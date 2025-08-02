@@ -4,13 +4,14 @@ export function Home() {
   const [data, setData] = useState({});
 
   useEffect(() => {
-    fetch(`${baseURL}/api`)
+    fetch(`${baseURL}/status`)
       .then((response) => response.json())
       .then((data) => {
         setData(data);
       });
   }, []);
 
+  console.log("baseURL:", baseURL);
   return (
     <div>
       <h1>Home Component</h1>
