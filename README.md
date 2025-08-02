@@ -1,1 +1,20 @@
-# SDP
+# SDP 
+| Artifact                  | Link                                                                                                                                   |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| Static Website      | [Static Site](https://sdp-sooty.vercel.app/)                                       |
+| Web Server | [Web Server](https://sdp-webserver.onrender.com/)                                    |
+
+
+## Local Setup
+### Client
+```bash
+cd client
+npm install
+npm run dev
+```
+
+### Server
+```bash
+cd server
+npm install
+npm run dev
