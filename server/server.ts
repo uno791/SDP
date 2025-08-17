@@ -26,7 +26,7 @@ app.listen(PORT, () => {
 router.get("/names", async (req, res) => {
   const { data, error } = await supabase
     .from("users")
-    .select("name"); 
+    .select("username"); 
 
   if (error) {
     console.error("❌ Supabase error:", error.message);

@@ -12,6 +12,9 @@ export function NavBar() {
       <Link to="/ball">
         <button>Ball</button>
       </Link>
+      <Link to="/doodlehome">
+        <button>Doodle Home</button>
+      </Link>
     </div>
   );
 }

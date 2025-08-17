@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { baseURL } from "../config";
 export function Home() {
   const [data, setData] = useState({});
-  const [users, setUsers] = useState<{ name: string }[]>([]);
+  const [users, setUsers] = useState<{ username: string }[]>([]);
   useEffect(() => {
     fetch(`${baseURL}/status`)
       .then((response) => response.json())
@@ -26,10 +26,10 @@ export function Home() {
     <div>
       <h1>Home Component</h1>
       <p>This is the Home component. /status tells us that: {data.status}</p>
-      <p>Names From users Table:</p>
+      <p>Usernames From users Table:</p>
       <ul>
         {users.map((user, index) => (
-          <li key={index}>{user.name}</li> // render each name
+          <li key={index}>{user.username}</li> // render each name
         ))}
       </ul>
     </div>
