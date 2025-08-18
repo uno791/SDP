@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./GoogleSignUpButton.module.css";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { User } from "../../Users/User";
 import { useUser } from "../../Users/UserContext";
 import { baseURL } from "../../config";
@@ -19,7 +19,7 @@ interface GoogleUserInfo {
 
 export function GoogleSignUpButton() {
   const { setUser } = useUser();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // call google login and handle signup
@@ -57,7 +57,7 @@ export function GoogleSignUpButton() {
         });
 
         setUser(newUser);
-        // navigate("/QuestionsPage");
+        navigate("/");
       } catch (err) {
         console.error("❌ Failed to fetch user info:", err);
         setErrorMessage("Google login failed. Please try again.");
