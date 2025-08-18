@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { baseURL } from "../config";
+import { useUser } from "../Users/UserContext";
 export function Home() {
   const [data, setData] = useState({});
   const [users, setUsers] = useState<{ username: string }[]>([]);
@@ -22,10 +23,20 @@ export function Home() {
       });
   }, []);
 
+  const u= useUser();
+  
+
   return (
     <div>
       <h1>Home Component</h1>
       <p>This is the Home component. /status tells us that: {data.status}</p>
+      <p> current user:</p>
+      <ul>
+        {
+          <li >{u.username}</li> // render each name
+        }
+      </ul>
+      
       <p>Usernames From users Table:</p>
       <ul>
         {users.map((user, index) => (

@@ -1,0 +1,91 @@
+.signUpButton {
+  position: relative;
+  cursor: pointer;
+  background-color: #00ffdd;
+  border-radius: 30px;
+  justify-content: center;
+  align-items: center;
+  width: clamp(250px, 70%, 802px);
+  margin-top: 2vh;
+  padding: 1.2rem 2rem;
+  display: flex;
+  border: none;
+  flex-wrap: nowrap;
+  transition: background-color 0.3s ease;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.signUpButton:hover {
+  background-color: #000;
+}
+
+.signUpButton:hover::after {
+  opacity: 1;
+}
+
+.errorMessage {
+  margin-top: 1rem;
+  color: red;
+  font-weight: 500;
+  text-align: center;
+}
+
+.googleIcon {
+  width: clamp(30px, 8vw, 85px);
+  height: clamp(30px, 8vw, 81px);
+  margin-right: 20px;
+  z-index: 3;
+}
+
+.buttonText {
+  color: #fff;
+  font-family: Kadwa, serif;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  font-weight: 700;
+  z-index: 3;
+}
+
+@media (width <= 991px) {
+  .signUpButton {
+    width: 90%;
+    padding: 15px 30px;
+  }
+
+  .googleIcon {
+    width: clamp(30px, 6vw, 65px);
+    height: clamp(30px, 6vw, 62px);
+  }
+
+  .buttonText {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+  }
+}
+
+@media (width <= 640px) {
+  .signUpButton {
+    padding: 10px 20px;
+  }
+
+  .googleIcon {
+    width: clamp(24px, 5vw, 45px);
+    height: clamp(24px, 5vw, 43px);
+  }
+
+  .buttonText {
+    font-size: clamp(1rem, 3vw, 1.5rem);
+  }
+}
+
+@media (width <= 480px) {
+  .signUpButton {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .googleIcon {
+    margin-right: 0;
+  }
+}

@@ -1,0 +1,301 @@
+.pageWrapper {
+  display: flex;
+  justify-content: center; /* horizontally center */
+  align-items: center; /* vertically center */
+  width: 100%;
+  height: 100%;
+  background-color: #242424;
+  box-sizing: border-box;
+}
+
+.loginContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 800px; /* optional, for desktop */
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+@media (width<=991px) {
+  .loginContainer {
+    max-width: 991px;
+  }
+}
+
+@media (width<=640px) {
+  .loginContainer {
+    max-width: 640px;
+  }
+}
+
+.popupSuccess,
+.popupError {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  max-width: 90vw;
+  min-width: 300px;
+  font-weight: bold;
+}
+
+.popupSuccess {
+  background-color: #ddffdd;
+  border: 2px solid green;
+  color: rgb(0, 0, 0);
+}
+
+.popupError {
+  background-color: #ffdddd;
+  border: 2px solid red;
+  color: #a00;
+}
+
+.popupSuccess button,
+.popupError button {
+  color: rgb(33, 36, 185);
+  margin-top: 1rem;
+  background: none;
+  border: none;
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.logo {
+  object-fit: contain;
+  width: clamp(120px, 20vw, 248px);
+  height: clamp(120px, 20vw, 248px);
+  margin-top: 1vh;
+  margin-bottom: 0.5vh;
+}
+
+@media (width<=640px) {
+  .logo {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+.welcomeTitle {
+  color: #ffffff;
+  text-align: center;
+  font-family: Kadwa, serif;
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  font-weight: 700;
+  margin-top: -1vh;
+  margin-bottom: 3vh;
+}
+
+@media (width<=991px) {
+  .welcomeTitle {
+    font-size: 96px;
+  }
+}
+
+@media (width<=640px) {
+  .welcomeTitle {
+    font-size: 64px;
+  }
+}
+
+.googleButton {
+  cursor: pointer;
+  background-color: #df29df;
+  border-radius: 30px;
+  justify-content: center;
+  align-items: center;
+  width: clamp(250px, 70%, 802px);
+  margin-top: 2vh;
+  padding: 1.2rem 2rem;
+  display: flex;
+  border: none;
+  flex-wrap: wrap;
+  text-wrap: wrap;
+  transition: background-color 0.3s ease;
+}
+
+.googleButton:hover {
+  background-color: #000;
+}
+
+@media (width<=991px) {
+  .googleButton {
+    width: 90%;
+    max-width: 802px;
+  }
+}
+
+@media (width<=640px) {
+  .googleButton {
+    height: 90px;
+  }
+}
+
+.googleIcon {
+  width: clamp(30px, 6vw, 85px);
+  height: clamp(30px, 6vw, 81px);
+  margin-right: 20px;
+}
+
+@media (width<=640px) {
+  .googleIcon {
+    width: 60px;
+    height: 56px;
+  }
+}
+
+.buttonText {
+  color: #fff;
+  font-family: Kadwa, serif;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  font-weight: 700;
+}
+
+@media (width<=640px) {
+  .buttonText {
+    font-size: 36px;
+  }
+}
+
+.signUpText {
+  letter-spacing: 2px;
+  font-family: Inter, sans-serif;
+  font-size: clamp(1rem, 2.5vw, 2rem);
+  text-align: center;
+  margin-top: 2vh;
+}
+@media (width<=991px) {
+  .signUpText {
+    margin-top: 150px;
+    font-size: 28px;
+  }
+  .googleIcon {
+    width: clamp(30px, 6vw, 65px);
+    height: clamp(30px, 6vw, 62px);
+  }
+
+  .buttonText {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+  }
+}
+
+@media (width<=640px) {
+  .signUpText {
+    letter-spacing: 2px;
+    margin-top: 100px;
+    font-size: 20px;
+  }
+}
+
+.exclamation {
+  color: #3595ef;
+}
+@media (width <= 480px) {
+  .pageContainer {
+    padding: 24px 12px;
+  }
+
+  .welcomeHeading {
+    padding: 0 10px;
+  }
+}
+@media (width <= 480px) {
+  .pageWrapper {
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+  }
+
+  .loginContainer {
+    padding: 24px 12px;
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  .googleButton {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    padding: 12px 20px;
+  }
+
+  .googleIcon {
+    margin-right: 0;
+  }
+
+  .signUpText {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .welcomeTitle {
+    padding: 0 10px;
+  }
+}
+
+.prankOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.prankBox {
+  position: relative;
+  background: white;
+  color: #000;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  width: 300px;
+  height: 200px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.yesButton,
+.noButton {
+  padding: 8px 16px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  z-index: 10;
+  position: absolute;
+}
+
+.noButton {
+  background-color: #2ecc71;
+}
