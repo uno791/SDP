@@ -26,7 +26,7 @@ export function GoogleSignUpButton() {
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const {data:userData} = await axios.get<GoogleUserInfo>(
+        const { data: userData } = await axios.get<GoogleUserInfo>(
           "https://www.googleapis.com/oauth2/v3/userinfo",
           {
             headers: {
@@ -35,7 +35,6 @@ export function GoogleSignUpButton() {
           }
         );
 
-        
         const userId = userData.sub;
         const username = userData.name || "Unnamed";
 
@@ -65,7 +64,6 @@ export function GoogleSignUpButton() {
           // lastName: userData.family_name,
           // email: userData.email,
           // picture: userData.picture,
-
         });
 
         setUser(newUser);
@@ -90,8 +88,6 @@ export function GoogleSignUpButton() {
           className={styles.googleIcon}
         />
         <span className={styles.buttonText}>Sign Up with Google</span>
-
-        
       </button>
 
       {/* display any errors */}
