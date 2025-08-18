@@ -10,7 +10,6 @@ import "./Home.css";
 export default function Home() {
   return (
     <>
-      <Header />
       <main className="page">
         <div className="container">
           <section className="colMain">
