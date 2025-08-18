@@ -36,4 +36,21 @@ router.get("/names", async (req, res) => {
   return res.status(200).json(data); 
 });
 
+router.get("/checkID", async (req, res) => {
+  const {user_id}=req.query;
+  const { data, error } = await supabase
+    .from("users")
+    .select("user_id")
+    .eq("user_id",user_id);
+
+  if (error) {
+    console.error("❌ Supabase error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+
+  const exists = data && data.length > 0;
+
+  return res.status(200).json({ exists });
+});
+
 export default router;

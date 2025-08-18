@@ -5,6 +5,9 @@ import { House } from "./pages/house";
 import { Ball } from "./pages/ball";
 import DoodleHome from "./pages/liveeplscoreboard";
 import { Layout } from "./Layout";
+import SignUpPage from "./pages/SignUpPage";
+import { UserProvider } from "./Users/UserContext"; // <-- add this
+import { GoogleOAuthProvider } from "@react-oauth/google"; // <-- add this
 function App() {
   return (
     <Router>
@@ -15,6 +18,7 @@ function App() {
           <Route path="/house" element={<House />} />
           <Route path="/ball" element={<Ball />} />
           <Route path="/doodlehome" element={<DoodleHome />} />
+          <Route path="/signuppage" element={<SignUpPage />} />
         </Route>
       </Routes>
     </Router>
