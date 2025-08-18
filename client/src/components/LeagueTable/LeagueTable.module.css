@@ -1,0 +1,89 @@
+.card {
+  background-color: rgb(216, 203, 170); /* comic card background */
+  border: 4px solid rgba(0, 0, 0, 1); /* thick black border */
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 1); /* offset shadow */
+  padding: 37px 28px; /* match comic card padding */
+  border-radius: 0; /* remove rounded corners for comic style */
+}
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+h3 {
+  margin: 0;
+  text-align: left;
+}
+
+.seasonNav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navBtn {
+  border: 2px solid #0c2a47;
+  background: #fff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+.navBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.seasonLabel {
+  font-weight: 700;
+  min-width: 110px;
+  text-align: center;
+  border: 2px solid #0c2a47;
+  padding: 2px 10px;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.head,
+.row {
+  display: grid;
+  grid-template-columns: 36px 1fr 28px 28px 28px 28px 40px 36px; /* Pos Team P W D L GD Pts */
+  gap: 8px;
+  align-items: center;
+}
+
+.head {
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #0c2a47;
+  padding-bottom: 4px;
+}
+
+.row {
+  padding: 6px 0;
+  border-bottom: 1px dashed #e5d2aa;
+}
+
+.team {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.body {
+  max-height: 380px;
+  overflow: auto;
+}
+.empty {
+  padding: 8px;
+  color: #777;
+  text-align: center;
+}
+
+.pts {
+  font-weight: 700;
+}

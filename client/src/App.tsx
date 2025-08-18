@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Home } from "./pages/home";
+import Home from "./pages/home";
 import { House } from "./pages/house";
 import { Ball } from "./pages/ball";
 import DoodleHome from "./pages/liveeplscoreboard";

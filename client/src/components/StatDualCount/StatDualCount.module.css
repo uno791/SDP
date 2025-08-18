@@ -1,0 +1,19 @@
+.wrap {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    font-size:13px;
+  }
+  .label { font-weight:700; color:#0c2a47; }
+  .counts { display:flex; align-items:center; gap:8px; }
+  .badge {
+    border:2px solid #0c2a47;
+    border-radius:999px;
+    background:#fff;
+    color:#0c2a47;
+    padding:2px 8px;
+  }
+  .tag { margin-right:6px; }
+  .sep { color:#0c2a47; opacity:.6; }
+  
