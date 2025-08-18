@@ -5,7 +5,7 @@ import LeagueTable from "../components/LeagueTable/LeagueTable";
 import LatestNews from "../components/LastestNews/LastestNews";
 import LiveStreamsCTA from "../components/LiveStreamsCTA/LiveStreamsCTA";
 import Footer from "../components/Footer/Footer";
-import "./Home.css";
+import "./home.css";
 
 export default function Home() {
   return (
