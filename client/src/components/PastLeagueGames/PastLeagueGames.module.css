@@ -1,4 +1,18 @@
-.wrap { background:#f4ead4; border:3px solid #0c2a47; padding:16px; border-radius:10px; }
-h2 { margin:0 0 8px; font-size:26px; }
-.dayLabel { font-size:13px; color:#333; margin-bottom:8px; }
-.empty { color:#777; }
+.wrap {
+  background: #f4ead4;
+  border: 3px solid #0c2a47;
+  padding: 16px;
+  border-radius: 10px;
+}
+h2 {
+  margin: 0 0 8px;
+  font-size: 26px;
+}
+.dayLabel {
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 8px;
+}
+.empty {
+  color: #777;
+}
