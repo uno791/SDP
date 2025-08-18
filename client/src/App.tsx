@@ -8,6 +8,7 @@ import { Layout } from "./Layout";
 import SignUpPage from "./pages/SignUpPage";
 import { UserProvider } from "./Users/UserContext"; // <-- add this
 import { GoogleOAuthProvider } from "@react-oauth/google"; // <-- add this
+import LoginPage from "./pages/LogInPage";
 function App() {
   return (
   <GoogleOAuthProvider clientId="719123023157-2l972akc1n9ktkksvlhajau4s9aclcng.apps.googleusercontent.com">
@@ -21,6 +22,8 @@ function App() {
             <Route path="/ball" element={<Ball />} />
             <Route path="/doodlehome" element={<DoodleHome />} />
             <Route path="/signuppage" element={<SignUpPage />} />
+            <Route path="/loginpage" element={<LoginPage />} />
+
           </Route>
         </Routes>
       </Router>

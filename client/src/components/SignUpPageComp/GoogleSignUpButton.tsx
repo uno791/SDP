@@ -37,6 +37,7 @@ export function GoogleSignUpButton() {
 
         
         const userId = userData.sub;
+        const username = userData.name || "Unnamed";
 
        const res = await axios.get<{ exists: boolean }>(
         `${baseURL}/checkID`,
@@ -48,11 +49,17 @@ export function GoogleSignUpButton() {
         return;
       }
 
+      const {data:inserted}=await axios.post(
+        `${baseURL}/addUser`,
+        { user_id: userId, username }
+      );
+
 
 
         // create new User instance and store in context
         const newUser = new User({
           id: userData.sub,
+          username
           // name: userData.name,
           // firstName: userData.given_name,
           // lastName: userData.family_name,
