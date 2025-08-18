@@ -1,21 +1,23 @@
 .pageWrapper {
   display: flex;
-  height: 100vh;
-  overflow-y: auto;
-}
-
-.loginContainer {
-  background-color: #f6ebd9;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  align-items: center;
-  min-width: 100vw;
-  min-height: 100dvh;
-  padding: 16px;
+  justify-content: center; /* horizontally center */
+  align-items: center; /* vertically center */
+  width: 100%;
+  height: 100%;
+  background-color: #242424;
   box-sizing: border-box;
 }
 
+.loginContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 800px; /* optional, for desktop */
+  padding: 16px;
+  box-sizing: border-box;
+}
 
 @media (width<=991px) {
   .loginContainer {
@@ -69,7 +71,6 @@
   cursor: pointer;
 }
 
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -81,18 +82,13 @@
   }
 }
 
-
-
-
-
 .logo {
   object-fit: contain;
   width: clamp(120px, 20vw, 248px);
   height: clamp(120px, 20vw, 248px);
-  margin-top: 1vh;        
-  margin-bottom: 0.5vh;   
+  margin-top: 1vh;
+  margin-bottom: 0.5vh;
 }
-
 
 @media (width<=640px) {
   .logo {
@@ -102,15 +98,14 @@
 }
 
 .welcomeTitle {
-  color: #3e2c14;
+  color: #ffffff;
   text-align: center;
   font-family: Kadwa, serif;
   font-size: clamp(2.5rem, 8vw, 6rem);
   font-weight: 700;
-  margin-top: -1vh;       
-  margin-bottom: 3vh;   
+  margin-top: -1vh;
+  margin-bottom: 3vh;
 }
-
 
 @media (width<=991px) {
   .welcomeTitle {
@@ -126,7 +121,7 @@
 
 .googleButton {
   cursor: pointer;
-  background-color: #3e2c14;
+  background-color: #df29df;
   border-radius: 30px;
   justify-content: center;
   align-items: center;
@@ -304,5 +299,3 @@
 .noButton {
   background-color: #2ecc71;
 }
-
-

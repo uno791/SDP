@@ -1,18 +1,24 @@
 .pageContainer {
-  background-color: #f6ebd9;
+  display: flex;
+  justify-content: center; /* horizontally center */
+  align-items: center; /* vertically center */
+  width: 100%;
+  height: 100%;
+  background-color: #242424;
+  box-sizing: border-box;
+
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  width: 100vw;
+  width: 100%;
+  max-width: 800px; /* optional, for desktop */
   padding: 16px;
   box-sizing: border-box;
-  overflow-y: auto;
 }
 
 .welcomeHeading {
-  color: #3e2c14;
+  color: #ffffff;
   margin-top: 2vh;
   font-family: Kadwa, serif;
   font-size: clamp(2rem, 10vw, 6rem);
@@ -48,4 +54,3 @@
     padding: 0 10px;
   }
 }
-

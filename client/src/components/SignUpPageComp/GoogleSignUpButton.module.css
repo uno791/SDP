@@ -1,7 +1,7 @@
 .signUpButton {
   position: relative;
   cursor: pointer;
-  background-color: #3e2c14;
+  background-color: #00ffdd;
   border-radius: 30px;
   justify-content: center;
   align-items: center;
@@ -20,12 +20,9 @@
   background-color: #000;
 }
 
-
 .signUpButton:hover::after {
   opacity: 1;
 }
-
-
 
 .errorMessage {
   margin-top: 1rem;

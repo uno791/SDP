@@ -1,5 +1,5 @@
 .signupText {
-  color: #3e2c14;
+  color: #ffffff;
   letter-spacing: 2px;
   font-family: Inter, sans-serif;
   font-size: clamp(1rem, 2.5vw, 2rem);
@@ -17,30 +17,24 @@
   font: inherit;
 }
 
-  
-  @media (width <= 991px) {
-    .signupText {
-      font-size: clamp(1rem, 2vw, 1.5rem);
-    }
+@media (width <= 991px) {
+  .signupText {
+    font-size: clamp(1rem, 2vw, 1.5rem);
   }
-  
+}
 
-
-  @media (width <= 640px) {
-    .signupText {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      letter-spacing: 1px;
-      font-size: clamp(0.9rem, 2vw, 1.2rem);
-      gap: 6px;
-    }
-  
-    .signinLink {
-      margin-left: 0; 
-    }
+@media (width <= 640px) {
+  .signupText {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    letter-spacing: 1px;
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+    gap: 6px;
   }
-  
-  
-  
+
+  .signinLink {
+    margin-left: 0;
+  }
+}

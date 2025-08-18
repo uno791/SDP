@@ -11,24 +11,23 @@ import { GoogleOAuthProvider } from "@react-oauth/google"; // <-- add this
 import LoginPage from "./pages/LogInPage";
 function App() {
   return (
-  <GoogleOAuthProvider clientId="719123023157-2l972akc1n9ktkksvlhajau4s9aclcng.apps.googleusercontent.com">
-    <UserProvider>
-      <Router>
-        <Routes>
-          // put within here if you want it to have NavBar
-          <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/house" element={<House />} />
-            <Route path="/ball" element={<Ball />} />
-            <Route path="/doodlehome" element={<DoodleHome />} />
-            <Route path="/signuppage" element={<SignUpPage />} />
-            <Route path="/loginpage" element={<LoginPage />} />
-
-          </Route>
-        </Routes>
-      </Router>
-    </UserProvider>
-  </GoogleOAuthProvider>
+    <GoogleOAuthProvider clientId="719123023157-2l972akc1n9ktkksvlhajau4s9aclcng.apps.googleusercontent.com">
+      <UserProvider>
+        <Router>
+          <Routes>
+            // put within here if you want it to have NavBar
+            <Route element={<Layout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/house" element={<House />} />
+              <Route path="/ball" element={<Ball />} />
+              <Route path="/doodlehome" element={<DoodleHome />} />
+              <Route path="/signuppage" element={<SignUpPage />} />
+              <Route path="/loginpage" element={<LoginPage />} />
+            </Route>
+          </Routes>
+        </Router>
+      </UserProvider>
+    </GoogleOAuthProvider>
   );
 }
 
