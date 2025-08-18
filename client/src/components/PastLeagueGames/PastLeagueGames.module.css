@@ -1,8 +1,9 @@
 .wrap {
-  background: #f4ead4;
-  border: 3px solid #0c2a47;
-  padding: 16px;
-  border-radius: 10px;
+  background-color: rgba(244, 236, 216, 1); /* comic card background */
+  border: 4px solid rgba(0, 0, 0, 1); /* thick black border */
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 1); /* offset shadow */
+  padding: 40px 39px; /* match comic card padding */
+  margin-left: -10%; /* align like other cards */
 }
 h2 {
   margin: 0 0 8px;

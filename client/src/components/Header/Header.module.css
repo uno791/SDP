@@ -8,12 +8,14 @@
 }
 
 .brand {
-  font-weight: 800;
-  background: #ffb347;
-  color: #08233a;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 2px solid #08233a;
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
 }
 
 .links {
@@ -21,15 +23,151 @@
   gap: 16px;
   align-items: center;
 }
-.links a {
-  cursor: pointer;
-  padding: 6px 8px;
-  border: 2px solid transparent;
-  border-radius: 8px;
-}
+
 .live {
-  background: #ff6a6a;
+  background: #da2b2b;
   border-color: #fff;
+  padding: 2px 5px;
 }
 
-/* keep header full width and visually “attached” to the beige body */
+.username {
+  font-weight: 700;
+}
+
+/* Comic brutal button styles */
+.comicBrutalButton {
+  position: relative;
+  font-size: 1.2em;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  transform: rotate(-2deg);
+  transform-origin: center;
+  transition: transform 0.15s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.buttonInner {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #08233a;
+  color: #000;
+  padding: 0.8em 1.5em;
+  z-index: 3;
+  overflow: hidden;
+  transform: skew(-3deg, 1deg);
+  clip-path: polygon(
+    0% 10%,
+    3% 0%,
+    97% 0%,
+    100% 10%,
+    100% 90%,
+    97% 100%,
+    3% 100%,
+    0% 90%
+  );
+}
+
+.buttonText {
+  position: relative;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  z-index: 5;
+  color: #ffb347;
+  transform: rotate(2deg);
+}
+
+.buttonFrame {
+  position: absolute;
+  top: -0.3em;
+  left: -0.3em;
+  right: -0.3em;
+  bottom: -0.3em;
+  background-color: #da2b2b;
+  border: 0.15em solid #000;
+  z-index: 1;
+}
+
+.buttonShadow {
+  position: absolute;
+  top: 0.4em;
+  left: 0.4em;
+  right: -0.4em;
+  bottom: -0.4em;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 0;
+}
+
+.halftoneOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(
+    circle at 30% 30%,
+    rgba(0, 0, 0, 0.2) 0.1em,
+    transparent 0.1em
+  );
+  background-size: 0.5em 0.5em;
+  opacity: 0.3;
+  z-index: 2;
+  mix-blend-mode: multiply;
+}
+
+.inkSplatter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0;
+  background: radial-gradient(
+      circle at 20% 30%,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.08) 20%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 70% 65%,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.08) 25%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 50%,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.08) 30%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 85% 15%,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.08) 15%,
+      transparent 40%
+    );
+  transition: opacity 0.2s ease;
+}
+
+.comicBrutalButton:hover {
+  transform: rotate(-1deg) scale(1.05);
+}
+
+.comicBrutalButton:hover .buttonInner {
+  transform: skew(-5deg, 2deg);
+  background-color: #ff0000;
+}
+
+.comicBrutalButton:hover .buttonText {
+  color: #fff;
+  text-shadow: 0.05em 0.05em 0 #000, -0.05em -0.05em 0 #000,
+    0.05em -0.05em 0 #000, -0.05em 0.05em 0 #000;
+}
+
+.comicBrutalButton:hover .inkSplatter {
+  opacity: 1;
+}
