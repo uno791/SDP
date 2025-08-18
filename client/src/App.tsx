@@ -1,5 +1,4 @@
-import "./App.css";
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Home } from "./pages/home";
 import { House } from "./pages/house";
 import { Ball } from "./pages/ball";
@@ -9,6 +8,7 @@ import SignUpPage from "./pages/SignUpPage";
 import { UserProvider } from "./Users/UserContext"; // <-- add this
 import { GoogleOAuthProvider } from "@react-oauth/google"; // <-- add this
 import LoginPage from "./pages/LogInPage";
+import FootballHomePage from "./pages/FootballHomePage";
 function App() {
   return (
     <GoogleOAuthProvider clientId="719123023157-8iqvisdfo85e23emcfe7gth9vqa7ebop.apps.googleusercontent.com">
@@ -23,6 +23,7 @@ function App() {
               <Route path="/doodlehome" element={<DoodleHome />} />
               <Route path="/signuppage" element={<SignUpPage />} />
               <Route path="/loginpage" element={<LoginPage />} />
+              <Route path="/football-home" element={<FootballHomePage />} />
             </Route>
           </Routes>
         </Router>

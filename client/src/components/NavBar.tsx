@@ -15,6 +15,9 @@ export function NavBar() {
       <Link to="/doodlehome">
         <button>Doodle Home</button>
       </Link>
+      <Link to="/football-home">
+        <button>Football Home</button>
+      </Link>
       <Link to="/signuppage">
         <button>Sign up</button>
       </Link>
