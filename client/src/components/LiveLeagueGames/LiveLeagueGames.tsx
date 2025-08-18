@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchScoreboard } from "../../api/espn";
-import type { ScoreboardResponse } from "../../api/espn";
+import {
+  fetchScoreboard,
+  type ScoreboardResponse,
+  extractStatsFromScoreboardEvent,
+} from "../../api/espn";
 import MatchCard from "../MatchCard/MatchCard";
 import styles from "./LiveLeagueGames.module.css";
 
@@ -29,10 +32,8 @@ export default function LiveLeagueGames() {
     };
   }, [date]);
 
-  const { live, upcoming } = useMemo(() => {
-    const live: any[] = [];
-    const upcoming: any[] = [];
-    (data?.events ?? []).forEach((ev) => {
+  const cards = useMemo(() => {
+    return (data?.events ?? []).map((ev) => {
       const comp = ev.competitions?.[0];
       const status = ev.status?.type;
       const home = comp?.competitors?.find((c) => c.homeAway === "home");
@@ -51,7 +52,9 @@ export default function LiveLeagueGames() {
             })
           : status?.detail ?? "";
 
-      const card = (
+      const details = extractStatsFromScoreboardEvent(ev);
+
+      return (
         <MatchCard
           key={ev.id}
           id={ev.id}
@@ -59,13 +62,12 @@ export default function LiveLeagueGames() {
           away={mkTeam(away)}
           state={status?.state as any}
           statusText={statusText}
+          metrics={details.metrics}
+          saves={details.saves}
+          scorers={details.scorers}
         />
       );
-
-      if (status?.state === "in") live.push(card);
-      else upcoming.push(card);
     });
-    return { live, upcoming };
   }, [data]);
 
   return (
@@ -104,23 +106,10 @@ export default function LiveLeagueGames() {
       {loading && <div className={styles.skel}>Loading…</div>}
       {err && <div className={styles.err}>{err}</div>}
 
-      {!loading && !err && (
-        <>
-          {live.length > 0 ? (
-            live
-          ) : (
-            <div className={styles.muted}>No live games</div>
-          )}
-          {upcoming.length > 0 && (
-            <>
-              <h3 className={styles.subhead}>
-                More on {date.toLocaleDateString()}
-              </h3>
-              {upcoming}
-            </>
-          )}
-        </>
+      {!loading && !err && cards.length === 0 && (
+        <div className={styles.muted}>No games for this date.</div>
       )}
+      {!loading && !err && cards}
     </section>
   );
 }
