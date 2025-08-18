@@ -11,7 +11,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google"; // <-- add this
 import LoginPage from "./pages/LogInPage";
 function App() {
   return (
-    <GoogleOAuthProvider clientId="719123023157-2l972akc1n9ktkksvlhajau4s9aclcng.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId="719123023157-8iqvisdfo85e23emcfe7gth9vqa7ebop.apps.googleusercontent.com">
       <UserProvider>
         <Router>
           <Routes>
