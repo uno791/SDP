@@ -1,10 +1,12 @@
 .nav {
   background: #0c2a47;
   color: #fff;
-  padding: 10px 14px;
+  padding: 3% 14px; /* keep nav height reasonable */
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 60px; /* fixed nav height */
+  overflow: hidden; /* ensures large logo doesn’t stretch nav */
 }
 
 .brand {
@@ -13,7 +15,7 @@
 }
 
 .logo {
-  height: 80px;
+  height: 135px; /* smaller but visible */
   width: auto;
   object-fit: contain;
 }
