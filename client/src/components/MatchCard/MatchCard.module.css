@@ -1,59 +1,52 @@
 .card {
   border: 2px solid #0c2a47;
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 10px;
   background: #fff;
+  overflow: hidden;
 }
-.card[data-state="in"] {
-  outline: 3px solid #ff6a6a33;
-}
-.card + .card {
-  margin-top: 12px;
-}
+.card + .card { margin-top: 12px; }
+.card[data-state="in"] { outline: 3px solid #ff6a6a33; }
 
-.row {
+.header {
+  width: 100%;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto 1fr 20px;
   align-items: center;
   gap: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  text-align: left;
+  border: 0;
+  cursor: pointer;
 }
-.team {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-}
-.team.right {
-  justify-content: flex-end;
-  text-align: right;
-}
-.logo {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  object-fit: cover;
+.header:hover { background: #faf8f3; }
+
+.team { display:flex; align-items:center; gap:10px; font-weight:700; color:#0c2a47; }
+.team.right { justify-content: flex-end; text-align: right; }
+.logo { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+
+.center { display:flex; flex-direction:column; align-items:center; min-width: 110px; }
+.score { font-size: 22px; line-height: 1; color:#0c2a47; }
+.hyphen { opacity:.6; margin: 0 6px; }
+.status { font-size: 12px; color:#cf6e00; margin-top: 2px; }
+
+.chev { color:#0c2a47; font-weight:700; }
+
+.expandArea { padding: 0 14px 12px; }
+.separator { border-top: 2px dashed #c9c2b1; margin: 4px 0 10px; }
+
+.statsWrap { display:flex; flex-direction:column; gap: 10px; }
+
+.scorers { display:flex; flex-direction:column; gap:8px; }
+.scorersTitle { font-weight:700; color:#0c2a47; }
+.scorerList { display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; list-style:none; }
+.scorerPill {
+  border:2px solid #0c2a47;
+  border-radius:999px;
+  padding:2px 8px;
+  background:#fff;
+  color:#0c2a47;
+  font-size:12px;
 }
 
-.center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 110px;
-}
-.score {
-  font-size: 20px;
-  line-height: 1;
-}
-.hyphen {
-  opacity: 0.6;
-  margin: 0 6px;
-}
-.vs {
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-.status {
-  font-size: 12px;
-  color: #cf6e00;
-  margin-top: 2px;
-}
+.loading { font-size:12px; color:#555; }

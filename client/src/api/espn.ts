@@ -11,8 +11,40 @@ export type ScoreboardResponse = {
       competitors: Array<{
         homeAway: "home" | "away";
         score?: string;
-        team: { shortDisplayName: string; logo?: string };
+        team: { shortDisplayName: string; logo?: string; abbreviation?: string };
+        statistics?: Array<{
+          name?: string;
+          displayName?: string;
+          shortDisplayName?: string;
+          abbreviation?: string;
+          type?: string;
+          value?: number | string;
+          displayValue?: string;
+          stat?: string;
+        }>;
       }>;
+      // ESPN sometimes uses an ARRAY of event objects here (with scoringPlay flags),
+      // and sometimes an OBJECT with a scoringPlays array. We'll support both.
+      details?:
+        | Array<{
+            type?: { id?: string; text?: string };
+            clock?: { displayValue?: string };
+            team?: { id?: string; abbreviation?: string };
+            homeAway?: "home" | "away";
+            scoreValue?: number;
+            scoringPlay?: boolean;
+            athletesInvolved?: Array<{ id?: string; displayName?: string }>;
+            text?: string;
+          }>
+        | {
+            scoringPlays?: Array<{
+              clock?: { displayValue?: string };
+              team?: { abbreviation?: string; id?: string };
+              homeAway?: "home" | "away";
+              athletesInvolved?: Array<{ athlete?: { displayName?: string } }>;
+              text?: string;
+            }>;
+          };
     }>;
   }>;
 };
@@ -62,10 +94,7 @@ export async function fetchEplNews(): Promise<EspnNewsResponse> {
   return res.json();
 }
 
-/** ---------------- Standings (robust) ----------------
- * Uses site.web.api and falls back across seasontype and container shapes.
- * Example: https://site.web.api.espn.com/apis/v2/sports/soccer/eng.1/standings?season=2025&level=3
- */
+/** ---------------- Standings (robust) ---------------- */
 export type StandingsEntry = {
   team: { id: string; displayName: string; abbreviation?: string; logos?: { href: string }[] };
   note?: { rank?: number };
@@ -116,11 +145,6 @@ function mapRow(e: StandingsEntry) {
   };
 }
 
-/**
- * Fetch EPL standings for a season (YYYY).
- * We try seasontype in this order: undefined (let ESPN choose), 2 (regular), 1 (pre), 3 (post).
- * Returns sorted rows by pos; if no rank, sorts by pts, gd, goalsFor.
- */
 export async function fetchEplStandings(opts?: {
   season?: number;
   seasontype?: 1 | 2 | 3; // optional override
@@ -129,7 +153,6 @@ export async function fetchEplStandings(opts?: {
   const season = opts?.season;
   const level = String(opts?.level ?? 3);
 
-  // try candidates until one returns non-empty entries
   const seasonTypeCandidates = opts?.seasontype
     ? [opts.seasontype]
     : [undefined, 2, 1, 3] as Array<1 | 2 | 3 | undefined>;
@@ -148,7 +171,6 @@ export async function fetchEplStandings(opts?: {
     if (entries.length > 0) {
       const rows = entries.map(mapRow);
 
-      // If rank missing/zero for some entries, sort by points/gd/name as fallback
       const allHaveRank = rows.every(r => r.pos > 0);
       if (!allHaveRank) {
         rows.sort((a, b) =>
@@ -156,7 +178,6 @@ export async function fetchEplStandings(opts?: {
           b.gd - a.gd ||
           a.team.localeCompare(b.team)
         );
-        // assign positions
         rows.forEach((r, i) => (r.pos = i + 1));
       } else {
         rows.sort((a, b) => a.pos - b.pos);
@@ -168,4 +189,136 @@ export async function fetchEplStandings(opts?: {
 
   // nothing worked
   return [];
+}
+
+/** ---------------- Match details from SCOREBOARD only ---------------- */
+export type StatMetric = { key: string; label: string; homePct?: number };
+export type Scorer = { minute?: string; player: string; teamAbbr?: string; homeAway?: "home"|"away" };
+export type MatchDetailsFromScoreboard = {
+  metrics: StatMetric[]; // bars: Possession + (Shots on Target | Shots | Corners | Fouls)
+  saves?: { home?: number; away?: number; homeAbbr?: string; awayAbbr?: string };
+  scorers: Scorer[];
+};
+
+/** Helpers */
+function normalizeMinute(v?: string) {
+  if (!v) return undefined;
+  const m = v.match(/\d+(?:\+\d+)?/); // "45+2" -> 45+2
+  return m ? `${m[0]}'` : v;
+}
+function parseNum(v: unknown): number | undefined {
+  if (typeof v === "number") return v;
+  if (typeof v === "string") {
+    const m = v.match(/-?\d+(\.\d+)?/);
+    if (m) return Number(m[0]);
+  }
+  return undefined;
+}
+function valFrom(stat: any) {
+  if (!stat) return undefined;
+  return parseNum(stat.value ?? stat.displayValue ?? stat.stat);
+}
+function normKey(s?: string) {
+  return (s ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+function findStat(stats: any[] | undefined, candidates: string[]) {
+  if (!stats) return undefined;
+  for (const s of stats) {
+    const key = normKey(s?.name) || normKey(s?.displayName) || normKey(s?.shortDisplayName) || normKey(s?.abbreviation) || normKey(s?.type);
+    if (!key) continue;
+    for (const c of candidates) {
+      if (key === normKey(c)) {
+        const v = valFrom(s);
+        if (v !== undefined) return v;
+      }
+    }
+  }
+  return undefined;
+}
+function sharePct(h?: number, a?: number) {
+  if (typeof h !== "number" || typeof a !== "number") return undefined;
+  const tot = h + a;
+  return tot > 0 ? Math.round((h / tot) * 100) : undefined;
+}
+
+/** Extract scorers directly from a scoreboard event object (supports both details shapes) */
+export function extractScorersFromScoreboardEvent(ev: any): Scorer[] {
+  const comp = ev?.competitions?.[0];
+  const abbrMap: Record<string, string> = {};
+  (comp?.competitors ?? []).forEach((c: any) => {
+    const id = c?.team?.id ?? c?.id;
+    const ab = c?.team?.abbreviation;
+    if (id && ab) abbrMap[id] = ab;
+  });
+
+  const fromArray = Array.isArray(comp?.details) ? comp?.details : [];
+  const fromScoring = !Array.isArray(comp?.details) ? comp?.details?.scoringPlays ?? [] : [];
+
+  const plays = [
+    ...fromArray.filter((p: any) => p?.scoringPlay === true),
+    ...fromScoring
+  ];
+
+  return plays.map((p: any) => {
+    const minute = normalizeMinute(p?.clock?.displayValue) ?? normalizeMinute(p?.text);
+    const player =
+      p?.athletesInvolved?.[0]?.displayName ??
+      p?.athletesInvolved?.[0]?.athlete?.displayName ??
+      (p?.text ? String(p.text).split(" (")[0] : "Goal");
+    const teamId = p?.team?.id;
+    const teamAbbr = p?.team?.abbreviation ?? (teamId ? abbrMap[teamId] : undefined);
+    const homeAway = p?.homeAway as "home" | "away" | undefined;
+    return { minute, player, teamAbbr, homeAway };
+  });
+}
+
+/** Extract stats (possession, a fallback share bar, and saves counts) from scoreboard */
+export function extractStatsFromScoreboardEvent(ev: any): MatchDetailsFromScoreboard {
+  const comp = ev?.competitions?.[0];
+  const home = comp?.competitors?.find((c: any) => c.homeAway === "home");
+  const away = comp?.competitors?.find((c: any) => c.homeAway === "away");
+  const hStats = home?.statistics ?? [];
+  const aStats = away?.statistics ?? [];
+
+  // Possession (scoreboard uses "possessionPct" with numeric string, e.g., "54.3")
+  const hPoss = findStat(hStats, ["possessionPct", "possession%", "possession"]);
+  const aPoss = findStat(aStats, ["possessionPct", "possession%", "possession"]);
+  const possHome = hPoss ?? (typeof aPoss === "number" ? 100 - aPoss : undefined);
+
+  // Secondary bar candidates (add ESPN scoreboard keys + abbreviations)
+  const tryPair = (label: string, names: string[]) => {
+    const h = findStat(hStats, names);
+    const a = findStat(aStats, names);
+    if (h !== undefined && a !== undefined) {
+      return { key: names[0], label, homePct: sharePct(h, a) } as StatMetric;
+    }
+    return undefined;
+  };
+  const secondary =
+    tryPair("Shots on Target", ["shotsOnTarget", "shotsontarget", "st", "sot"]) ||
+    tryPair("Total Shots", ["totalShots", "shots", "sh"]) ||
+    tryPair("Corners", ["wonCorners", "cornerkicks", "corners", "cw"]) ||
+    tryPair("Fouls", ["foulsCommitted", "fouls", "fc"]);
+
+  const metrics: StatMetric[] = [{ key: "poss", label: "Possession", homePct: possHome }];
+  if (secondary) metrics.push(secondary);
+
+  // Saves as counts if present (key often "saves" or "sv")
+  const savesHome = findStat(hStats, ["saves", "sv"]);
+  const savesAway = findStat(aStats, ["saves", "sv"]);
+  const saves =
+    savesHome !== undefined && savesAway !== undefined
+      ? {
+          home: savesHome,
+          away: savesAway,
+          homeAbbr: home?.team?.abbreviation,
+          awayAbbr: away?.team?.abbreviation,
+        }
+      : undefined;
+
+  return {
+    metrics,
+    saves,
+    scorers: extractScorersFromScoreboardEvent(ev),
+  };
 }

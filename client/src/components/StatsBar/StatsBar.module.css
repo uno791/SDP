@@ -1,0 +1,16 @@
+.wrap { display:flex; flex-direction:column; gap:4px; }
+.row { display:flex; align-items:center; justify-content:space-between; font-size:13px; }
+.label { color:#0c2a47; font-weight:600; }
+.value { color:#0c2a47; font-weight:700; }
+
+.track {
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid #0c2a47;
+  background: #f2eee6;
+  overflow: hidden;
+}
+.fill {
+  height: 100%;
+  background: #0c2a47;
+}
