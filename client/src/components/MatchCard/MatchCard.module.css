@@ -1,0 +1,20 @@
+.card {
+    border: 2px solid #0c2a47;
+    border-radius: 8px;
+    padding: 10px 14px;
+    background: #fff;
+  }
+  .card[data-state="in"] { outline: 3px solid #ff6a6a33; }
+  .card + .card { margin-top: 12px; }
+  
+  .row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+  .team { display:flex; align-items:center; gap:10px; font-weight:600; }
+  .team.right { justify-content: flex-end; text-align: right; }
+  .logo { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+  
+  .center { display:flex; flex-direction:column; align-items:center; min-width: 110px; }
+  .score { font-size: 20px; line-height: 1; }
+  .hyphen { opacity: .6; margin: 0 6px; }
+  .vs { font-weight: 700; letter-spacing: .5px; }
+  .status { font-size: 12px; color: #cf6e00; margin-top: 2px; }
+  

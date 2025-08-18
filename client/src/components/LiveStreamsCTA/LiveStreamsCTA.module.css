@@ -1,0 +1,4 @@
+.wrap { border:3px solid #0c2a47; border-radius:10px; background:#ffb347; padding:18px; }
+.tile { display:flex; gap:14px; align-items:center; justify-content:center; }
+.icon { font-size:28px; }
+.title { font-weight:800; letter-spacing:.5px; }

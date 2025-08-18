@@ -1,0 +1,8 @@
+.card { border:3px solid #0c2a47; border-radius:10px; padding:12px; background:#fff7e7; }
+h3 { margin:0 0 8px; text-align:center; }
+.head, .row { display:grid; grid-template-columns: 36px 1fr 28px 28px 36px; gap:8px; align-items:center; }
+.head { font-weight:700; font-size:12px; text-transform:uppercase; border-bottom:1px solid #0c2a47; padding-bottom:4px; }
+.row { padding:6px 0; border-bottom:1px dashed #e5d2aa; }
+.team { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.body { max-height: 380px; overflow:auto; }
+.empty { padding:8px; color:#777; text-align:center; }
