@@ -6,11 +6,29 @@ import { LoginPrompt } from "../components/SignUpPageComp/LoginPrompt";
 
 export default function SignUpPage() {
   return (
-    <main className={styles.pageContainer}>
-      {/* <Logo /> */}
-      <h1 className={styles.welcomeHeading}>pls sign up</h1>
-      <GoogleSignUpButton />
-      <LoginPrompt />
-    </main>
+    <section className={styles.page}>
+      <div className={styles.frame}>
+        {/* collage background */}
+        <div className={styles.comicGrid} aria-hidden={false}>
+          {/* top row (3) */}
+          <i className={`${styles.panel} ${styles.topLeft}`} />
+          <i className={`${styles.panel} ${styles.topCenter}`} />
+          <i className={`${styles.panel} ${styles.topRight}`} />
+
+          {/* middle row (1 big dotted) — contains the actions */}
+          <div className={`${styles.panel} ${styles.middleDotted}`}>
+            <div className={styles.middleInner}>
+              <GoogleSignUpButton />
+              <LoginPrompt />
+            </div>
+          </div>
+
+          {/* bottom row (3) */}
+          <i className={`${styles.panel} ${styles.botLeft}`} />
+          <i className={`${styles.panel} ${styles.botCenter}`} />
+          <i className={`${styles.panel} ${styles.botRight}`} />
+        </div>
+      </div>
+    </section>
   );
 }

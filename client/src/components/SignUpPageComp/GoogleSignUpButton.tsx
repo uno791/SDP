@@ -1,6 +1,7 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styles from "./GoogleSignUpButton.module.css";
+import headerStyles from "../Header/Header.module.css"; // same module as header buttons
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -22,50 +23,30 @@ export function GoogleSignUpButton() {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // call google login and handle signup
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
         const { data: userData } = await axios.get<GoogleUserInfo>(
           "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: {
-              Authorization: `Bearer ${tokenResponse.access_token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${tokenResponse.access_token}` } }
         );
 
         const userId = userData.sub;
         const username = userData.name || "Unnamed";
 
-       const res = await axios.get<{ exists: boolean }>(
-        `${baseURL}/checkID`,
-        { params: { user_id: userId } }
-      );
+        const res = await axios.get<{ exists: boolean }>(
+          `${baseURL}/checkID`,
+          { params: { user_id: userId } }
+        );
 
-      if (res.data.exists) {
-        setErrorMessage("User already exists. Please log in instead.");
-        return;
-      }
+        if (res.data.exists) {
+          setErrorMessage("User already exists. Please log in instead.");
+          return;
+        }
 
-      const {data:inserted}=await axios.post(
-        `${baseURL}/addUser`,
-        { user_id: userId, username }
-      );
+        await axios.post(`${baseURL}/addUser`, { user_id: userId, username });
 
-
-
-        // create new User instance and store in context
-        const newUser = new User({
-          id: userData.sub,
-          username
-          // name: userData.name,
-          // firstName: userData.given_name,
-          // lastName: userData.family_name,
-          // email: userData.email,
-          // picture: userData.picture,
-        });
-
+        const newUser = new User({ id: userId, username });
         setUser(newUser);
         navigate("/");
       } catch (err) {
@@ -81,16 +62,30 @@ export function GoogleSignUpButton() {
 
   return (
     <>
-      <button onClick={() => login()} className={styles.signUpButton}>
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/6c2c435e2bfdac1c7aa377094a31133bc82338d0"
-          alt="Google logo"
-          className={styles.googleIcon}
-        />
-        <span className={styles.buttonText}>Sign Up with Google</span>
+      {/* Use the same structure & classes as header ComicButton */}
+      <button
+        type="button"
+        onClick={() => login()}
+        aria-label="Sign up with Google"
+        className={`${styles.signUpButton} ${headerStyles.comicBrutalButton}`}
+      >
+        <div className={headerStyles.buttonInner}>
+          <img
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/6c2c435e2bfdac1c7aa377094a31133bc82338d0"
+            alt="Google logo"
+            className={styles.googleIcon}
+          />
+          {/* make ONLY this text bigger */}
+          <span className={`${headerStyles.buttonText} ${styles.bigText}`}>
+            Sign Up with Google
+          </span>
+          <div className={headerStyles.halftoneOverlay}></div>
+          <div className={headerStyles.inkSplatter}></div>
+        </div>
+        <div className={headerStyles.buttonShadow}></div>
+        <div className={headerStyles.buttonFrame}></div>
       </button>
 
-      {/* display any errors */}
       {errorMessage && (
         <div className={styles.errorMessage}>
           <p>{errorMessage}</p>
