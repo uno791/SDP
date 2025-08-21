@@ -17,3 +17,32 @@ h2 {
 .empty {
   color: #777;
 }
+
+/* Medium screens: tighten padding and font sizes */
+@media (max-width: 768px) {
+  .wrap {
+    padding: 28px 24px;
+    margin-left: -5%;
+  }
+  h2 {
+    font-size: 22px;
+  }
+  .dayLabel {
+    font-size: 12px;
+  }
+}
+
+/* Small phones: full-width card and stacked feel */
+@media (max-width: 480px) {
+  .wrap {
+    padding: 20px 16px;
+    margin-left: 0; /* remove offset so it centers on narrow screens */
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+  }
+  h2 {
+    font-size: 20px;
+  }
+  .dayLabel {
+    font-size: 11px;
+  }
+}

@@ -1,11 +1,13 @@
 import styles from "./Header.module.css";
 import { useUser } from "../../Users/UserContext";
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function Header() {
   const u = useUser();
   const username = u?.username || "Guest";
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
   // Helper component for comic buttons
   const ComicButton = ({ text, to }: { text: string; to: string }) => (
@@ -29,7 +31,18 @@ export default function Header() {
           className={styles.logo}
         />
       </div>
-      <nav className={styles.links}>
+
+      <button
+        className={styles.hamburger}
+        onClick={() => setOpen(!open)}
+        aria-label="Toggle navigation"
+      >
+        <span />
+        <span />
+        <span />
+      </button>
+
+      <nav className={`${styles.links} ${open ? styles.open : ""}`}>
         <span className={styles.live}>LIVE</span>
         <ComicButton text="Home" to="/" />
         <ComicButton text="Favourite Teams" to="/favourites" />

@@ -1,43 +1,76 @@
 /* Page-level layout using Flexbox */
 
 .page {
-    width: 100%;
-    /* body already beige; this keeps inner sections readable */
-    padding: 16px 12px 28px;
-    display: flex;
-    justify-content: center;     /* center the content column */
+  width: 100%;
+  /* body already beige; this keeps inner sections readable */
+  padding: 16px 12px 28px;
+  display: flex;
+  justify-content: center; /* center the content column */
+}
+
+.container {
+  width: 100%;
+  max-width: 1120px; /* keeps content nicely centered on wide screens */
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* Two-column layout using flex instead of CSS Grid */
+.colMain {
+  flex: 2 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.colSide {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Responsive: stack columns on small screens */
+@media (max-width: 900px) {
+  .container {
+    flex-direction: column;
   }
-  
+  .colSide,
+  .colMain {
+    flex: 1 1 auto;
+  }
+}
+
+/* Medium screens: reduce padding and gaps */
+@media (max-width: 768px) {
+  .page {
+    padding: 12px 8px 20px;
+  }
+  .container {
+    gap: 12px;
+  }
+  .colMain,
+  .colSide {
+    gap: 10px;
+  }
+}
+
+/* Small phones: tighter spacing and full-width columns */
+/* Ensure content stays centered with margins */
+@media (max-width: 768px) {
   .container {
     width: 100%;
-    max-width: 1120px;           /* keeps content nicely centered on wide screens */
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
+    max-width: 600px; /* keep content narrow enough to look balanced */
+    margin: 0 auto; /* center it horizontally */
+    padding: 0 12px; /* add side padding */
   }
-  
-  /* Two-column layout using flex instead of CSS Grid */
-  .colMain {
-    flex: 2 1 0;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+}
+
+@media (max-width: 480px) {
+  .container {
+    max-width: 100%; /* allow full width on tiny screens */
+    margin: 0 auto;
+    padding: 20px 20px 20px 20px; /* side margins so content doesn’t touch edges */
   }
-  
-  .colSide {
-    flex: 1 1 320px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  
-  /* Responsive: stack columns on small screens */
-  @media (max-width: 900px) {
-    .container {
-      flex-direction: column;
-    }
-    .colSide, .colMain {
-      flex: 1 1 auto;
-    }
-  }
-  
+}

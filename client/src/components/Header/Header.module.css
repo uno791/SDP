@@ -173,3 +173,66 @@
 .comicBrutalButton:hover .inkSplatter {
   opacity: 1;
 }
+
+/* Hamburger icon */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+/* Hamburger icon */
+.hamburger span {
+  display: block;
+  height: 3px;
+  background: #ffb347; /* your yellow */
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Responsive nav */
+@media (max-width: 768px) {
+  .links {
+    position: absolute;
+    top: 60px; /* below header */
+    right: 0;
+    background: #0c2a47;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 16px 26px;
+    width: 100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+
+    /* animation setup */
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+  .links.open {
+    display: flex;
+    max-height: 400px; /* large enough to fit all links */
+    opacity: 1;
+  }
+  .hamburger {
+    width: 40px;
+    height: 22px;
+    gap: 5px; /* adds space between bars */
+    display: flex;
+  }
+  .hamburger span {
+    height: 4px; /* thicker bars */
+  }
+  .nav {
+    height: auto; /* let padding/content define height */
+    min-height: 80px; /* ensure a thicker bar */
+    padding: 12px 16px;
+  }
+  .logo {
+    height: 100px; /* scale logo down a bit but still visible */
+  }
+}
