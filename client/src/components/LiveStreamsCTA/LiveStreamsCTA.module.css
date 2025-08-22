@@ -22,3 +22,41 @@
   font-weight: 800;
   letter-spacing: 0.5px;
 }
+
+/* Medium screens: reduce padding and icon size */
+@media (max-width: 768px) {
+  .wrap {
+    padding: 28px 24px;
+    margin-left: -5%;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 1);
+  }
+  .tile {
+    gap: 10px;
+  }
+  .icon {
+    font-size: 24px;
+  }
+  .title {
+    font-size: 16px;
+  }
+}
+
+/* Small phones: stack tiles vertically and simplify spacing */
+@media (max-width: 480px) {
+  .wrap {
+    padding: 20px 16px;
+    margin-left: 0; /* center card fully */
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+  }
+  .tile {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+  .icon {
+    font-size: 22px;
+  }
+  .title {
+    font-size: 15px;
+  }
+}

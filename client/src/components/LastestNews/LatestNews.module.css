@@ -105,3 +105,61 @@ h3 {
   font-size: 12px;
   color: #333;
 }
+
+/* Medium screens: tighten spacing, slightly smaller fonts */
+@media (max-width: 768px) {
+  .card {
+    padding: 10px;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 1);
+  }
+  .item {
+    grid-template-columns: 80px 1fr;
+    gap: 8px;
+    padding: 6px;
+  }
+  .thumb {
+    height: 64px;
+  }
+  .title {
+    font-size: 13px;
+  }
+  .summary {
+    font-size: 11px;
+  }
+}
+
+/* Small phones: stack thumbnail and content vertically */
+@media (max-width: 480px) {
+  .card {
+    padding: 8px;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+  }
+  .item {
+    grid-template-columns: 1fr; /* stack thumb + content */
+    padding: 6px;
+  }
+  .thumb {
+    height: 120px; /* make thumbnail larger for mobile readability */
+  }
+  .metaRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .tag {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+  .time {
+    font-size: 10px;
+  }
+  .title {
+    font-size: 13px;
+  }
+  .byline {
+    font-size: 10px;
+  }
+  .summary {
+    font-size: 11px;
+  }
+}
