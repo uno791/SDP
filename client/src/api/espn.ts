@@ -1,6 +1,6 @@
 // src/api/espn.ts
 
-/** ---------------- Scoreboard (kept from before) ---------------- */
+/** ---------------- Scoreboard ---------------- */
 export type ScoreboardResponse = {
   events: Array<{
     id: string;
@@ -11,7 +11,7 @@ export type ScoreboardResponse = {
       competitors: Array<{
         homeAway: "home" | "away";
         score?: string;
-        team: { shortDisplayName: string; logo?: string; abbreviation?: string };
+        team: { shortDisplayName: string; logo?: string; abbreviation?: string; id?: string };
         statistics?: Array<{
           name?: string;
           displayName?: string;
@@ -23,15 +23,12 @@ export type ScoreboardResponse = {
           stat?: string;
         }>;
       }>;
-      // ESPN sometimes uses an ARRAY of event objects here (with scoringPlay flags),
-      // and sometimes an OBJECT with a scoringPlays array. We'll support both.
       details?:
         | Array<{
             type?: { id?: string; text?: string };
             clock?: { displayValue?: string };
             team?: { id?: string; abbreviation?: string };
             homeAway?: "home" | "away";
-            scoreValue?: number;
             scoringPlay?: boolean;
             athletesInvolved?: Array<{ id?: string; displayName?: string }>;
             text?: string;
@@ -68,15 +65,15 @@ export async function fetchScoreboard(date?: Date): Promise<ScoreboardResponse> 
   return res.json();
 }
 
-/** ---------------- News (new) ---------------- */
+/** ---------------- News ---------------- */
 export type EspnNewsResponse = {
   header?: string;
   articles: Array<{
     type?: string;
     headline: string;
     description?: string;
-    published: string; // ISO
-    lastModified?: string; // ISO
+    published: string;
+    lastModified?: string;
     links?: { web?: { href?: string } };
     images?: Array<{ url: string; width?: number; height?: number; name?: string }>;
     byline?: string;
@@ -87,7 +84,6 @@ export type EspnNewsResponse = {
 const NEWS_URL =
   "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news";
 
-/** Fetch top EPL news from ESPN */
 export async function fetchEplNews(): Promise<EspnNewsResponse> {
   const res = await fetch(NEWS_URL);
   if (!res.ok) throw new Error(`ESPN news fetch failed: ${res.status}`);
@@ -100,110 +96,87 @@ export type StandingsEntry = {
   note?: { rank?: number };
   stats: Array<{ name: string; value?: number; displayValue?: string }>;
 };
-
 export type StandingsWire = {
   standings?: Array<{ entries: StandingsEntry[] }>;
   children?: Array<{ name?: string; standings: { entries: StandingsEntry[] } }>;
-  season?: number;
-  seasonType?: number;
 };
-
 const STANDINGS_BASE =
   "https://site.web.api.espn.com/apis/v2/sports/soccer/eng.1/standings";
 
-/** Extract entries from either `standings[]` or `children[]` */
 function extractEntries(data: StandingsWire): StandingsEntry[] {
-  const direct = (data.standings ?? []).flatMap(s => s?.entries ?? []);
-  const fromChildren = (data.children ?? []).flatMap(c => c?.standings?.entries ?? []);
+  const direct = (data.standings ?? []).flatMap((s) => s?.entries ?? []);
+  const fromChildren = (data.children ?? []).flatMap((c) => c?.standings?.entries ?? []);
   return [...direct, ...fromChildren];
 }
-
-/** Convert ESPN stats into our compact row */
 function mapRow(e: StandingsEntry) {
   const g = (k: string) => e.stats.find((s) => s.name === k);
   const num = (v: unknown) => (typeof v === "number" ? v : Number(v ?? 0));
-
   const rankStat = g("rank")?.value ?? g("rank")?.displayValue;
   const rankNote = e.note?.rank;
   const rank = num(rankStat ?? rankNote ?? 0);
-
   const P = num(g("gamesPlayed")?.value ?? g("gamesPlayed")?.displayValue);
   const W = num(g("wins")?.value ?? g("wins")?.displayValue);
-  const D = num(g("ties")?.value ?? g("ties")?.displayValue); // draws
+  const D = num(g("ties")?.value ?? g("ties")?.displayValue);
   const L = num(g("losses")?.value ?? g("losses")?.displayValue);
-
   const GD =
     num(g("goalDifferential")?.value ?? g("goalDifferential")?.displayValue) ||
     num(g("pointDifferential")?.value ?? g("pointDifferential")?.displayValue);
-
   const PTS = num(g("points")?.value ?? g("points")?.displayValue);
-
-  return {
-    pos: rank || 0,
-    team: e.team.displayName,
-    p: P, w: W, d: D, l: L, gd: GD, pts: PTS,
-  };
+  return { pos: rank || 0, team: e.team.displayName, p: P, w: W, d: D, l: L, gd: GD, pts: PTS };
 }
-
 export async function fetchEplStandings(opts?: {
   season?: number;
-  seasontype?: 1 | 2 | 3; // optional override
-  level?: number; // default 3
+  seasontype?: 1 | 2 | 3;
+  level?: number;
 }) {
   const season = opts?.season;
   const level = String(opts?.level ?? 3);
-
   const seasonTypeCandidates = opts?.seasontype
     ? [opts.seasontype]
-    : [undefined, 2, 1, 3] as Array<1 | 2 | 3 | undefined>;
-
+    : ([undefined, 2, 1, 3] as Array<1 | 2 | 3 | undefined>);
   for (const st of seasonTypeCandidates) {
     const url = new URL(STANDINGS_BASE);
     if (season) url.searchParams.set("season", String(season));
     url.searchParams.set("level", level);
     if (st !== undefined) url.searchParams.set("seasontype", String(st));
-
     const res = await fetch(url.toString());
-    if (!res.ok) continue; // try next
+    if (!res.ok) continue;
     const data: StandingsWire = await res.json();
-
     const entries = extractEntries(data);
     if (entries.length > 0) {
       const rows = entries.map(mapRow);
-
-      const allHaveRank = rows.every(r => r.pos > 0);
+      const allHaveRank = rows.every((r) => r.pos > 0);
       if (!allHaveRank) {
-        rows.sort((a, b) =>
-          b.pts - a.pts ||
-          b.gd - a.gd ||
-          a.team.localeCompare(b.team)
-        );
+        rows.sort((a, b) => b.pts - a.pts || b.gd - a.gd || a.team.localeCompare(b.team));
         rows.forEach((r, i) => (r.pos = i + 1));
-      } else {
-        rows.sort((a, b) => a.pos - b.pos);
-      }
-
+      } else rows.sort((a, b) => a.pos - b.pos);
       return rows;
     }
   }
-
-  // nothing worked
   return [];
 }
 
-/** ---------------- Match details from SCOREBOARD only ---------------- */
-export type StatMetric = { key: string; label: string; homePct?: number };
+/** ---------------- Match details (from SCOREBOARD only) ---------------- */
 export type Scorer = { minute?: string; player: string; teamAbbr?: string; homeAway?: "home"|"away" };
+export type StatMetric = {
+  key: string;
+  label: string;
+  /** percent of left/home share (0–100) */
+  homePct?: number;
+  /** raw values so UI can show both sides */
+  homeVal?: number;
+  awayVal?: number;
+};
 export type MatchDetailsFromScoreboard = {
-  metrics: StatMetric[]; // bars: Possession + (Shots on Target | Shots | Corners | Fouls)
+  metrics: StatMetric[];  // possession + (sot|shots|corners|fouls)
   saves?: { home?: number; away?: number; homeAbbr?: string; awayAbbr?: string };
   scorers: Scorer[];
 };
 
-/** Helpers */
+// helpers
 function normalizeMinute(v?: string) {
   if (!v) return undefined;
-  const m = v.match(/\d+(?:\+\d+)?/); // "45+2" -> 45+2
+  const m = v.match(/\d+(?:\+\d+)?/);
   return m ? `${m[0]}'` : v;
 }
 function parseNum(v: unknown): number | undefined {
@@ -224,7 +197,12 @@ function normKey(s?: string) {
 function findStat(stats: any[] | undefined, candidates: string[]) {
   if (!stats) return undefined;
   for (const s of stats) {
-    const key = normKey(s?.name) || normKey(s?.displayName) || normKey(s?.shortDisplayName) || normKey(s?.abbreviation) || normKey(s?.type);
+    const key =
+      normKey(s?.name) ||
+      normKey(s?.displayName) ||
+      normKey(s?.shortDisplayName) ||
+      normKey(s?.abbreviation) ||
+      normKey(s?.type);
     if (!key) continue;
     for (const c of candidates) {
       if (key === normKey(c)) {
@@ -241,9 +219,10 @@ function sharePct(h?: number, a?: number) {
   return tot > 0 ? Math.round((h / tot) * 100) : undefined;
 }
 
-/** Extract scorers directly from a scoreboard event object (supports both details shapes) */
+/** Scorers from scoreboard */
 export function extractScorersFromScoreboardEvent(ev: any): Scorer[] {
   const comp = ev?.competitions?.[0];
+
   const abbrMap: Record<string, string> = {};
   (comp?.competitors ?? []).forEach((c: any) => {
     const id = c?.team?.id ?? c?.id;
@@ -253,11 +232,7 @@ export function extractScorersFromScoreboardEvent(ev: any): Scorer[] {
 
   const fromArray = Array.isArray(comp?.details) ? comp?.details : [];
   const fromScoring = !Array.isArray(comp?.details) ? comp?.details?.scoringPlays ?? [] : [];
-
-  const plays = [
-    ...fromArray.filter((p: any) => p?.scoringPlay === true),
-    ...fromScoring
-  ];
+  const plays = [...fromArray.filter((p: any) => p?.scoringPlay), ...fromScoring];
 
   return plays.map((p: any) => {
     const minute = normalizeMinute(p?.clock?.displayValue) ?? normalizeMinute(p?.text);
@@ -272,7 +247,7 @@ export function extractScorersFromScoreboardEvent(ev: any): Scorer[] {
   });
 }
 
-/** Extract stats (possession, a fallback share bar, and saves counts) from scoreboard */
+/** Stats from scoreboard (adds raw values for both sides) */
 export function extractStatsFromScoreboardEvent(ev: any): MatchDetailsFromScoreboard {
   const comp = ev?.competitions?.[0];
   const home = comp?.competitors?.find((c: any) => c.homeAway === "home");
@@ -280,37 +255,55 @@ export function extractStatsFromScoreboardEvent(ev: any): MatchDetailsFromScoreb
   const hStats = home?.statistics ?? [];
   const aStats = away?.statistics ?? [];
 
-  // Possession (scoreboard uses "possessionPct" with numeric string, e.g., "54.3")
+  // possession
   const hPoss = findStat(hStats, ["possessionPct", "possession%", "possession"]);
   const aPoss = findStat(aStats, ["possessionPct", "possession%", "possession"]);
-  const possHome = hPoss ?? (typeof aPoss === "number" ? 100 - aPoss : undefined);
+  const possHomePct = typeof hPoss === "number" ? Math.round(hPoss) :
+                      typeof aPoss === "number" ? 100 - Math.round(aPoss) : undefined;
 
-  // Secondary bar candidates (add ESPN scoreboard keys + abbreviations)
+  // helpers for secondary metrics
   const tryPair = (label: string, names: string[]) => {
-    const h = findStat(hStats, names);
-    const a = findStat(aStats, names);
-    if (h !== undefined && a !== undefined) {
-      return { key: names[0], label, homePct: sharePct(h, a) } as StatMetric;
+    const hv = findStat(hStats, names);
+    const av = findStat(aStats, names);
+    if (hv !== undefined && av !== undefined) {
+      return {
+        key: names[0],
+        label,
+        homeVal: Math.round(Number(hv)),
+        awayVal: Math.round(Number(av)),
+        homePct: sharePct(Number(hv), Number(av)),
+      } as StatMetric;
     }
     return undefined;
   };
+
   const secondary =
     tryPair("Shots on Target", ["shotsOnTarget", "shotsontarget", "st", "sot"]) ||
     tryPair("Total Shots", ["totalShots", "shots", "sh"]) ||
     tryPair("Corners", ["wonCorners", "cornerkicks", "corners", "cw"]) ||
     tryPair("Fouls", ["foulsCommitted", "fouls", "fc"]);
 
-  const metrics: StatMetric[] = [{ key: "poss", label: "Possession", homePct: possHome }];
+  const metrics: StatMetric[] = [];
+  if (possHomePct !== undefined) {
+    const possAway = 100 - possHomePct;
+    metrics.push({
+      key: "poss",
+      label: "Possession (%)",
+      homePct: possHomePct,
+      homeVal: possHomePct,
+      awayVal: possAway,
+    });
+  }
   if (secondary) metrics.push(secondary);
 
-  // Saves as counts if present (key often "saves" or "sv")
+  // saves (as counts)
   const savesHome = findStat(hStats, ["saves", "sv"]);
   const savesAway = findStat(aStats, ["saves", "sv"]);
   const saves =
     savesHome !== undefined && savesAway !== undefined
       ? {
-          home: savesHome,
-          away: savesAway,
+          home: Number(savesHome),
+          away: Number(savesAway),
           homeAbbr: home?.team?.abbreviation,
           awayAbbr: away?.team?.abbreviation,
         }

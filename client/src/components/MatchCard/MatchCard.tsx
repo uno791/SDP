@@ -1,7 +1,7 @@
+// src/components/MatchCard/MatchCard.tsx
 import { useState } from "react";
 import styles from "./MatchCard.module.css";
 import StatsBar from "../StatsBar/StatsBar";
-import StatDualCount from "../StatDualCount/StatDualCount";
 import type { Scorer } from "../../api/espn";
 import type { StatMetric } from "../../api/espn";
 
@@ -13,7 +13,6 @@ type Props = {
   state: "pre" | "in" | "post";
   statusText: string;
 
-  // supplied directly from the SCOREBOARD event (no extra fetch)
   metrics: StatMetric[];
   saves?: {
     home?: number;
@@ -69,39 +68,37 @@ export default function MatchCard({
         <div className={styles.expandArea}>
           <div className={styles.separator} />
 
-          {/* Bars: Possession + one fallback */}
-          {metrics.length > 0 ? (
-            <div className={styles.statsWrap}>
-              {metrics.map((m) => (
-                <StatsBar
-                  key={m.key}
-                  label={m.label}
-                  percent={m.homePct}
-                  rightLabel={
-                    m.homePct !== undefined ? `${m.homePct}%` : undefined
-                  }
-                />
-              ))}
-            </div>
-          ) : (
-            <div className={styles.loading}>Match stats unavailable.</div>
-          )}
-
-          {/* Saves as team counts */}
-          {saves && (
-            <>
-              <div className={styles.separator} />
-              <StatDualCount
-                label="Saves"
-                leftTag={saves.homeAbbr}
-                leftValue={saves.home}
-                rightTag={saves.awayAbbr}
-                rightValue={saves.away}
+          {/* ——— Dual stat bars ——— */}
+          <div className={styles.statsWrap}>
+            {metrics.map((m) => (
+              <StatsBar
+                key={m.key}
+                label={m.label}
+                leftValue={m.homeVal}
+                rightValue={m.awayVal}
+                leftPercent={m.homePct}
               />
-            </>
-          )}
+            ))}
 
-          {/* Scorers list from SCOREBOARD */}
+            {/* Add saves as a third row if present */}
+            {saves && (
+              <StatsBar
+                label="Saves"
+                leftValue={saves.home}
+                rightValue={saves.away}
+                leftPercent={
+                  typeof saves.home === "number" &&
+                  typeof saves.away === "number"
+                    ? Math.round(
+                        (saves.home / (saves.home + saves.away || 1)) * 100
+                      )
+                    : undefined
+                }
+              />
+            )}
+          </div>
+
+          {/* Scorers (unchanged) */}
           {scorers.length > 0 && (
             <>
               <div className={styles.separator} />

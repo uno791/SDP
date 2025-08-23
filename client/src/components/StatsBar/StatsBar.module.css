@@ -1,60 +1,49 @@
-.wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/* src/components/StatsBar/StatsBar.module.css */
+
+:root {
+  --fb-navy: #0c2a47;
+  --fb-slate: #a9b9c8;   /* softer right segment */
+  --fb-track: #e8edf3;
+  --fb-dash: #c9c2b1;
 }
+
+.wrap { display: flex; flex-direction: column; gap: 6px; }
+
 .row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-}
-.label {
-  color: #0c2a47;
-  font-weight: 600;
-}
-.value {
-  color: #0c2a47;
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: baseline;
+  color: var(--fb-navy);
   font-weight: 700;
 }
 
+.sideVal {
+  justify-self: start;
+  font-variant-numeric: tabular-nums;
+}
+.sideVal[data-right] { justify-self: end; }
+
+.label {
+  justify-self: center;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
 .track {
+  position: relative;
   height: 10px;
+  background: var(--fb-track);
+  border: 2px solid var(--fb-navy);
   border-radius: 999px;
-  border: 2px solid #0c2a47;
-  background: #f2eee6;
   overflow: hidden;
 }
-.fill {
-  height: 100%;
-  background: #0c2a47;
+
+/* dual fill bars */
+.leftFill,
+.rightFill {
+  position: absolute;
+  top: 0; bottom: 0;
 }
 
-/* Medium screens: slightly larger text and spacing */
-@media (max-width: 768px) {
-  .row {
-    font-size: 12px;
-    gap: 6px;
-  }
-  .track {
-    height: 9px;
-  }
-}
-
-/* Small phones: stack label/value vertically */
-@media (max-width: 480px) {
-  .row {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    font-size: 12px;
-    gap: 4px;
-  }
-  .label,
-  .value {
-    width: 100%;
-  }
-  .track {
-    height: 8px;
-  }
-}
+.leftFill { left: 0; background: var(--fb-navy); }
+.rightFill { right: 0; background: var(--fb-slate); }
