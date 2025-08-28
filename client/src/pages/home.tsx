@@ -1,10 +1,9 @@
-import Header from "../components/Header/Header";
-import LiveLeagueGames from "../components/LiveLeagueGames/LiveLeagueGames";
-import PastLeagueGames from "../components/PastLeagueGames/PastLeagueGames";
-import LeagueTable from "../components/LeagueTable/LeagueTable";
-import LatestNews from "../components/LastestNews/LastestNews";
-import LiveStreamsCTA from "../components/LiveStreamsCTA/LiveStreamsCTA";
-import Footer from "../components/Footer/Footer";
+import LiveLeagueGames from "../components/HomePageComp/LiveLeagueGames/LiveLeagueGames";
+import PastLeagueGames from "../components/HomePageComp/PastLeagueGames/PastLeagueGames";
+import LeagueTable from "../components/HomePageComp/LeagueTable/LeagueTable";
+import LatestNews from "../components/HomePageComp/LastestNews/LastestNews";
+import LiveStreamsCTA from "../components/HomePageComp/LiveStreamsCTA/LiveStreamsCTA";
+import Footer from "../components/HomePageComp/Footer/Footer";
 import "./home.css";
 
 export default function Home() {

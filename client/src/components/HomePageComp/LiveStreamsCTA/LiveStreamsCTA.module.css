@@ -1,0 +1,62 @@
+.wrap {
+  border: 3px solid #0c2a47;
+  border-radius: 10px;
+  background: #ffb347;
+  padding: 18px;
+  border: 4px solid rgba(0, 0, 0, 1); /* thick black border */
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 1); /* offset shadow */
+  padding: 40px 39px; /* match comic card padding */
+  margin-left: -10%; /* align like other cards */
+  border-radius: 0; /* remove rounded corners for comic style */
+}
+.tile {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+}
+.icon {
+  font-size: 28px;
+}
+.title {
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* Medium screens: reduce padding and icon size */
+@media (max-width: 768px) {
+  .wrap {
+    padding: 28px 24px;
+    margin-left: -5%;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 1);
+  }
+  .tile {
+    gap: 10px;
+  }
+  .icon {
+    font-size: 24px;
+  }
+  .title {
+    font-size: 16px;
+  }
+}
+
+/* Small phones: stack tiles vertically and simplify spacing */
+@media (max-width: 480px) {
+  .wrap {
+    padding: 20px 16px;
+    margin-left: 0; /* center card fully */
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+  }
+  .tile {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+  .icon {
+    font-size: 22px;
+  }
+  .title {
+    font-size: 15px;
+  }
+}

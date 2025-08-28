@@ -2,8 +2,8 @@
 import { useState } from "react";
 import styles from "./MatchCard.module.css";
 import StatsBar from "../StatsBar/StatsBar";
-import type { Scorer } from "../../api/espn";
-import type { StatMetric } from "../../api/espn";
+import type { Scorer } from "../../../api/espn";
+import type { StatMetric } from "../../../api/espn";
 
 type Team = { name: string; score?: string; logo?: string };
 type Props = {

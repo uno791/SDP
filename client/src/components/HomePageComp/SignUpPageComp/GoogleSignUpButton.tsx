@@ -5,9 +5,9 @@ import headerStyles from "../Header/Header.module.css"; // same module as header
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { User } from "../../Users/User";
-import { useUser } from "../../Users/UserContext";
-import { baseURL } from "../../config";
+import { User } from "../../../Users/User";
+import { useUser } from "../../../Users/UserContext";
+import { baseURL } from "../../../config";
 
 interface GoogleUserInfo {
   sub: string;
@@ -34,10 +34,9 @@ export function GoogleSignUpButton() {
         const userId = userData.sub;
         const username = userData.name || "Unnamed";
 
-        const res = await axios.get<{ exists: boolean }>(
-          `${baseURL}/checkID`,
-          { params: { user_id: userId } }
-        );
+        const res = await axios.get<{ exists: boolean }>(`${baseURL}/checkID`, {
+          params: { user_id: userId },
+        });
 
         if (res.data.exists) {
           setErrorMessage("User already exists. Please log in instead.");
