@@ -1,8 +1,8 @@
 "use client";
 import * as React from "react";
-import styles from "../components/SignUpPageComp/SignUpPage.module.css";
-import { GoogleSignUpButton } from "../components/SignUpPageComp/GoogleSignUpButton";
-import { LoginPrompt } from "../components/SignUpPageComp/LoginPrompt";
+import styles from "../components/HomePageComp/SignUpPageComp/SignUpPage.module.css";
+import { GoogleSignUpButton } from "../components/HomePageComp/SignUpPageComp/GoogleSignUpButton";
+import { LoginPrompt } from "../components/HomePageComp/SignUpPageComp/LoginPrompt";
 
 export default function SignUpPage() {
   return (

@@ -1,6 +1,6 @@
 import styles from "./Header.module.css";
-import { useUser } from "../../Users/UserContext";
-import { Link, useNavigate } from "react-router-dom";
+import { useUser } from "../../../Users/UserContext";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export default function Header() {

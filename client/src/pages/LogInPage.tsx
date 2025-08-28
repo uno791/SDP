@@ -1,9 +1,9 @@
 import * as React from "react";
-import styles from "../components/LogInPageComp/LoginPage.module.css";
+import styles from "../components/HomePageComp/LogInPageComp/LoginPage.module.css";
 
-import { WelcomeMessage } from "../components/LogInPageComp/WelcomeMessage";
-import { GoogleLogInButton } from "../components/LogInPageComp/GoogleLoginButton";
-import { SignUpPrompt } from "../components/LogInPageComp/SignUpPrompt";
+import { WelcomeMessage } from "../components/HomePageComp/LogInPageComp/WelcomeMessage";
+import { GoogleLogInButton } from "../components/HomePageComp/LogInPageComp/GoogleLoginButton";
+import { SignUpPrompt } from "../components/HomePageComp/LogInPageComp/SignUpPrompt";
 
 // login page component
 export default function LoginPage() {

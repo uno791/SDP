@@ -1,7 +1,7 @@
 // src/components/LatestNews/LatestNews.tsx
 import { useEffect, useState } from "react";
-import { fetchEplNews } from "../../api/espn";
-import type { EspnNewsResponse } from "../../api/espn";
+import { fetchEplNews } from "../../../api/espn";
+import type { EspnNewsResponse } from "../../../api/espn";
 import styles from "./LatestNews.module.css";
 
 type UiNews = {

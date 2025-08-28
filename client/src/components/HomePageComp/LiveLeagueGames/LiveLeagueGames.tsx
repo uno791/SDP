@@ -4,7 +4,7 @@ import {
   fetchScoreboard,
   type ScoreboardResponse,
   extractStatsFromScoreboardEvent,
-} from "../../api/espn";
+} from "../../../api/espn";
 import MatchCard from "../MatchCard/MatchCard";
 import styles from "./LiveLeagueGames.module.css";
 

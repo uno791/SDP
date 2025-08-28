@@ -1,6 +1,6 @@
 import styles from "./Footer.module.css";
 import { Link } from "react-router-dom";
-import { useUser } from "../../Users/UserContext";
+import { useUser } from "../../../Users/UserContext";
 
 export default function Footer() {
   const user = useUser(); // get current user

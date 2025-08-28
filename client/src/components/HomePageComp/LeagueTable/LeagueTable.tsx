@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import styles from "./LeagueTable.module.css";
-import { fetchEplStandings } from "../../api/espn";
+import { fetchEplStandings } from "../../../api/espn";
 
 type Row = {
   pos: number;

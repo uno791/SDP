@@ -4,9 +4,9 @@ import styles from "./LoginPage.module.css";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { User } from "../../Users/User";
-import { useUser } from "../../Users/UserContext";
-import { baseURL } from "../../config";
+import { User } from "../../../Users/User";
+import { useUser } from "../../../Users/UserContext";
+import { baseURL } from "../../../config";
 
 interface GoogleUserInfo {
   sub: string;

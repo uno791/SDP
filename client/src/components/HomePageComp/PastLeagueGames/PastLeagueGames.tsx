@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchScoreboard } from "../../api/espn";
-import type { ScoreboardResponse } from "../../api/espn";
+import { fetchScoreboard } from "../../../api/espn";
+import type { ScoreboardResponse } from "../../../api/espn";
 import MatchCard from "../MatchCard/MatchCard";
 import styles from "./PastLeagueGames.module.css";
 
