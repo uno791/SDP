@@ -4,6 +4,7 @@ import LeagueTable from "../components/HomePageComp/LeagueTable/LeagueTable";
 import LatestNews from "../components/HomePageComp/LastestNews/LastestNews";
 import LiveStreamsCTA from "../components/HomePageComp/LiveStreamsCTA/LiveStreamsCTA";
 import Footer from "../components/HomePageComp/Footer/Footer";
+import TopPerformersCard from "../components/HomePageComp/TopPerformersCard/TopPerformersCard";
 import "./home.css";
 
 export default function Home() {
@@ -20,6 +21,7 @@ export default function Home() {
           <aside className="colSide">
             <LeagueTable rows={[]} />
             <LatestNews />
+            <TopPerformersCard />
           </aside>
         </div>
       </main>

@@ -1,48 +1,99 @@
+/* src/components/HomePageComp/PastLeagueGames/PastLeagueGames.module.css */
 .wrap {
   background-color: rgba(244, 236, 216, 1); /* comic card background */
-  border: 4px solid rgba(0, 0, 0, 1); /* thick black border */
-  box-shadow: 8px 8px 0 rgba(0, 0, 0, 1); /* offset shadow */
-  padding: 40px 39px; /* match comic card padding */
-  margin-left: -10%; /* align like other cards */
+  border: 4px solid rgba(0, 0, 0, 1);       /* thick black border */
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 1);   /* offset shadow */
+  padding: 40px 39px;
+  margin-left: -10%;
 }
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
 h2 {
-  margin: 0 0 8px;
-  font-size: 26px;
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: 0.5px;
 }
-.dayLabel {
-  font-size: 13px;
-  color: #333;
-  margin-bottom: 8px;
+
+.dateNav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.empty {
+
+.dateNav button {
+  border: 2px solid #0c2a47;
+  background: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Styled bold navy date label */
+.dateLabel {
+  font-weight: 700;
+  min-width: 180px;
+  text-align: center;
+  border: 2px solid #0c2a47;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: white;
+  color: #0c2a47;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Hidden input */
+.hiddenDateInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.muted {
+  margin-top: 6px;
   color: #777;
 }
-
-/* Medium screens: tighten padding and font sizes */
-@media (max-width: 768px) {
-  .wrap {
-    padding: 28px 24px;
-    margin-left: -5%;
-  }
-  h2 {
-    font-size: 22px;
-  }
-  .dayLabel {
-    font-size: 12px;
-  }
+.subhead {
+  margin: 14px 0 6px;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+.skel {
+  padding: 10px;
+}
+.err {
+  color: #b00020;
 }
 
-/* Small phones: full-width card and stacked feel */
-@media (max-width: 480px) {
-  .wrap {
-    padding: 20px 16px;
-    margin-left: 0; /* remove offset so it centers on narrow screens */
-    box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
-  }
-  h2 {
-    font-size: 20px;
-  }
-  .dayLabel {
-    font-size: 11px;
-  }
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.badge {
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+  border: 2px solid #0c2a47;
+  background: #fff;
+  border-radius: 50%;
+}
+.badge[data-live="yes"] {
+  background: #28a745;
+}
+.wrap ul,
+.wrap li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
