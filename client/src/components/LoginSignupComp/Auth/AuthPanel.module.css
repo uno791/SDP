@@ -1,0 +1,80 @@
+.container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  height: 100%;
+  justify-content: center;
+}
+
+.header {
+  background: #e64a19;
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem 2rem;
+  border: 3px solid black;
+  box-shadow: 4px 4px 0px black;
+  z-index: 2;
+  margin-top: -10%;
+}
+
+.illustrationleft {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 70%;
+  object-fit: contain;
+  z-index: 1;
+}
+.illustrationright {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 99%;
+  height: 79%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.googleBtn {
+  background: #b63812;
+  margin-top: 270px;
+  width: 110%;
+  height: 20%;
+  color: white;
+  font-weight: bold;
+  padding: 0.8rem 35%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 3px solid black;
+  box-shadow: 4px 4px 0px black;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.googleBtn:hover {
+  transform: scale(1.05);
+}
+
+.googleIcon {
+  font-size: 7rem;
+}
+
+.switchText {
+  font-size: 0.9rem;
+}
+
+.switchText a {
+  color: #e64a19;
+  font-weight: bold;
+  text-decoration: none;
+  z-index: 2;
+}

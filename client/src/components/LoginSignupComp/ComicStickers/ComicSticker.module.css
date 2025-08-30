@@ -1,0 +1,11 @@
+.sticker {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 2px solid black;
+  box-shadow: 4px 4px 0px black;
+  font-weight: bold;
+  font-size: 0.85rem;
+  max-width: 120px;
+  text-align: center;
+  z-index: 2;
+}

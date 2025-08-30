@@ -8,6 +8,9 @@ import SignUpPage from "./pages/SignUpPage";
 import { UserProvider } from "./Users/UserContext"; // <-- add this
 import { GoogleOAuthProvider } from "@react-oauth/google"; // <-- add this
 import LoginPage from "./pages/LogInPage";
+
+import ComicBook from "./components/LoginSignupComp/ComicBook/ComicBook";
+
 function App() {
   return (
     <GoogleOAuthProvider clientId="719123023157-8iqvisdfo85e23emcfe7gth9vqa7ebop.apps.googleusercontent.com">
@@ -20,8 +23,8 @@ function App() {
               <Route path="/house" element={<House />} />
               <Route path="/ball" element={<Ball />} />
               <Route path="/doodlehome" element={<DoodleHome />} />
-              <Route path="/signuppage" element={<SignUpPage />} />
-              <Route path="/loginpage" element={<LoginPage />} />
+              <Route path="/signuppage" element={<ComicBook />} />
+              <Route path="/loginpage" element={<ComicBook />} />
             </Route>
           </Routes>
         </Router>
