@@ -5,10 +5,8 @@ import { Ball } from "./pages/ball";
 import DoodleHome from "./pages/liveeplscoreboard";
 import { Layout } from "./Layout";
 import SignUpPage from "./pages/SignUpPage";
-import { UserProvider } from "./Users/UserContext"; // <-- add this
-import { GoogleOAuthProvider } from "@react-oauth/google"; // <-- add this
-import LoginPage from "./pages/LogInPage";
-
+import { UserProvider } from "./Users/UserContext";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import ComicBook from "./components/LoginSignupComp/ComicBook/ComicBook";
 
 function App() {

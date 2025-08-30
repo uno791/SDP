@@ -1,11 +1,12 @@
 import React from "react";
 import styles from "./AuthPanel.module.css";
-import { FcGoogle } from "react-icons/fc";
+import GoogleSignUpButton from "../GoogleButtons/GoogleSignupButton";
+import GoogleLogInButton from "../GoogleButtons/GoogleLogInButton";
 
 interface AuthPanelProps {
   type: "signup" | "login";
   image: string;
-  side: "left" | "right"; // 👈 new prop
+  side: "left" | "right";
 }
 
 const AuthPanel: React.FC<AuthPanelProps> = ({ type, image, side }) => {
@@ -15,7 +16,6 @@ const AuthPanel: React.FC<AuthPanelProps> = ({ type, image, side }) => {
         {type === "signup" ? "SIGN UP" : "LOGIN"}
       </h2>
 
-      {/* dynamically apply illustration class */}
       <img
         src={image}
         alt={type}
@@ -24,10 +24,7 @@ const AuthPanel: React.FC<AuthPanelProps> = ({ type, image, side }) => {
         }
       />
 
-      <button className={styles.googleBtn}>
-        <FcGoogle className={styles.googleIcon} />
-        {type === "signup" ? "SIGN UP" : "LOGIN"} WITH GOOGLE
-      </button>
+      {type === "signup" ? <GoogleSignUpButton /> : <GoogleLogInButton />}
 
       <p className={styles.switchText}>
         {type === "signup" ? (
