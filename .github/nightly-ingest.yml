@@ -1,0 +1,49 @@
+name: Nightly Ingest
+
+on:
+  schedule:
+    # Run every day at 21:59 UTC = 23:59 SAST
+    - cron: "59 21 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "YYYY-MM-DD (optional)"
+        required: false
+        type: string
+      leagues:
+        description: "Comma list e.g. eng.1,esp.1 (optional)"
+        required: false
+        type: string
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run ingestion
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          DEFAULT_LEAGUES: ${{ vars.DEFAULT_LEAGUES || secrets.DEFAULT_LEAGUES || 'eng.1' }}
+        run: |
+          DATE_ARG=""
+          LEAGUES_ARG=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            DATE_ARG="--date=${{ github.event.inputs.date }}"
+          fi
+          if [ -n "${{ github.event.inputs.leagues }}" ]; then
+            LEAGUES_ARG="--leagues=${{ github.event.inputs.leagues }}"
+          fi
+          npx ts-node scripts/ingestDay.ts $DATE_ARG $LEAGUES_ARG
