@@ -315,3 +315,290 @@ export function extractStatsFromScoreboardEvent(ev: any): MatchDetailsFromScoreb
     scorers: extractScorersFromScoreboardEvent(ev),
   };
 }
+
+/** =================== NEW: SUMMARY → FULL TEAM & PLAYER STATS =================== */
+
+export type TeamSide = "home" | "away";
+
+export type TeamDisciplineFouls = {
+  foulsCommitted: number | null;
+  yellowCards: number | null;
+  redCards: number | null;
+  offsides: number | null;
+};
+
+export type TeamSetPiecesSaves = {
+  cornerKicksWon: number | null;
+  savesByGK: number | null;
+};
+
+export type TeamPossessionPassing = {
+  possessionPct: number | null;             // e.g., 67.1
+  passesAttempted: number | null;           // e.g., 636
+  accuratePasses: number | null;            // e.g., 544
+  passCompletionPct: number | null;         // e.g., 90
+};
+
+export type TeamShooting = {
+  totalShots: number | null;
+  shotsOnTarget: number | null;
+  onTargetPct: number | null;
+  blockedShots: number | null;
+  penaltyKicksTaken: number | null;
+  penaltyGoals: number | null;
+};
+
+export type TeamCrossLong = {
+  crossesAttempted: number | null;
+  accurateCrosses: number | null;
+  crossAccuracyPct: number | null;
+  longBallsAttempted: number | null;
+  accurateLongBalls: number | null;
+  longBallAccuracyPct: number | null;
+};
+
+export type TeamDefActions = {
+  tacklesTotal: number | null;
+  tacklesWon: number | null;
+  tackleSuccessPct: number | null;
+  interceptions: number | null;
+  clearancesTotal: number | null;
+  clearancesEffective: number | null;
+};
+
+export type TeamStatsBundle = {
+  teamId: string;
+  teamName: string;
+  side: TeamSide;
+  disciplineFouls: TeamDisciplineFouls;
+  setPiecesSaves: TeamSetPiecesSaves;
+  possessionPassing: TeamPossessionPassing;
+  shooting: TeamShooting;
+  crossingLongBalls: TeamCrossLong;
+  defensiveActions: TeamDefActions;
+};
+
+export type PlayerLine = {
+  athleteId: string;
+  athleteName: string;
+  teamId: string;
+  teamName: string;
+
+  // General participation
+  appearances?: number | null;            // APP
+  subsOn?: number | null;                 // SUBIN
+  subbedIn?: boolean | null;
+  subbedOut?: boolean | null;
+
+  // Discipline
+  foulsCommitted?: number | null;         // FC
+  foulsSuffered?: number | null;          // FA
+  yellowCards?: number | null;            // YC
+  redCards?: number | null;               // RC
+  ownGoals?: number | null;               // OG
+
+  // Goalkeeping (for GK)
+  goalsAgainst?: number | null;           // GA
+  saves?: number | null;                  // SV
+  shotsOnTargetFaced?: number | null;     // SHF
+
+  // Attacking
+  goals?: number | null;                  // G
+  assists?: number | null;                // A
+  shotsTotal?: number | null;             // SH
+  shotsOnTarget?: number | null;          // ST/SG
+  offsides?: number | null;               // OF
+};
+
+export type SummaryNormalized = {
+  eventId: string;
+  home: TeamStatsBundle;
+  away: TeamStatsBundle;
+  players: PlayerLine[];                  // all players, both teams
+};
+
+/** ---- helpers for Summary parsing ---- */
+type AnyObj = Record<string, any>;
+
+const numOrNull = (v: any): number | null => {
+  const n = parseNum(v);
+  return typeof n === "number" && Number.isFinite(n) ? n : null;
+};
+
+const pctOrNull = (v: any): number | null => {
+  const n = numOrNull(v);
+  return n == null ? null : n;
+};
+
+function statObj(stats: AnyObj[] | undefined, names: string[]): AnyObj | undefined {
+  if (!stats) return;
+  for (const s of stats) {
+    const key =
+      normKey(s?.name) ||
+      normKey(s?.displayName) ||
+      normKey(s?.shortDisplayName) ||
+      normKey(s?.abbreviation) ||
+      normKey(s?.type) ||
+      normKey(s?.label);
+    if (!key) continue;
+    if (names.some((n) => key === normKey(n))) return s;
+  }
+  return;
+}
+function statVal(stats: AnyObj[] | undefined, names: string[]): number | null {
+  const s = statObj(stats, names);
+  if (!s) return null;
+  return numOrNull(s.value ?? s.displayValue ?? s.stat);
+}
+
+function extractTeamFromSummaryTeamNode(node: AnyObj, side: TeamSide): TeamStatsBundle {
+  const { team } = node;
+  const stats: AnyObj[] = node.statistics ?? [];
+
+  // Discipline & Fouls
+  const foulsCommitted = statVal(stats, ["fouls committed", "fouls", "fc"]);
+  const yellowCards   = statVal(stats, ["yellow cards", "yc"]);
+  const redCards      = statVal(stats, ["red cards", "rc"]);
+  const offsides      = statVal(stats, ["offsides", "offside", "of"]);
+
+  // Set Pieces & Saves
+  const cornerKicksWon = statVal(stats, ["corner kicks", "corner kicks won", "corners", "won corners"]);
+  const savesByGK      = statVal(stats, ["saves", "sv", "saves made"]);
+
+  // Possession & Passing
+  const possessionPct     = pctOrNull(statVal(stats, ["possession", "possession%", "possessionpct"]));
+  const passesAttempted   = statVal(stats, ["passes attempted", "passes"]);
+  const accuratePasses    = statVal(stats, ["accurate passes", "passes completed"]);
+  const passCompletionPct = pctOrNull(statVal(stats, ["pass completion %", "pass accuracy", "passing %", "passing accuracy"]));
+
+  // Shooting
+  const totalShots        = statVal(stats, ["total shots", "shots", "shots total", "sh"]);
+  const shotsOnTarget     = statVal(stats, ["shots on target", "st", "sot"]);
+  const onTargetPct       = pctOrNull(statVal(stats, ["on-target %", "shots on target %"]));
+  const blockedShots      = statVal(stats, ["blocked shots", "blocks"]);
+  const penaltyKicksTaken = statVal(stats, ["penalties taken", "penalty kicks taken", "pk att"]);
+  const penaltyGoals      = statVal(stats, ["penalty goals", "pk goals"]);
+
+  // Crossing & Long Balls
+  const crossesAttempted    = statVal(stats, ["crosses attempted", "crosses"]);
+  const accurateCrosses     = statVal(stats, ["accurate crosses", "crosses completed"]);
+  const crossAccuracyPct    = pctOrNull(statVal(stats, ["cross accuracy", "crosses %", "crossing %"]));
+  const longBallsAttempted  = statVal(stats, ["long balls attempted", "long balls"]);
+  const accurateLongBalls   = statVal(stats, ["accurate long balls", "long balls completed"]);
+  const longBallAccuracyPct = pctOrNull(statVal(stats, ["long ball accuracy", "long balls %"]));
+
+  // Defensive Actions
+  const tacklesTotal       = statVal(stats, ["total tackles", "tackles"]);
+  const tacklesWon         = statVal(stats, ["tackles won", "effective tackles"]);
+  const tackleSuccessPct   = pctOrNull(statVal(stats, ["tackle success rate", "tackles %"]));
+  const interceptions      = statVal(stats, ["interceptions"]);
+  const clearancesTotal    = statVal(stats, ["clearances"]);
+  const clearancesEffective= statVal(stats, ["effective clearances"]);
+
+  return {
+    teamId: String(team?.id ?? ""),
+    teamName: team?.displayName ?? team?.name ?? "",
+    side,
+    disciplineFouls: { foulsCommitted, yellowCards, redCards, offsides },
+    setPiecesSaves: { cornerKicksWon, savesByGK },
+    possessionPassing: { possessionPct, passesAttempted, accuratePasses, passCompletionPct },
+    shooting: { totalShots, shotsOnTarget, onTargetPct, blockedShots, penaltyKicksTaken, penaltyGoals },
+    crossingLongBalls: {
+      crossesAttempted, accurateCrosses, crossAccuracyPct,
+      longBallsAttempted, accurateLongBalls, longBallAccuracyPct
+    },
+    defensiveActions: {
+      tacklesTotal, tacklesWon, tackleSuccessPct, interceptions,
+      clearancesTotal, clearancesEffective
+    },
+  };
+}
+
+function extractPlayersFromSummary(playersNode: AnyObj[]): PlayerLine[] {
+  const out: PlayerLine[] = [];
+  for (const team of playersNode ?? []) {
+    const teamId = String(team?.team?.id ?? "");
+    const teamName = team?.team?.displayName ?? "";
+
+    // team.statistics here often groups by position or by "Statistics"
+    for (const group of team?.statistics ?? []) {
+      for (const p of group?.athletes ?? []) {
+        const base: PlayerLine = {
+          athleteId: String(p?.athlete?.id ?? ""),
+          athleteName: p?.athlete?.displayName ?? "Player",
+          teamId, teamName,
+        };
+
+        // ESPN per-player stats often in p.stats (array of {name,displayValue,value})
+        const statsArr: AnyObj[] = p?.stats ?? p?.statistics ?? [];
+
+        const v = (names: string[]) => statVal(statsArr, names);
+
+        // Participation (seasonal in many feeds; booleans inferred if flags exist)
+        base.appearances = v(["appearances", "apps", "app"]);
+        base.subsOn      = v(["sub appearances", "substitute appearances", "subin"]);
+        // Some feeds only track substitution text; set flags if present
+        const hasSubIn  = !!statObj(statsArr, ["subbed in", "sub on", "subbed on"]);
+        const hasSubOut = !!statObj(statsArr, ["subbed out", "sub off"]);
+        base.subbedIn  = hasSubIn || undefined;
+        base.subbedOut = hasSubOut || undefined;
+
+        // Discipline
+        base.foulsCommitted = v(["fouls committed", "fouls", "fc"]);
+        base.foulsSuffered  = v(["fouls drawn", "fouls suffered"]);
+        base.yellowCards    = v(["yellow cards", "yc"]);
+        base.redCards       = v(["red cards", "rc"]);
+        base.ownGoals       = v(["own goals", "og"]);
+
+        // Goalkeeping
+        base.goalsAgainst       = v(["goals conceded", "goals against", "ga"]);
+        base.saves              = v(["saves", "sv"]);
+        base.shotsOnTargetFaced = v(["shots on target faced", "shots faced", "shf"]);
+
+        // Attacking
+        base.goals         = v(["goals", "g"]);
+        base.assists       = v(["assists", "a"]);
+        base.shotsTotal    = v(["shots", "total shots", "sh"]);
+        base.shotsOnTarget = v(["shots on target", "st", "sg"]);
+        base.offsides      = v(["offsides", "offside", "of"]);
+
+        out.push(base);
+      }
+    }
+  }
+  return out;
+}
+
+/** Fetch + normalize full summary (team + player) for one event */
+export async function fetchSummaryNormalized(eventId: string): Promise<SummaryNormalized> {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=${encodeURIComponent(
+    eventId
+  )}`;
+  const res = await fetch(url, { headers: { accept: "application/json" } });
+  if (!res.ok) throw new Error(`ESPN summary fetch failed: ${res.status}`);
+
+  const json: AnyObj = await res.json();
+
+  const headerEventId = json?.header?.id ?? eventId;
+  const box = json?.boxscore ?? {};
+
+  // Teams node usually has two entries with .statistics
+  const teamsArr: AnyObj[] = box?.teams ?? [];
+  const homeNode =
+    teamsArr.find((t) => (t?.homeAway ?? t?.team?.homeAway) === "home") ?? teamsArr[0];
+  const awayNode =
+    teamsArr.find((t) => (t?.homeAway ?? t?.team?.homeAway) === "away") ?? teamsArr[1];
+
+  const home = extractTeamFromSummaryTeamNode(homeNode, "home");
+  const away = extractTeamFromSummaryTeamNode(awayNode, "away");
+
+  // Players node groups by team → groups → athletes
+  const players: PlayerLine[] = extractPlayersFromSummary(box?.players ?? []);
+
+  return {
+    eventId: String(headerEventId ?? ""),
+    home,
+    away,
+    players,
+  };
+}
