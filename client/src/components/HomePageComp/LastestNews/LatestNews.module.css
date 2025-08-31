@@ -128,11 +128,41 @@ h3 {
   }
 }
 
+/* Medium screens: tighten spacing, slightly smaller fonts */
+@media (max-width: 768px) {
+  .card {
+    padding: 10px;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 1);
+
+    max-width: 500px; /* keeps it from stretching too wide */
+    margin: 20px auto; /* centers the card with breathing space */
+    width: 100%; /* ensures it still scales down */
+  }
+  .item {
+    grid-template-columns: 80px 1fr;
+    gap: 8px;
+    padding: 6px;
+  }
+  .thumb {
+    height: 64px;
+  }
+  .title {
+    font-size: 13px;
+  }
+  .summary {
+    font-size: 11px;
+  }
+}
+
 /* Small phones: stack thumbnail and content vertically */
 @media (max-width: 480px) {
   .card {
     padding: 8px;
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+
+    max-width: 420px; /* was full width — now slightly wider like your table card */
+    margin: 20px auto; /* keep centered */
+    width: 100%;
   }
   .item {
     grid-template-columns: 1fr; /* stack thumb + content */

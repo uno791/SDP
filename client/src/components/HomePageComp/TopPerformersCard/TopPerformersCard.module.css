@@ -1,6 +1,6 @@
 /* --- OUTER CARD: same comic look, no forced width --- */
 .card {
-  background-color: #d8cbaa;                 /* golden like other cards */
+  background-color: #d8cbaa; /* golden like other cards */
   border: 4px solid #000;
   box-shadow: 8px 8px 0 #000;
   padding: 20px 20px 18px;
@@ -15,13 +15,15 @@
   gap: 12px;
   margin-bottom: 12px;
 }
-.title { margin: 0; }
+.title {
+  margin: 0;
+}
 
 /* --- INNER TABLE CONTAINER (white box + border + shadow) --- */
 .table {
   background: #fff;
   border: 2px solid #0c2a47;
-  box-shadow: 4px 4px 0 rgba(0,0,0,1);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
   overflow: hidden; /* keeps borders clean */
 }
 
@@ -36,7 +38,7 @@
   text-transform: uppercase;
   font-size: 12px;
   color: #0c2a47;
-  border-bottom: 2px solid #0c2a47;  /* solid header line (we lost this before) */
+  border-bottom: 2px solid #0c2a47; /* solid header line (we lost this before) */
   padding: 10px 12px 8px 12px;
 }
 
@@ -47,21 +49,31 @@
   gap: 8px;
   align-items: center;
   padding: 14px 12px;
-  border-bottom: 1px dashed #e5d2aa;           /* dotted rule restored */
-  font-size: 15px;                              /* readable but not huge */
+  border-bottom: 1px dashed #e5d2aa; /* dotted rule restored */
+  font-size: 15px; /* readable but not huge */
 }
-.row:last-child { border-bottom: 0; }
+.row:last-child {
+  border-bottom: 0;
+}
 
 /* column cells */
-.colStatCell { font-weight: 800; color: #0c2a47; }
-.colTeamCell { color: #0c2a47; }
-.colValueCell { display: flex; justify-content: flex-end; }
+.colStatCell {
+  font-weight: 800;
+  color: #0c2a47;
+}
+.colTeamCell {
+  color: #0c2a47;
+}
+.colValueCell {
+  display: flex;
+  justify-content: flex-end;
+}
 
 /* winner cell: avatar + name */
 .playerWrap {
   display: inline-flex;
   align-items: center;
-  gap: 8px;           /* slightly larger than the super-tight version */
+  gap: 8px; /* slightly larger than the super-tight version */
   min-width: 0;
 }
 .playerName {
@@ -77,34 +89,55 @@
   height: 24px;
   object-fit: cover;
   border: 2px solid #0c2a47;
-  box-shadow: 2px 2px 0 rgba(0,0,0,1);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 1);
   background: #e5d2aa;
 }
-.avatarFallback { background: #e5d2aa; }
+.avatarFallback {
+  background: #e5d2aa;
+}
 
 /* value pill (comic) */
 .pill {
   font-weight: 800;
   padding: 2px 8px;
   border: 2px solid #0c2a47;
-  box-shadow: 2px 2px 0 rgba(0,0,0,1);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 1);
   background: #fff;
   line-height: 1;
   min-width: 28px;
   text-align: center;
 }
-.dark  { background: #0c2a47; color: #fff; }
-.amber { background: #ffbf47; }
-.red   { background: #e36a6a; }
-.blue  { background: #b9d4f0; }
+.dark {
+  background: #0c2a47;
+  color: #fff;
+}
+.amber {
+  background: #ffbf47;
+}
+.red {
+  background: #e36a6a;
+}
+.blue {
+  background: #b9d4f0;
+}
 
 /* states */
-.state, .error { padding: 8px 12px; color: #0c2a47; }
-.error { color: #8e1c1c; }
-.dim { opacity: 0.5; }
+.state,
+.error {
+  padding: 8px 12px;
+  color: #0c2a47;
+}
+.error {
+  color: #8e1c1c;
+}
+.dim {
+  opacity: 0.5;
+}
 
 /* empty helper */
-.emptyWrap { padding: 10px 12px 14px; }
+.emptyWrap {
+  padding: 10px 12px 14px;
+}
 .emptyBox {
   padding: 10px 12px;
   border: 2px dashed #0c2a47;
@@ -121,13 +154,57 @@
 
 /* --- RESPONSIVE: collapse TEAM on narrow sidebars if needed --- */
 @media (max-width: 900px) {
-  .thead, .row {
+  .thead,
+  .row {
     grid-template-columns: 124px 1fr 56px; /* hide TEAM */
   }
-  .colTeam, .colTeamCell { display: none; }
+  .colTeam,
+  .colTeamCell {
+    display: none;
+  }
 }
 
 /* Optional hard cap if your right column is very narrow.
    Uncomment if the card still feels too wide:
    .card { max-width: 420px; }
 */
+
+/* --- RESPONSIVE: collapse TEAM on narrow sidebars if needed --- */
+@media (max-width: 900px) {
+  .thead,
+  .row {
+    grid-template-columns: 124px 1fr 56px; /* hide TEAM */
+  }
+  .colTeam,
+  .colTeamCell {
+    display: none;
+  }
+
+  .card {
+    max-width: 500px; /* medium screens cap */
+    margin: 24px auto; /* center with spacing */
+    width: 100%; /* still shrink if viewport smaller */
+    box-shadow: 6px 6px 0 #000;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .card {
+    max-width: 420px; /* slightly wider than “narrow column” */
+    margin: 20px auto; /* keep breathing space */
+    width: 100%;
+    padding: 16px 12px; /* lighter padding on tiny screens */
+    box-shadow: 4px 4px 0 #000;
+  }
+
+  .thead,
+  .row {
+    grid-template-columns: 1fr auto; /* stat + val only */
+  }
+
+  .colWinner,
+  .playerWrap {
+    display: none; /* hide winner avatars/names */
+  }
+}
