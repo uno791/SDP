@@ -1,0 +1,68 @@
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid black;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: white;
+}
+
+.team {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+}
+
+.center {
+  flex: 1;
+  text-align: center;
+}
+
+.score {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.minute {
+  margin-left: 5px;
+  color: red;
+  font-size: 14px;
+}
+
+.live {
+  background-color: red;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.upcoming {
+  background-color: #27ae60;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.finished {
+  background-color: #00c0e0;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.moreButton {
+  background-color: orange;
+  border: none;
+  padding: 5px 10px;
+  font-weight: bold;
+  cursor: pointer;
+}

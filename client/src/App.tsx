@@ -8,6 +8,12 @@ import SignUpPage from "./pages/SignUpPage";
 import { UserProvider } from "./Users/UserContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import ComicBook from "./components/LoginSignupComp/ComicBook/ComicBook";
+import MyMatches from "./pages/MatchPages/MyMatches";
+import CreateMatch from "./pages/MatchPages/CreateMatch";
+import LiveMatchUpdate from "./pages/MatchPages/LiveMatchUpdate";
+
+// import the new profile page
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -15,7 +21,7 @@ function App() {
       <UserProvider>
         <Router>
           <Routes>
-            // put within here if you want it to have NavBar
+            {/* Routes inside Layout will have the NavBar */}
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
               <Route path="/house" element={<House />} />
@@ -23,6 +29,12 @@ function App() {
               <Route path="/doodlehome" element={<DoodleHome />} />
               <Route path="/signuppage" element={<ComicBook />} />
               <Route path="/loginpage" element={<ComicBook />} />
+              <Route path="/mymatches" element={<MyMatches />} />
+              <Route path="create-match" element={<CreateMatch />} />
+              <Route path="/live/:id" element={<LiveMatchUpdate />} />
+
+              {/* New Profile route */}
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Routes>
         </Router>

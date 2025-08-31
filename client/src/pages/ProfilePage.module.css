@@ -1,0 +1,34 @@
+/* Set the whole page background to your light beige */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px;
+  background-color: #f8f4eb; /* <-- sampled from your screenshot */
+  min-height: 100vh;
+}
+
+/* Make the profile card bigger and shaded darker */
+.card {
+  background: #f4ecd8;
+  padding: 40px 50px; /* more padding to make it feel bigger */
+  border-radius: 16px; /* slightly larger rounding */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* darker shadow for emphasis */
+  width: 100%;
+  max-width: 650px; /* bump the size up from 500px */
+}
+
+.signOutButton {
+  margin-top: 20px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #dc3545;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.signOutButton:hover {
+  background-color: #a71d2a;
+}

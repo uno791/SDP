@@ -236,3 +236,8 @@
     height: 100px; /* scale logo down a bit but still visible */
   }
 }
+
+.profileIcon {
+  margin-right: 6px;
+  vertical-align: middle;
+}

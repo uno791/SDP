@@ -46,8 +46,12 @@ export default function Header() {
         <span className={styles.live}>LIVE</span>
         <ComicButton text="Home" to="/" />
         <ComicButton text="Favourite Teams" to="/favourites" />
-        <ComicButton text="doodleHome" to="/doodlehome" />
-        <span className={styles.username}>{username}</span>
+        {/* <ComicButton text="doodleHome" to="/doodlehome" /> */}
+
+        <ComicButton text="My Matches" to="/mymatches" />
+        {/* New Profile link */}
+        <ComicButton text="Profile" to="/profile" />
+        {/*<span className={styles.username}>{username}</span>*/}
       </nav>
     </header>
   );

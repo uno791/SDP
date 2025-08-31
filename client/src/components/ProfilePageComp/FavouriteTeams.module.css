@@ -1,0 +1,92 @@
+.container {
+  margin-top: 20px;
+}
+
+.heading {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.teamList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px 0;
+}
+
+.teamList li {
+  background: #f4ecd8; /* light blue */
+  color: #0d47a1; /* dark blue text */
+  border: 1px solid #ddd;
+  font-weight: 500;
+  padding: 10px 14px;
+  margin: 8px 0;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.teamList li:hover {
+  background: #bbdefb;
+}
+
+.empty {
+  color: #666;
+  font-style: italic;
+}
+
+.editButton {
+  margin-top: 10px;
+  padding: 6px 12px;
+  border: none;
+  background-color: #0d47a1;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.editButton:hover {
+  background-color: #0056b3;
+}
+
+.editMode {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.editList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.saveButton {
+  background-color: #28a745;
+  border: none;
+  padding: 6px 12px;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.saveButton:hover {
+  background-color: #1e7e34;
+}
+
+.cancelButton {
+  background-color: #dc3545;
+  border: none;
+  padding: 6px 12px;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  background-color: #a71d2a;
+}

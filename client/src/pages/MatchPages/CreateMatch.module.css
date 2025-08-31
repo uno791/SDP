@@ -1,0 +1,20 @@
+.container {
+  background-color: #f5ebd7;
+  padding: 20px;
+  border: 2px solid black;
+}
+
+.header {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.uploadCsv {
+  background-color: #ffdd57;
+  border: 2px solid black;
+  font-weight: bold;
+  padding: 8px 16px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}

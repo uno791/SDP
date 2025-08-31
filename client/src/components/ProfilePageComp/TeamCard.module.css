@@ -1,0 +1,17 @@
+.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f4f4f4;
+  padding: 8px 12px;
+  margin: 6px 0;
+  border-radius: 6px;
+}
+
+.removeButton {
+  background: transparent;
+  border: none;
+  color: red;
+  font-size: 16px;
+  cursor: pointer;
+}
