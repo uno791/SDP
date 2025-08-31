@@ -5,6 +5,7 @@
   padding: 37px 28px; /* match comic card padding */
   border-radius: 0; /* remove rounded corners for comic style */
 }
+
 .headerRow {
   display: flex;
   align-items: center;
@@ -88,11 +89,15 @@ h3 {
   font-weight: 700;
 }
 
-/* Medium screens: tighten padding, shrink fonts slightly */
+/* --------------------------- */
+/* Medium screens adjustments  */
+/* --------------------------- */
 @media (max-width: 768px) {
   .card {
     padding: 24px 20px;
     box-shadow: 6px 6px 0 rgba(0, 0, 0, 1);
+    max-width: 500px; /* constrain width */
+    margin: 24px auto; /* breathing space */
   }
   .head {
     font-size: 11px;
@@ -112,12 +117,15 @@ h3 {
   }
 }
 
-/* Small phones: stack header row and simplify columns */
+/* --------------------------- */
+/* Small phones adjustments    */
+/* --------------------------- */
 @media (max-width: 480px) {
   .card {
-    padding: 16px 12px;
-    margin-left: 0;
+    padding: 20px 12px;
+    margin: 24px auto; /* top/bottom space */
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+    max-width: 360px; /* narrower column */
   }
   .headerRow {
     flex-direction: column;
