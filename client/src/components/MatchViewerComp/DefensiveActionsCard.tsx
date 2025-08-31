@@ -1,29 +1,15 @@
 import React from "react";
 import ComicCard from "./ComicCard";
+import TriStatRow from "./TriStatRow";
 
 const DefensiveActionsCard: React.FC = () => {
   return (
     <ComicCard title="Defensive Actions">
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div>
-          <p>15 Total tackles</p>
-          <p>9 Effective tackles (won)</p>
-          <p>
-            <span style={{ color: "red" }}>60%</span> Tackle success rate
-          </p>
-          <p>8 Interceptions</p>
-          <p>17 Clearances</p>
-        </div>
-        <div>
-          <p>22 Total tackles</p>
-          <p>16 Effective tackles (won)</p>
-          <p>
-            <span style={{ color: "red" }}>73%</span> Tackle success rate
-          </p>
-          <p>12 Interceptions</p>
-          <p>24 Clearances</p>
-        </div>
-      </div>
+      <TriStatRow label="Total tackles"        left={<b>15</b>} right={<b>22</b>} />
+      <TriStatRow label="Effective tackles"    left={<b>9</b>}  right={<b>16</b>} />
+      <TriStatRow label="Tackle success rate"  left={<b>60%</b>} right={<b>73%</b>} />
+      <TriStatRow label="Interceptions"        left={<b>8</b>}  right={<b>12</b>} />
+      {/* Removed Clearances */}
     </ComicCard>
   );
 };

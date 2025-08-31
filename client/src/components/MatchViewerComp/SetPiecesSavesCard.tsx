@@ -1,27 +1,12 @@
 import React from "react";
 import ComicCard from "./ComicCard";
+import TriStatRow from "./TriStatRow";
 
 const SetPiecesSavesCard: React.FC = () => {
   return (
     <ComicCard title="Set Pieces & Saves">
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div>
-          <p>
-            <strong>4</strong> Corner kicks won
-          </p>
-          <p>
-            <strong>4</strong> Saves made (by GK)
-          </p>
-        </div>
-        <div>
-          <p>
-            <strong>6</strong> Corner kicks won
-          </p>
-          <p>
-            <strong>1</strong> Saves made (by GK)
-          </p>
-        </div>
-      </div>
+      <TriStatRow label="Corner kicks won"  left={<b>4</b>} right={<b>6</b>} />
+      <TriStatRow label="Saves (GK)"        left={<b>4</b>} right={<b>1</b>} />
     </ComicCard>
   );
 };

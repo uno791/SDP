@@ -170,3 +170,22 @@
     padding: 1px 5px;
   }
 }
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.viewBtn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.viewBtn:hover {
+  background: #f0f0f0;
+}
+

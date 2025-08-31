@@ -8,7 +8,7 @@ import SignUpPage from "./pages/SignUpPage";
 import { UserProvider } from "./Users/UserContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import ComicBook from "./components/LoginSignupComp/ComicBook/ComicBook";
-import MatchViewer from "./components/MatchViewerComp/MatchViewer";
+import MatchViewer from "./pages/MatchViewer";
 
 function App() {
   return (
@@ -23,7 +23,8 @@ function App() {
               <Route path="/ball" element={<Ball />} />
               <Route path="/doodlehome" element={<DoodleHome />} />
               <Route path="/signuppage" element={<ComicBook />} />
-              <Route path="/loginpage" element={<MatchViewer />} />
+              <Route path="/matchviewer" element={<MatchViewer />} />
+              
             </Route>
           </Routes>
         </Router>

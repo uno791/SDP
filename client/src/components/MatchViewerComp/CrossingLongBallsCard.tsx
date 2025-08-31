@@ -1,31 +1,16 @@
 import React from "react";
 import ComicCard from "./ComicCard";
+import TriStatRow from "./TriStatRow";
 
 const CrossingLongBallsCard: React.FC = () => {
   return (
     <ComicCard title="Crossing & Long Balls">
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div>
-          <p>11 Crosses attempted</p>
-          <p>6 Accurate crosses</p>
-          <p>
-            <span style={{ color: "red" }}>55%</span> Cross accuracy
-          </p>
-          <p>39 Long balls attempted</p>
-          <p>21 Accurate long balls</p>
-          <p>54% Long ball accuracy</p>
-        </div>
-        <div>
-          <p>7 Crosses attempted</p>
-          <p>3 Accurate crosses</p>
-          <p>
-            <span style={{ color: "red" }}>43%</span> Cross accuracy
-          </p>
-          <p>28 Long balls attempted</p>
-          <p>18 Accurate long balls</p>
-          <p>64% Long ball accuracy</p>
-        </div>
-      </div>
+      <TriStatRow label="Crosses attempted"    left={<b>11</b>} right={<b>7</b>} />
+      <TriStatRow label="Accurate crosses"     left={<b>6</b>}  right={<b>3</b>} />
+      {/* Removed Cross accuracy */}
+      <TriStatRow label="Long balls attempted" left={<b>39</b>} right={<b>28</b>} />
+      <TriStatRow label="Accurate long balls"  left={<b>21</b>} right={<b>18</b>} />
+      <TriStatRow label="Long ball accuracy"   left={<b>54%</b>} right={<b>64%</b>} />
     </ComicCard>
   );
 };

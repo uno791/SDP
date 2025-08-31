@@ -1,27 +1,14 @@
 import React from "react";
 import ComicCard from "./ComicCard";
+import TriStatRow from "./TriStatRow";
 
 const PossessionPassingCard: React.FC = () => {
   return (
     <ComicCard title="Possession & Passing">
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div>
-          <p>
-            <span style={{ color: "red" }}>68%</span> Possession
-          </p>
-          <p>636 Passes attempted</p>
-          <p>544 Accurate passes</p>
-          <p>85% Pass completion %</p>
-        </div>
-        <div>
-          <p>
-            <span style={{ color: "red" }}>32%</span> Possession
-          </p>
-          <p>298 Passes attempted</p>
-          <p>251 Accurate passes</p>
-          <p>84% Pass completion %</p>
-        </div>
-      </div>
+      <TriStatRow label="Possession"            left={<b>68%</b>} right={<b>32%</b>} />
+      <TriStatRow label="Passes attempted"      left={<b>636</b>}  right={<b>298</b>} />
+      <TriStatRow label="Accurate passes"       left={<b>544</b>}  right={<b>251</b>} />
+      <TriStatRow label="Pass completion %"     left={<b>85%</b>}  right={<b>84%</b>} />
     </ComicCard>
   );
 };
