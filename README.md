@@ -3,6 +3,7 @@
 |---------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | Static Website      | [Static Site](https://sdp-sooty.vercel.app/)                                       |
 | Web Server | [Web Server](https://sdp-webserver.onrender.com/)                                    |
+| Documentation | [Document](https://kamallalloo.github.io/SDP-Documentation/)                                    |
 
 
 ## Local Setup
