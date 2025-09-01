@@ -23,7 +23,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
       setUserState(new User(parsed)); // Instantiate User class
-      setUsername(parsed.name);
+      setUsername(parsed.username);
     }
   }, []);
 

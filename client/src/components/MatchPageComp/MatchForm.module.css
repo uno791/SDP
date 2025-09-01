@@ -1,0 +1,258 @@
+.form {
+  background-color: #f5ebd7;
+  padding: 20px;
+  border: 2px solid black;
+}
+
+.subHeader {
+  font-weight: bold;
+  margin: 20px 0 10px;
+}
+
+.teams {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.teamColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.teamLabel {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.textInput {
+  background: #fff;
+  border: 2px solid #000;
+  padding: 10px;
+  outline: none;
+}
+
+.durationInput {
+  width: 90px;
+  background: #fff;
+  border: 2px solid #000;
+  padding: 8px;
+  outline: none;
+}
+
+.upload {
+  background-color: #f39c12;
+  border: 2px solid #000;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  width: fit-content;
+}
+
+/* Lineups */
+.lineupBlock {
+  margin-top: 6px;
+}
+
+.addLineup {
+  background-color: #7fdbca;
+  border: 2px solid #000;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.lineupEditor {
+  margin-top: 10px;
+  padding: 10px;
+  border: 2px dashed #888;
+  background: #fffef8;
+}
+
+.lineupCountRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.countInput {
+  width: 100px;
+  border: 2px solid #000;
+  padding: 8px;
+  background: #fff;
+}
+
+.smallAction {
+  background: #cfe3ff;
+  border: 2px solid #000;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.smallActionAlt {
+  background: #ffe0d6;
+  border: 2px solid #000;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.lineupInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lineupInputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.numberBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #000;
+  background: #fff;
+  font-weight: 700;
+}
+
+.lineupActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.saveBtn {
+  background: #b8f5b8;
+  border: 2px solid #000;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cancelInline {
+  background: #ffc6c6;
+  border: 2px solid #000;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.smallNote {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #333;
+}
+
+.settings {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 16px 0 8px;
+  align-items: end;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.label {
+  font-weight: 700;
+}
+
+.privacyRow {
+  display: flex;
+  gap: 24px;
+  margin: 14px 0 6px;
+  align-items: center;
+}
+.privacyOption {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 700;
+}
+
+/* Private invitations */
+.inviteBlock {
+  margin: 12px 0 8px;
+}
+
+.addUsersBtn {
+  background-color: #8fdcd0;
+  border: 2px solid #000;
+  padding: 8px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.inviteRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.userSelect {
+  min-width: 220px;
+  border: 2px solid #000;
+  padding: 8px;
+  background: #fff;
+}
+
+.chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background: #eee;
+  padding: 6px 10px;
+  border-radius: 16px;
+  border: 1px solid #aaa;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 600;
+}
+
+.chipRemove {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.cancel {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.create {
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
