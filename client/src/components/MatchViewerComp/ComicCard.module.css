@@ -1,0 +1,23 @@
+.cardWrapper {
+  position: relative;
+  width: 90%;
+  height: 90%;
+  margin: auto;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.card {
+  background: #f5eedc;
+  /* background: #ffffff; */
+  border: 2px solid black;
+  padding: 1rem;
+  box-shadow: 4px 4px 0 black;
+}

@@ -2,8 +2,21 @@
 import { useState } from "react";
 import styles from "./MatchCard.module.css";
 import StatsBar from "../StatsBar/StatsBar";
-import type { Scorer } from "../../../api/espn";
-import type { StatMetric } from "../../../api/espn";
+import type { Scorer, StatMetric } from "../../../api/espn";
+// src/components/MatchCard/MatchCard.tsx (CTA area)
+import { Link } from "react-router-dom";
+
+// ...
+{/* <div className={styles.actions}>
+  <Link
+    to={`/matchviewer?id=${encodeURIComponent(id)}`}
+    className={styles.viewBtn}
+    onClick={(e) => e.stopPropagation()} // prevent toggling the accordion
+  >
+    Open Match Viewer
+  </Link>
+</div> */}
+
 
 type Team = { name: string; score?: string; logo?: string };
 type Props = {
@@ -12,18 +25,13 @@ type Props = {
   away: Team;
   state: "pre" | "in" | "post";
   statusText: string;
-
   metrics: StatMetric[];
-  saves?: {
-    home?: number;
-    away?: number;
-    homeAbbr?: string;
-    awayAbbr?: string;
-  };
+  saves?: { home?: number; away?: number; homeAbbr?: string; awayAbbr?: string };
   scorers: Scorer[];
 };
 
 export default function MatchCard({
+  id,                // ⬅️ add this
   home,
   away,
   state,
@@ -54,7 +62,7 @@ export default function MatchCard({
           <span className={styles.status}>{statusText}</span>
         </div>
 
-        <div className={styles.team + " " + styles.right}>
+        <div className={`${styles.team} ${styles.right}`}>
           {away.logo && <img src={away.logo} alt="" className={styles.logo} />}
           <span>{away.name}</span>
         </div>
@@ -87,18 +95,15 @@ export default function MatchCard({
                 leftValue={saves.home}
                 rightValue={saves.away}
                 leftPercent={
-                  typeof saves.home === "number" &&
-                  typeof saves.away === "number"
-                    ? Math.round(
-                        (saves.home / (saves.home + saves.away || 1)) * 100
-                      )
+                  typeof saves.home === "number" && typeof saves.away === "number"
+                    ? Math.round((saves.home / (saves.home + saves.away || 1)) * 100)
                     : undefined
                 }
               />
             )}
           </div>
 
-          {/* Scorers (unchanged) */}
+          {/* Scorers */}
           {scorers.length > 0 && (
             <>
               <div className={styles.separator} />
@@ -116,6 +121,17 @@ export default function MatchCard({
               </div>
             </>
           )}
+
+          {/* ⬇️ New: Open Match Viewer CTA */}
+          <div className={styles.actions}>
+            <a
+              href={`/matchviewer?id=${encodeURIComponent(id)}`}
+              className={styles.viewBtn}
+              onClick={(e) => e.stopPropagation()} // prevent any accidental toggles
+            >
+              Open Match Viewer
+            </a>
+          </div>
         </div>
       )}
     </div>
