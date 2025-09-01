@@ -1,4 +1,4 @@
-name: Coverage & Codecov
+name: Coverage & Codecov (client)
 
 on:
   push:
@@ -9,6 +9,11 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: client
+
     steps:
       - uses: actions/checkout@v4
 
@@ -16,14 +21,18 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: client/package-lock.json
 
-      - run: npm ci
-      - run: npm run coverage
+      - name: Install deps
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run coverage
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v5
         with:
-          files: coverage/lcov.info
+          files: client/coverage/lcov.info
           slug: uno791/SDP
           fail_ci_if_error: true
           verbose: true
