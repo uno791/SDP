@@ -90,3 +90,17 @@
 .cancelButton:hover {
   background-color: #a71d2a;
 }
+
+.teamCard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0;
+}
+
+.teamLogo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 50%;
+}

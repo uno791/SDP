@@ -3,17 +3,10 @@ import styles from "./AddTeam.module.css";
 
 interface AddTeamProps {
   onAdd: (team: string) => void;
+  availableTeams: string[];
 }
 
-const dummyTeams = [
-  "Chelsea",
-  "Arsenal",
-  "Liverpool",
-  "Man United",
-  "Man City",
-];
-
-const AddTeam: React.FC<AddTeamProps> = ({ onAdd }) => {
+const AddTeam: React.FC<AddTeamProps> = ({ onAdd, availableTeams }) => {
   const [selectedTeam, setSelectedTeam] = useState("");
 
   const handleAdd = () => {
@@ -31,7 +24,7 @@ const AddTeam: React.FC<AddTeamProps> = ({ onAdd }) => {
         onChange={(e) => setSelectedTeam(e.target.value)}
       >
         <option value="">Select a team</option>
-        {dummyTeams.map((team) => (
+        {availableTeams.map((team) => (
           <option key={team} value={team}>
             {team}
           </option>
