@@ -1,24 +1,26 @@
-// jest.config.js
+/** @type {import('jest').Config} */
 export default {
-  preset: "ts-jest/presets/default-esm",
+  preset: "ts-jest",
   testEnvironment: "jsdom",
 
   transform: {
     "^.+\\.[tj]sx?$": [
       "ts-jest",
       {
-        useESM: true,
         tsconfig: "tsconfig.jest.json",
-        diagnostics: { warnOnly: true },
+        diagnostics: {
+          warnOnly: true,
+          // Keep these quiet during coverage collection
+          ignoreCodes: [6133, 6192, 1343, 2307],
+        },
       },
     ],
   },
 
-  extensionsToTreatAsEsm: [".ts", ".tsx"],
+  // DO NOT mark files as ESM for Jest here
+  // extensionsToTreatAsEsm: [],
 
   moduleNameMapper: {
-    "^react$": "<rootDir>/node_modules/react",
-    "^react-dom$": "<rootDir>/node_modules/react-dom",
     "^@/(.*)$": "<rootDir>/src/$1",
     "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
     "^.+\\.(css|sass|scss)$": "<rootDir>/_mocks_/styleMock.js",
@@ -29,14 +31,15 @@ export default {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 
   collectCoverage: true,
-  coverageReporters: ["json", "lcov", "text", "clover"],
   coverageDirectory: "coverage",
+  coverageReporters: ["json", "lcov", "text", "clover"],
 
+  // ← IMPORTANT: include pages so the stuff you render actually counts
   collectCoverageFrom: [
-    "src/**/*.{js,jsx,ts,tsx}",
+    "src/**/*.{ts,tsx,js,jsx}",
     "!src/**/*.d.ts",
     "!src/api/**",
-    "!src/pages/**",
+    "!src/config.ts", // uses import.meta – exclude from coverage
   ],
 
   coveragePathIgnorePatterns: ["/node_modules/", "/dist/"],
