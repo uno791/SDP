@@ -1,3 +1,4 @@
+// src/pages/MatchViewer.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -14,7 +15,7 @@ import {
   type ScoreboardResponse,
 } from "../api/espn";
 
-// 3-col stat row: left (home) — center label — right (away)
+/** ───────────────── TriStatRow (inline) ───────────────── */
 function TriStatRow({
   label,
   left,
@@ -41,14 +42,15 @@ function TriStatRow({
   );
 }
 
-// ---------- local helpers ----------
+/** ───────────────── Local helpers ───────────────── */
 function first<T>(arr: T[] | undefined | null): T | undefined {
   return Array.isArray(arr) && arr.length ? arr[0] : undefined;
 }
-function normalizeMinute(v?: string) {
-  if (!v) return undefined;
-  const m = v.match(/\d+(?:\+\d+)?/);
-  return m ? `${m[0]}'` : v;
+function normalizeMinute(v?: string | number) {
+  if (v == null) return undefined;
+  const s = String(v);
+  const m = s.match(/\d+(?:\+\d+)?/);
+  return m ? `${m[0]}'` : s;
 }
 function parseNameFromText(raw?: string): { name?: string; isPenalty?: boolean; isOG?: boolean } {
   if (!raw) return {};
@@ -78,13 +80,35 @@ function isOwnGoalPlay(p: any): boolean {
   return /\bown[- ]goal\b|\(OG\)/i.test(t) || /owngoal/i.test(p?.type?.id ?? "");
 }
 
-// format one scorer for the UI (fallback)
-function fmtScorer(s: Scorer): string {
-  const name = s.player || "Goal";
-  const min = s.minute ? ` ${s.minute}` : "";
-  return `${name}${min}`.trim();
+/** tolerant scorer → string (used only for fallback display) */
+function fmtScorer(s: Scorer | any): string {
+  let name =
+    s?.player ??
+    s?.name ??
+    s?.scorer ??
+    s?.athlete?.displayName ??
+    s?.athleteName ??
+    "Goal";
+
+  // remove pre-existing tags; we'll add our own when we know
+  name = String(name).replace(/\s*\((?:P|p)\)\s*/g, "").replace(/\s*\(OG\)\s*/g, "");
+
+  const minuteRaw =
+    s?.minute ??
+    s?.min ??
+    s?.time ??
+    s?.minuteText ??
+    s?.clock ??
+    undefined;
+
+  const min = normalizeMinute(minuteRaw);
+  if (s?.isPenalty) name += " (p)";
+  if (s?.isOG) name += " (OG)";
+
+  return `${name}${min ? ` ${min}` : ""}`.trim();
 }
 
+/** ───────────────── Component ───────────────── */
 export default function MatchViewer() {
   const [sp] = useSearchParams();
   const eventId = sp.get("id") ?? undefined;
@@ -116,23 +140,28 @@ export default function MatchViewer() {
         if (cancelled) return;
         setData(d);
 
-        // Always fetch the scoreboard event too, for logos + scorer repair
+        // ── Fetch the scoreboard for the MATCH DATE (fallback to today) ──
         try {
-          const sb = await fetchScoreboard(today);
+          const when =
+            (d as any)?.compDate && !Number.isNaN(Date.parse((d as any).compDate))
+              ? new Date((d as any).compDate)
+              : today;
+
+          const sb = await fetchScoreboard(when);
           if (cancelled) return;
+
           const ev = (sb.events ?? []).find((e) => String(e.id) === String(eventId)) || null;
           setSbEvent(ev);
 
-          if (!d.scorers || d.scorers.length === 0) {
-            if (ev) {
-              const details = extractStatsFromScoreboardEvent(ev);
-              setSbScorers(details.scorers ?? []);
-            } else {
-              setSbScorers(null);
-            }
-          } else {
-            setSbScorers(null);
-          }
+          // Prefer good summary scorers; else fallback to scoreboard scorers (same logic as PastLeagueGames)
+          const details = ev ? extractStatsFromScoreboardEvent(ev) : { scorers: [] as Scorer[] };
+
+          const hasGoodSummaryScorers =
+            Array.isArray(d.scorers) &&
+            d.scorers.length > 0 &&
+            d.scorers.some((s: any) => typeof s?.player === "string" && !/^Goal\b/i.test(s.player));
+
+          setSbScorers(hasGoodSummaryScorers ? null : details.scorers ?? []);
         } catch {
           setSbScorers(null);
           setSbEvent(null);
@@ -183,10 +212,10 @@ export default function MatchViewer() {
   const allScorers: Scorer[] =
     (data as any)?.scorers?.length ? (data as any).scorers : sbScorers ?? [];
 
-  // rebuild/repair scorer list from raw scoreboard plays (ensures (p)/(OG))
+  /** Rebuild/repair scorer list from raw scoreboard plays (ensures (p)/(OG)) */
   function buildDisplayScorers(): { home: string[]; away: string[] } {
-    const baseHome = allScorers.filter((x) => x.homeAway === "home").map(fmtScorer);
-    const baseAway = allScorers.filter((x) => x.homeAway === "away").map(fmtScorer);
+    const baseHome = allScorers.filter((x: any) => x.homeAway === "home").map(fmtScorer);
+    const baseAway = allScorers.filter((x: any) => x.homeAway === "away").map(fmtScorer);
 
     const needsFix =
       ([...baseHome, ...baseAway].some((s) => /^Goal\b/i.test(s)) &&
@@ -216,9 +245,9 @@ export default function MatchViewer() {
       const ai0: any = first(p?.athletesInvolved as any[]);
       let name: string | undefined = undefined;
 
-      if (ai0 && ai0.displayName) name = ai0.displayName;
-      else if (ai0 && ai0.athlete && ai0.athlete.displayName) name = ai0.athlete.displayName;
-      else if (p && p.athlete && p.athlete.displayName) name = p.athlete.displayName;
+      if (ai0?.displayName) name = ai0.displayName;
+      else if (ai0?.athlete?.displayName) name = ai0.athlete.displayName;
+      else if ((p as any)?.athlete?.displayName) name = (p as any).athlete.displayName;
 
       const parsed = parseNameFromText(p?.text);
       if (!name && parsed.name) name = parsed.name;
@@ -227,9 +256,10 @@ export default function MatchViewer() {
       const pen = isPenaltyPlay(p) || !!parsed.isPenalty;
       const og = isOwnGoalPlay(p) || !!parsed.isOG;
 
-      // tag flags
-      if (pen) name = `${name.replace(/\s*\((?:P|p)\)\s*/g, "")} (p)`;
-      if (og) name = `${name.replace(/\s*\(OG\)\s*/g, "")} (OG)`;
+      // tag flags once
+      name = name.replace(/\s*\((?:P|p)\)\s*/g, "").replace(/\s*\(OG\)\s*/g, "");
+      if (pen) name = `${name} (p)`;
+      if (og) name = `${name} (OG)`;
 
       const minute = normalizeMinute(p?.clock?.displayValue) ?? normalizeMinute(p?.text);
       const label = `${name}${minute ? ` ${minute}` : ""}`.trim();
@@ -253,14 +283,24 @@ export default function MatchViewer() {
   const homeScorers = fixed.home;
   const awayScorers = fixed.away;
 
-  // derive team logos from scoreboard (with fallbacks)
+  /** derive team logos (scoreboard → summary fallbacks) */
   const comp = (sbEvent as any)?.competitions?.[0];
   const homeC = comp?.competitors?.find((c: any) => c.homeAway === "home");
   const awayC = comp?.competitors?.find((c: any) => c.homeAway === "away");
   const homeLogoUrl =
-    homeC?.team?.logo ?? homeC?.team?.logos?.[0]?.href ?? null;
+    homeC?.team?.logo ??
+    homeC?.team?.logos?.[0]?.href ??
+    (H as any)?.logoUrl ??
+    (H as any)?.logo ??
+    (H as any)?.crest ??
+    null;
   const awayLogoUrl =
-    awayC?.team?.logo ?? awayC?.team?.logos?.[0]?.href ?? null;
+    awayC?.team?.logo ??
+    awayC?.team?.logos?.[0]?.href ??
+    (A as any)?.logoUrl ??
+    (A as any)?.logo ??
+    (A as any)?.crest ??
+    null;
 
   return (
     <ComicCard>

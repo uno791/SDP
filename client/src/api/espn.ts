@@ -13,7 +13,14 @@ export type ScoreboardResponse = {
       competitors: Array<{
         homeAway: "home" | "away";
         score?: string;
-        team: { shortDisplayName: string; logo?: string; abbreviation?: string; id?: string };
+        team: {
+          shortDisplayName: string;
+          logo?: string;
+          logos?: Array<{ href?: string }>;
+          abbreviation?: string;
+          id?: string;
+        };
+
         statistics?: Array<{
           name?: string;
           displayName?: string;
@@ -77,33 +84,27 @@ function parseScorerText(raw?: string): { name?: string; isPenalty?: boolean; is
   if (!raw) return {};
   const text = String(raw).trim();
 
-  const isPenalty = /\bpen(alty|alties)?\b|\(PEN\)|\((?:P)\)/i.test(text);
-  const isOG = /\bown goal\b|\(OG\)/i.test(text);
+  const isPenalty = /\bpen(?:alty|alties)?\b|\(PEN\)|\((?:P)\)/i.test(text);
+  const isOG = /\bown[- ]goal\b|\(OG\)/i.test(text);
 
-  // Try most precise patterns first:
-
-  // A) "... by <Name>"
-  let m = text.match(/\bby\s+([A-Z][\w'.\- ]+)/i);
+  let m = text.match(/\bby\s+([\p{L}][\p{L}'.\- ]+)/iu);
   if (m?.[1]) return { name: m[1].trim(), isPenalty, isOG };
 
-  // B) Start with name + verb: "<Name> ( ... ) converts/scores/nets/finishes/heads/strikes/fires"
-  m = text.match(/^([A-Z][\w'.\- ]+?)\s*(?:\(|\s+)(?:converts|scores|nets|finishes|heads|strikes|fires)/i);
+  m = text.match(/^([\p{L}][\p{L}'.\- ]+?)\s*(?:\(|\s+)(?:converts|scores|nets|finishes|heads|strikes|fires)/iu);
   if (m?.[1]) return { name: m[1].trim(), isPenalty, isOG };
 
-  // C) After a sentence break: ". <Name> converts/scores/..."
-  m = text.match(/\.\s*([A-Z][\w'.\- ]+?)\s+(?:converts|scores|nets|finishes|heads|strikes|fires)/i);
+  m = text.match(/\.\s*([\p{L}][\p{L}'.\- ]+?)\s+(?:converts|scores|nets|finishes|heads|strikes|fires)/iu);
   if (m?.[1]) return { name: m[1].trim(), isPenalty, isOG };
 
-  // D) "Goal - <Name>"
-  m = text.match(/-\s*([A-Z][\w'.\- ]+)/);
+  m = text.match(/-\s*([\p{L}][\p{L}'.\- ]+)/iu);
   if (m?.[1]) return { name: m[1].trim(), isPenalty, isOG };
 
-  // E) Leading name with team in parens: "<Name> (Team) ..."
-  m = text.match(/^([A-Z][\w'.\- ]+?)\s*\(/i);
+  m = text.match(/^([\p{L}][\p{L}'.\- ]+?)\s*\(/iu);
   if (m?.[1]) return { name: m[1].trim(), isPenalty, isOG };
 
   return { isPenalty, isOG };
 }
+
 
 
 
@@ -301,21 +302,29 @@ export function extractScorersFromScoreboardEvent(ev: any): Scorer[] {
   const fromScoring = !Array.isArray(comp?.details) ? comp?.details?.scoringPlays ?? [] : [];
   const plays = [...fromArray.filter((p: any) => p?.scoringPlay), ...fromScoring];
 
+  const normalizeMinute = (v?: string) => {
+    if (!v) return undefined;
+    const m = v.match(/\d+(?:\+\d+)?/);
+    return m ? `${m[0]}'` : v;
+  };
+
   return plays.map((p: any) => {
     const minute = normalizeMinute(p?.clock?.displayValue) ?? normalizeMinute(p?.text);
 
-    // Prefer ESPN-provided name, else parse the free text
     let name =
       p?.athletesInvolved?.[0]?.displayName ??
       p?.athletesInvolved?.[0]?.athlete?.displayName ??
-      p?.athlete?.displayName ??
+      (p as any)?.athlete?.displayName ??
       undefined;
 
     const { name: parsed, isPenalty, isOG } = parseScorerText(p?.text);
     if (!name && parsed) name = parsed;
     if (!name) name = "Goal";
-    if (isPenalty) name = `${name} (P)`;
-    if (isOG) name = `${name} (OG)`;
+
+    // add tags once
+    name = name.replace(/\s*\((?:P|p)\)\s*/g, "").replace(/\s*\(OG\)\s*/g, "");
+    if (isPenalty) name += " (p)";
+    if (isOG) name += " (OG)";
 
     const teamId = p?.team?.id ? String(p.team.id) : undefined;
     const teamAbbr = p?.team?.abbreviation ?? (teamId ? idToAbbr[teamId] : undefined);
@@ -328,6 +337,7 @@ export function extractScorersFromScoreboardEvent(ev: any): Scorer[] {
     return { minute, player: name, teamAbbr, homeAway };
   });
 }
+
 
 
 
@@ -460,6 +470,12 @@ export type TeamStatsBundle = {
   teamId: string;
   teamName: string;
   side: TeamSide;
+
+  // ⬇️ ADD THESE THREE
+  teamAbbr?: string | null;
+  logoUrl?: string | null;
+  crest?: string | null;
+
   disciplineFouls: TeamDisciplineFouls;
   setPiecesSaves: TeamSetPiecesSaves;
   possessionPassing: TeamPossessionPassing;
@@ -467,6 +483,7 @@ export type TeamStatsBundle = {
   crossingLongBalls: TeamCrossLong;
   defensiveActions: TeamDefActions;
 };
+
 
 export type PlayerLine = {
   athleteId: string;
@@ -511,7 +528,9 @@ export type SummaryNormalized = {
   score?: SummaryScore;
   statusText?: string | null;
   scorers?: Scorer[];
+  compDate?: string | null; // ⬅️ add this
 };
+
 
 /** ---- helpers for Summary parsing ---- */
 type AnyObj = Record<string, any>;
@@ -545,6 +564,13 @@ function statVal(stats: AnyObj[] | undefined, names: string[]): number | null {
 /** Map one team node from summary → TeamStatsBundle */
 function extractTeamFromSummaryTeamNode(node: AnyObj, side: TeamSide): TeamStatsBundle {
   const { team } = node;
+    const teamAbbr = team?.abbreviation ?? team?.shortDisplayName ?? null;
+  const logoUrl =
+    team?.logos?.[0]?.href ??
+    team?.logo ??
+    (team as any)?.alternateLogo ??
+    null;
+
   const stats: AnyObj[] = node.statistics ?? [];
 
   // Discipline & Fouls
@@ -619,6 +645,9 @@ function extractTeamFromSummaryTeamNode(node: AnyObj, side: TeamSide): TeamStats
     teamId: String(team?.id ?? ""),
     teamName: team?.displayName ?? team?.name ?? "",
     side,
+    teamAbbr,
+    logoUrl,
+    crest: logoUrl,
     disciplineFouls: { foulsCommitted, yellowCards, redCards, offsides },
     setPiecesSaves: { cornerKicksWon, savesByGK },
     possessionPassing: { possessionPct, passesAttempted, accuratePasses, passCompletionPct },
@@ -851,12 +880,14 @@ export async function fetchSummaryNormalized(eventId: string): Promise<SummaryNo
   }
 
   return {
-    eventId: String(headerEventId ?? ""),
-    home,
-    away,
-    players,
-    score,
-    statusText,
-    scorers,
-  };
+  eventId: String(headerEventId ?? ""),
+  home,
+  away,
+  players,
+  score,
+  statusText,
+  scorers,
+  compDate, // ⬅️ add this
+};
+
 }
