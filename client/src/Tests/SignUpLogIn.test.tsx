@@ -1,4 +1,3 @@
-// __tests__/SignUpLogIn.test.tsx
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import AuthPanel from "../components/LoginSignupComp/Auth/AuthPanel";
