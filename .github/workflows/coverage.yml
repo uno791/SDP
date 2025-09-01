@@ -34,5 +34,6 @@ jobs:
         with:
           files: client/coverage/lcov.info
           slug: uno791/SDP
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
