@@ -19,7 +19,8 @@ export default function Home() {
           </section>
 
           <aside className="colSide">
-            <LeagueTable rows={[]} />
+            {/* ✅ removed rows={[]} */}
+            <LeagueTable />
             <LatestNews />
             <TopPerformersCard />
           </aside>
