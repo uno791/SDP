@@ -11,7 +11,13 @@ export default function Header() {
 
   // Helper component for comic buttons
   const ComicButton = ({ text, to }: { text: string; to: string }) => (
-    <button className={styles.comicBrutalButton} onClick={() => navigate(to)}>
+    <button
+      className={styles.comicBrutalButton}
+      onClick={() => {
+        navigate(to);
+        setOpen(false); // Close the menu after navigation
+      }}
+    >
       <div className={styles.buttonInner}>
         <span className={styles.buttonText}>{text}</span>
         <div className={styles.halftoneOverlay}></div>
@@ -46,12 +52,8 @@ export default function Header() {
         <span className={styles.live}>LIVE</span>
         <ComicButton text="Home" to="/" />
         <ComicButton text="Favourite Teams" to="/favourites" />
-        {/* <ComicButton text="doodleHome" to="/doodlehome" /> */}
-
         <ComicButton text="My Matches" to="/mymatches" />
-        {/* New Profile link */}
         <ComicButton text="Profile" to="/profile" />
-        {/*<span className={styles.username}>{username}</span>*/}
       </nav>
     </header>
   );
