@@ -1,7 +1,7 @@
 .wrapper {
   position: absolute; /* float inside hero */
-  width: 300px; /* adjust ball size */
-  height: 300px;
+  width: 600px; /* adjust ball size */
+  height: 600px;
   pointer-events: none; /* let mouse go through if you want */
 }
 

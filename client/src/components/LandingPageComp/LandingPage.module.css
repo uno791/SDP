@@ -71,7 +71,7 @@
   text-align: left;
   color: white;
   margin-top: -7rem; /* pulls subtext closer to FOOTBOOK */
-  margin-right: 1rem;
+  margin-right: 50rem;
   margin-left: -7rem;
 }
 
@@ -125,12 +125,13 @@
 }
 
 .heroBall {
-  position: absolute; /* float instead of flex item */
-  top: 50%;
-  left: 50%;
+  position: absolute;
+  top: 100%; /* vertically center in hero */
+  left: 34%; /* push left (default 50%, lower = further left) */
   transform: translate(-50%, -50%);
-  width: 300px;
-  height: 300px;
+  width: 300px; /* adjust as needed */
+  height: 300px; /* adjust as needed */
+  z-index: 5; /* keep it above the background but below text if needed */
 }
 
 /* Sections */

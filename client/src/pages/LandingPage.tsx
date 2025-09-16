@@ -180,7 +180,7 @@ export default function LandingPage() {
           </style>
           <h1 className={styles.heroTitle}>FOOTBOOK</h1>
           {/* Ball centered */}
-          <motion.div style={{ y: yFootball }}>
+          <motion.div style={{ y: yFootball }} className={styles.heroBall}>
             <ThreeFootball />
           </motion.div>
           <div className={styles.heroContent}>
