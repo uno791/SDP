@@ -1,4 +1,3 @@
-// ThreeFootball.tsx
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
@@ -9,6 +8,7 @@ import {
   Bounds,
   useGLTF,
 } from "@react-three/drei";
+import { motion, useScroll, useTransform } from "framer-motion";
 import * as THREE from "three";
 import styles from "./ThreeFootball.module.css";
 
@@ -122,13 +122,19 @@ function RotatingFootball({ url }: { url: string }) {
   );
 }
 
-/* Main exported football canvas */
 export default function ThreeFootball() {
   const modelUrl = "/jabulani.glb";
   useGLTF.preload?.(modelUrl);
 
+  // 👇 hook into scroll
+  const { scrollY } = useScroll();
+  // ball starts centered, then moves up as you scroll
+  const y = useTransform(scrollY, [0, 600], [0, -700]);
+
+  // you can tweak [-300] to control how high the ball “kicks up”
+
   return (
-    <div className={styles.wrapper}>
+    <motion.div className={styles.wrapper} style={{ y }}>
       <Canvas
         shadows
         dpr={[1, 2]}
@@ -164,6 +170,6 @@ export default function ThreeFootball() {
           <OrbitControls enablePan={false} enableZoom={false} />
         </Suspense>
       </Canvas>
-    </div>
+    </motion.div>
   );
 }
