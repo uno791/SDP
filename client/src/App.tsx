@@ -10,7 +10,7 @@ import ComicBook from "./components/LoginSignupComp/ComicBook/ComicBook";
 import MyMatches from "./pages/MatchPages/MyMatches";
 import CreateMatch from "./pages/MatchPages/CreateMatch";
 import LiveMatchUpdate from "./pages/MatchPages/LiveMatchUpdate";
-
+import LandingPage from "./pages/LandingPage";
 // import the new profile page
 import ProfilePage from "./pages/ProfilePage";
 import MatchViewer from "./pages/MatchViewer";
@@ -23,7 +23,8 @@ function App() {
           <Routes>
             {/* Routes inside Layout will have the NavBar */}
             <Route element={<Layout />}>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<LandingPage />} />
+              {/* <Route path="/" element={<Home />} /> */}
               <Route path="/house" element={<House />} />
               <Route path="/ball" element={<Ball />} />
               <Route path="/doodlehome" element={<DoodleHome />} />

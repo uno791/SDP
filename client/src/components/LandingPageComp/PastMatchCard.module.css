@@ -1,0 +1,23 @@
+.card {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.matchup {
+  font-weight: 600;
+}
+
+.date {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.score {
+  font-size: 1.25rem;
+  font-weight: 700;
+}

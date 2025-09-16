@@ -1,0 +1,57 @@
+.menu {
+  position: fixed;
+  top: 0;
+  right: -20rem;
+  z-index: 50;
+  height: 100%;
+  width: 20rem;
+  background: rgba(6, 78, 59, 0.95);
+  color: white;
+  padding: 1.5rem;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.3);
+  transition: right 0.3s ease;
+}
+
+.open {
+  right: 0;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.closeButton {
+  height: 2.25rem;
+  width: 2.25rem;
+  border-radius: 0.375rem;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.link {
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  transition: background 0.2s;
+}
+
+.link:hover {
+  background: rgba(5, 150, 105, 0.3);
+}
