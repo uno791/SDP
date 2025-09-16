@@ -3,7 +3,6 @@ import Header from "./components/HomePageComp/Header/Header";
 export function Layout() {
   return (
     <>
-      <Header />
       <Outlet />
       {}
     </>

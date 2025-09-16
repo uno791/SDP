@@ -1,0 +1,232 @@
+/* Base page */
+.page {
+  min-height: 90vh;
+  font-family: sans-serif;
+  background: linear-gradient(to bottom, #059669, #10b981, #059669);
+}
+
+/* Loader */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 78, 59, 0.8);
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Main wrapper */
+.main {
+  padding-top: 6rem; /* matches pt-24 */
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.5rem;
+  overflow: hidden;
+}
+
+.heroTitle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18vw;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 72rem;
+  width: 100%;
+}
+
+.heroText {
+  color: white;
+  width: 100%;
+}
+
+.heroHeading {
+  font-size: 2.25rem; /* 36px = text-4xl */
+  font-weight: 700;
+}
+
+.heroSub {
+  font-size: 1.125rem; /* text-lg */
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1.5rem;
+}
+
+.heroButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.primaryBtn {
+  padding: 0.75rem 1.25rem;
+  background: white;
+  color: #047857;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+.primaryBtn:hover {
+  transform: scale(1.02);
+}
+
+.secondaryBtn {
+  padding: 0.75rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 0.5rem;
+  transition: background 0.2s ease;
+}
+.secondaryBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.heroBall {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Sections */
+.sectionWhite {
+  padding: 4rem 1.5rem;
+  background: white;
+}
+
+.sectionGray {
+  padding: 4rem 1.5rem;
+  background: #f9fafb;
+}
+
+.sectionHeading {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.grid3 {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Ticker */
+.ticker {
+  background: #065f46;
+  color: white;
+  padding: 1.5rem 0;
+}
+
+/* Footer */
+.footer {
+  background: #065f46;
+  color: white;
+  padding: 2rem 0;
+}
+
+.footerInner {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.footerBrand {
+  font-weight: 700;
+}
+
+.footerNote {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ─────────────────────────────── Responsive Breakpoints ─────────────────────────────── */
+
+/* md: ≥768px */
+@media (min-width: 768px) {
+  .hero {
+    padding: 0 3rem; /* md:px-12 */
+  }
+
+  .heroTitle {
+    font-size: 14vw; /* md:text-[14vw] */
+  }
+
+  .heroHeading {
+    font-size: 3rem; /* md:text-5xl */
+  }
+
+  .heroSub {
+    font-size: 1.25rem; /* md:text-xl */
+  }
+
+  .grid3 {
+    grid-template-columns: repeat(2, 1fr); /* md:grid-cols-2 */
+  }
+}
+
+/* lg: ≥1024px */
+@media (min-width: 1024px) {
+  .heroTitle {
+    font-size: 12vw; /* lg:text-[12vw] */
+  }
+
+  .heroContent {
+    flex-direction: row; /* lg:flex-row */
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .heroText {
+    width: 50%; /* lg:w-1/2 */
+  }
+
+  .heroBall {
+    width: 50%; /* lg:w-1/2 */
+  }
+
+  .heroHeading {
+    font-size: 3rem; /* keep same, but tighter on lg screens */
+  }
+
+  .grid3 {
+    grid-template-columns: repeat(3, 1fr); /* lg:grid-cols-3 */
+  }
+
+  .footerInner {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
