@@ -75,7 +75,7 @@ function useSafeGLTF(url: string) {
   return gltf ?? { scene: null };
 }
 
-/* Rotating football with hover/click boost + wobble */
+/* Rotating football */
 function RotatingFootball({ url }: { url: string }) {
   const group = useRef<THREE.Group>(null);
   const [spinBoost, setSpinBoost] = useState(1);
@@ -122,16 +122,14 @@ function RotatingFootball({ url }: { url: string }) {
   );
 }
 
+/* Main exported football canvas */
 export default function ThreeFootball() {
   const modelUrl = "/jabulani.glb";
   useGLTF.preload?.(modelUrl);
 
-  // 👇 hook into scroll
+  // Parallax (gentle) — keep small so the ball stays in the hero area
   const { scrollY } = useScroll();
-  // ball starts centered, then moves up as you scroll
-  const y = useTransform(scrollY, [0, 600], [0, -700]);
-
-  // you can tweak [-300] to control how high the ball “kicks up”
+  const y = useTransform(scrollY, [0, 600], [0, -140]);
 
   return (
     <motion.div className={styles.wrapper} style={{ y }}>

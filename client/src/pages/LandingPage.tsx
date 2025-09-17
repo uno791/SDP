@@ -14,8 +14,6 @@ import PastMatchCard from "../components/LandingPageComp/PastMatchCard";
 import NewsCard from "../components/LandingPageComp/NewsCard";
 import MarqueeWide from "../components/LandingPageComp/MarqueeWide";
 import ThreeFootball from "../components/LandingPageComp/ThreeFootball";
-// import "@fontsource-variable/bricolage-grotesque";
-// import "@fontsource/inter";
 import styles from "../components/LandingPageComp/LandingPage.module.css";
 
 // ─────────────────────────────── FIXTURE DATA ───────────────────────────────
@@ -137,13 +135,21 @@ const newsItems = [
   },
 ];
 
-// ─────────────────────────────── MAIN PAGE ───────────────────────────────
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Fonts
+  const FontImports = () => (
+    <style>
+      {`@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&display=swap');`}
+    </style>
+  );
+
   const { scrollY } = useScroll();
-  const yFootball = useTransform(scrollY, [0, 600], [0, 100]);
+  // gentle parallax up for the ball (keep small so it stays in the hero)
+  const yFootball = useTransform(scrollY, [0, 600], [200, -120]);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1400);
@@ -152,8 +158,9 @@ export default function LandingPage() {
 
   return (
     <div className={styles.page}>
-      {/* Loader */}
+      <FontImports />
 
+      {/* Loader */}
       <AnimatePresence>
         {loading && (
           <motion.div
@@ -173,25 +180,13 @@ export default function LandingPage() {
       <main className={styles.main}>
         {/* HERO */}
         <section className={styles.hero}>
-          {/* Big FOOTBOOK heading */}
-          <style>
-            @import
-            url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Badeen+Display&display=swap');
-          </style>
           <h1 className={styles.heroTitle}>FOOTBOOK</h1>
-          {/* Ball centered */}
-          <motion.div style={{ y: yFootball }} className={styles.heroBall}>
-            <ThreeFootball />
-          </motion.div>
+
           <div className={styles.heroContent}>
             {/* Bottom-left tagline & buttons */}
-            <style>
-              @import
-              url('https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&display=swap');
-            </style>
             <div className={styles.heroOverlay}>
               <h2 className={styles.heroHeading}>
-                LIVE PREMIER LEAGUE ACTION - IN YOUR HANDS
+                LIVE PREMIER LEAGUE ACTION — IN YOUR HANDS
               </h2>
               <p className={styles.heroSub}>
                 REAL-TIME SCORES, FIXTURES, TABLES, AND NEWS
@@ -205,6 +200,11 @@ export default function LandingPage() {
                 </a>
               </div>
             </div>
+
+            {/* Ball (flex sibling; moved left & down via CSS; parallax via yFootball) */}
+            <motion.div style={{ y: yFootball }} className={styles.heroBall}>
+              <ThreeFootball />
+            </motion.div>
           </div>
         </section>
 

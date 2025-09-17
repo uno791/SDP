@@ -1,13 +1,16 @@
+/* Parent (.heroBall) handles layout; keep this simple */
 .wrapper {
-  position: absolute; /* float inside hero */
-  width: 600px; /* adjust ball size */
-  height: 600px;
-  pointer-events: none; /* let mouse go through if you want */
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
 }
 
 .canvas {
   width: 100%;
   height: 100%;
+  display: block;
 }
 
 .loader {
