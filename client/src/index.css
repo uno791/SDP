@@ -1,22 +1,43 @@
 /* Global reset & primitives */
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; margin: 0; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
 
 /* Use a neutral/beige page background so no blue edges show */
 body {
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: #f7f1e5;           /* was dark blue */
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    sans-serif;
+  background: #f7f1e5; /* was dark blue */
   color: #0c2a47;
   min-height: 100vh;
   display: flex;
-  flex-direction: column;         /* allows footer to sit after main content */
+  flex-direction: column; /* allows footer to sit after main content */
 }
 
 /* Make the app fill available height */
-#root { display: contents; }      /* lets App be the layout root without extra wrappers */
+#root {
+  display: contents;
+} /* lets App be the layout root without extra wrappers */
 
 /* Headings */
-h1, h2, h3, h4 { color: #0c2a47; }
+h1,
+h2,
+h3,
+h4 {
+  color: #0c2a47;
+}
 
 /* Remove the old rule that forced main’s beige (body now owns it) */
-main { background: transparent; }
+main {
+  background: transparent;
+}
