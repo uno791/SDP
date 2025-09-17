@@ -1,25 +1,59 @@
+/* Card container */
 .wrapper {
-  overflow-x: auto;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden; /* keep rounded corners */
 }
 
+/* How tall each row is (controls the 5-row window) */
+:root { --row-h: 56px; }
+
+/* Table base */
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;              /* keeps header/body columns in sync */
+  color: #0f2946;
+  font-size: 0.95rem;
 }
 
-.table thead {
-  background: #065f46;
-  color: white;
+/* Header area (its own table) */
+.headWrap thead {
+  background: #0e5a4c;
+  color: #fff;
 }
-
 .table th,
 .table td {
-  padding: 0.75rem;
+  padding: 12px 16px;
   text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.table th:nth-child(n + 3),
+.table td:nth-child(n + 3) {
+  text-align: right;                /* numeric columns right-aligned */
 }
 
-.table tr:nth-child(even) {
+/* Scrollable body area (its own table) */
+.bodyWrap {
+  max-height: calc(var(--row-h) * 5);  /* show exactly 5 rows */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Row styling */
+.bodyWrap tbody tr {
+  height: var(--row-h);
+  border-bottom: 1px solid #eef2f7;
+}
+.bodyWrap tbody tr:nth-child(even) {
   background: #f9fafb;
+}
+
+/* Small screens: slightly tighter rows (optional) */
+@media (max-width: 640px) {
+  :root { --row-h: 52px; }
+  .table th, .table td { padding: 10px 12px; }
 }
