@@ -191,11 +191,8 @@ export default function LandingPage() {
 
         {/* PAST MATCHES (your static examples) */}
         <section id="past" className={styles.sectionGray}>
-          <h3 className={styles.sectionHeading}>Past Matches</h3>
           <div className={styles.stack}>
-            {pastMatches.map((m, i) => (
-              <PastMatchCard key={i} {...m} />
-            ))}
+            <PastMatchCard />
           </div>
         </section>
 
