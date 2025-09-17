@@ -284,6 +284,7 @@ router.post("/matches", async (req, res) => {
       venue_city,
       venue_country,
       created_by, // <-- NEW
+      notes_json,
     } = req.body || {};
 
     if (!league_code || !utc_kickoff) {
@@ -320,6 +321,7 @@ router.post("/matches", async (req, res) => {
         away_score: away_score ?? null,
         venue_id: venId,
         created_by: created_by ?? null, // <-- store user who created it
+        notes_json: notes_json ?? null,
       })
       .select("*")
       .single();

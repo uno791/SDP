@@ -210,7 +210,10 @@ const MatchForm = ({ onCancel }: Props) => {
 
     try {
       const base = API_BASE || "http://localhost:3000";
-      const utc_kickoff = new Date(`${date}T${time}:00Z`).toISOString();
+
+      // ✅ FIX: don’t append "Z"
+      const kickoffLocal = new Date(`${date}T${time}:00`);
+      const utc_kickoff = kickoffLocal.toISOString();
 
       const payload = {
         league_code: "custom.user",

@@ -16,13 +16,22 @@ type Match = {
   status: string;
   utc_kickoff: string;
   minute?: number | null;
+  notes_json?: {
+    duration?: string | number;
+    privacy?: string;
+    invitedUsers?: string[];
+    lineupTeam1?: string[];
+    lineupTeam2?: string[];
+  };
 };
 
 const MyMatches = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const [matches, setMatches] = useState<Match[]>([]);
+  const [now, setNow] = useState(new Date());
 
+  // Fetch matches from backend
   useEffect(() => {
     if (!user?.id) return;
 
@@ -36,34 +45,53 @@ const MyMatches = () => {
       });
   }, [user?.id]);
 
-  const now = new Date();
+  // Update "now" every 30s → keeps timers live
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
-  // Categorize matches
-  const liveMatches = matches.filter((m) => m.status === "in_progress");
-  const upcomingMatches = matches.filter(
-    (m) =>
-      m.status === "scheduled" &&
-      new Date(m.utc_kickoff).getTime() > now.getTime()
-  );
-  const pastMatches = matches.filter(
-    (m) =>
-      m.status === "final" ||
-      (m.status === "scheduled" &&
-        new Date(m.utc_kickoff).getTime() <= now.getTime())
-  );
+  // --- Categorize Matches ---
+  const liveMatches = matches.filter((m) => {
+    const kickoff = new Date(m.utc_kickoff).getTime();
+    const duration = Number(m.notes_json?.duration ?? 90);
+    const end = kickoff + duration * 60000;
+    return now.getTime() >= kickoff && now.getTime() < end;
+  });
 
-  // Transform for MatchList (MatchList expects team1/team2/score/etc.)
-  // Transform for MatchList (MatchList expects team1/team2/score/etc.)
+  const upcomingMatches = matches.filter((m) => {
+    const kickoff = new Date(m.utc_kickoff).getTime();
+    return now.getTime() < kickoff;
+  });
+
+  const pastMatches = matches.filter((m) => {
+    const kickoff = new Date(m.utc_kickoff).getTime();
+    const duration = Number(m.notes_json?.duration ?? 90);
+    const end = kickoff + duration * 60000;
+    return now.getTime() >= end;
+  });
+
+  // --- Transform for MatchList ---
   const transform = (m: Match) => {
-    let status: "live" | "upcoming" | "finished";
+    const kickoff = new Date(m.utc_kickoff).getTime();
+    const duration = Number(m.notes_json?.duration ?? 90);
+    const end = kickoff + duration * 60000;
 
-    if (m.status === "in_progress") {
-      status = "live";
-    } else if (m.status === "scheduled" && new Date(m.utc_kickoff) > now) {
+    let status: "live" | "upcoming" | "finished";
+    if (now.getTime() < kickoff) {
       status = "upcoming";
+    } else if (now.getTime() >= kickoff && now.getTime() < end) {
+      status = "live";
     } else {
       status = "finished";
     }
+
+    const minute =
+      status === "live"
+        ? Math.min(Math.floor((now.getTime() - kickoff) / 60000), duration)
+        : undefined;
 
     return {
       id: m.id,
@@ -73,8 +101,8 @@ const MyMatches = () => {
         m.home_score != null && m.away_score != null
           ? `${m.home_score} - ${m.away_score}`
           : "",
-      status, // ✅ now correctly typed
-      minute: m.minute ?? undefined,
+      status,
+      minute,
       date: new Date(m.utc_kickoff).toLocaleString(),
     };
   };
