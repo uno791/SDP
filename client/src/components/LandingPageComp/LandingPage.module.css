@@ -253,3 +253,42 @@
     align-items: center;
   }
 }
+/* ───────── Small devices (iPhone SE / iPhone 12) ───────── */
+@media (max-width: 480px) {
+  .heroTitle {
+    font-size: 12vw; /* scale neatly to viewport width */
+    text-align: center; /* center on small screens */
+    padding: 0 0.5rem; /* little breathing room */
+    display: block;
+    font-size: clamp(2.5rem, 12vw, 12rem); /* scale with screen size */
+    font-weight: 800;
+    font-family: "Alfa Slab One", serif;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 0.9;
+    text-align: center;
+    margin: 1rem 0 0 0;
+
+    transform: none; /* remove scaleX/scaleY */
+    transform-origin: center top;
+    pointer-events: none;
+    user-select: none;
+
+    word-break: break-word; /* ensures no overflow */
+    overflow-wrap: break-word;
+  }
+
+  .heroOverlay {
+    max-width: 100% !important; /* full width for text */
+    padding-left: 0.75rem; /* small gutter so it doesn’t touch edge */
+  }
+
+  .heroBall {
+    position: relative; /* inline flow on small screens */
+    margin: 2rem auto 0 auto; /* center horizontally */
+    width: 200px;
+    height: 200px;
+    bottom: 0; /* remove absolute offsets */
+    left: auto;
+    transform: none; /* reset transforms */
+  }
+}
