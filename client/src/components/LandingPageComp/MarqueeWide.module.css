@@ -1,0 +1,26 @@
+.wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 18s linear infinite;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.item {
+  margin: 0 1.5rem;
+  opacity: 0.9;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

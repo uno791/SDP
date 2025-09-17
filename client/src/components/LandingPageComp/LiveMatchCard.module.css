@@ -1,0 +1,165 @@
+/* ===== Theming (tweak these if you want) ===== */
+:root {
+  --card-bg: #6f8a80;       /* muted green/teal like your screenshot */
+  --card-fg: #f3f7f5;       /* main text on card */
+  --card-fg-soft: #e6efec;  /* softer text */
+  --card-border: rgba(0,0,0,.08);
+  --shadow: 0 6px 24px rgba(0,0,0,.12);
+
+  --accent: #ffb020;        /* FT amber */
+  --bar-track: rgba(255,255,255,.28);
+  --bar-fill: rgba(255,255,255,.92);
+
+  --pill-bg: rgba(255,255,255,.15);
+  --pill-border: rgba(255,255,255,.35);
+
+  --cta-border: rgba(255,255,255,.8);
+  --cta-fg: #ffffff;
+  --cta-hover: rgba(255,255,255,.1);
+}
+
+/* Card shell — clickable */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  outline: none;
+  color: var(--card-fg);
+}
+.card:focus-visible { box-shadow: 0 0 0 3px rgba(255,255,255,.35); }
+
+/* Header: Home | Score/FT | Away  */
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Team row (no overlap, truncate) */
+.team {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-weight: 700;
+  color: var(--card-fg);
+}
+.teamRight { justify-content: flex-end; }
+.teamName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.logo {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 6px;
+  object-fit: contain;
+  background: rgba(255,255,255,.35);
+}
+
+/* Center stack (score, FT, chevron) */
+.center { display: flex; flex-direction: column; align-items: center; }
+.score {
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color: var(--card-fg);
+  text-align: center;
+}
+.ft { margin-top: 4px; color: var(--accent); font-weight: 800; user-select: none; }
+.chev {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--card-fg-soft);
+  opacity: .85;
+  transition: transform 200ms ease, opacity 150ms ease;
+}
+.open .chev { transform: rotate(180deg); opacity: 1; }
+
+/* Divider (shown when open) */
+.rule { margin: 12px 0; border: 0; border-top: 2px dashed rgba(255,255,255,.35); }
+
+/* Collapse with smooth height transition */
+.collapse {
+  overflow: hidden;
+  transition: grid-template-rows 240ms ease, opacity 200ms ease;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+.openCollapse { grid-template-rows: 1fr; opacity: 1; }
+.collapseInner { min-height: 0; }
+
+/* Stat rows */
+.statLabel {
+  grid-column: 1 / span 3;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--card-fg);
+  margin-bottom: 2px;
+}
+.statRow {
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 8px;
+  font-weight: 800;
+  color: var(--card-fg);
+}
+.bar {
+  height: 10px;
+  background: var(--bar-track);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.barInner { height: 100%; background: var(--bar-fill); }
+
+/* Scorers */
+.scorersTitle {
+  margin-top: 10px;
+  font-weight: 800;
+  color: var(--card-fg);
+  font-size: 20px;
+}
+.scorers {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--pill-bg);
+  color: var(--card-fg);
+  font-weight: 700;
+  border: 1px solid var(--pill-border);
+}
+
+/* CTA */
+.ctaWrap { display: flex; justify-content: flex-end; margin-top: 12px; }
+.cta {
+  border: 2px solid var(--cta-border);
+  color: var(--cta-fg);
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  background: transparent;
+}
+.cta:hover { background: var(--cta-hover); }
+
+/* Grid wrapper (multi-cards) */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; }
+
+/* Loading / error */
+.state { padding: 12px 8px; color: #0f172a; } /* page text outside cards */
+.error { color: #b00020; }
