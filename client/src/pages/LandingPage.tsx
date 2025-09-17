@@ -110,9 +110,18 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Fonts
+  const FontImports = () => (
+    <style>
+      {`@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&display=swap');`}
+    </style>
+  );
+
   // Small parallax on the 3D ball
   const { scrollY } = useScroll();
-  const yFootball = useTransform(scrollY, [0, 600], [0, -120]);
+  // gentle parallax up for the ball (keep small so it stays in the hero)
+  const yFootball = useTransform(scrollY, [0, 600], [200, -120]);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1400);
@@ -121,6 +130,8 @@ export default function LandingPage() {
 
   return (
     <div className={styles.page}>
+      <FontImports />
+
       {/* Google Fonts imports */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
@@ -150,7 +161,8 @@ export default function LandingPage() {
           <h1 className={styles.heroTitle}>FOOTBOOK</h1>
 
           <div className={styles.heroContent}>
-            {/* Bottom-left tagline & CTAs */}
+            {/* Bottom-left tagline & buttons */}
+
             <div className={styles.heroOverlay}>
               <h2 className={styles.heroHeading}>
                 LIVE PREMIER LEAGUE ACTION — IN YOUR HANDS
@@ -168,7 +180,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* 3D Ball (hidden on mobile via CSS) */}
+            {/* Ball (flex sibling; moved left & down via CSS; parallax via yFootball) */}
             <motion.div style={{ y: yFootball }} className={styles.heroBall}>
               <ThreeFootball />
             </motion.div>
