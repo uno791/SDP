@@ -10,6 +10,7 @@ const CreateMatch = () => {
       <h2 className={styles.header}>FILL IN MATCH FORM OR</h2>
       <button className={styles.uploadCsv}>UPLOAD AS A CSV</button>
 
+      {/* ✅ Only pass onCancel now */}
       <MatchForm onCancel={() => navigate("/my-matches")} />
     </div>
   );
