@@ -242,7 +242,7 @@ const MatchForm = ({ onCancel }: Props) => {
         throw new Error(err.error || "Failed to create match");
       }
 
-      navigate("/my-matches");
+      navigate("/mymatches");
     } catch (err) {
       console.error("❌ Failed to create match", err);
       alert("Failed to create match, see console for details.");
