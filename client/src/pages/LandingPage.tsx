@@ -122,7 +122,6 @@ export default function LandingPage() {
   const { scrollY } = useScroll();
   // gentle parallax up for the ball (keep small so it stays in the hero)
   const yFootball = useTransform(scrollY, [0, 600], [200, -120]);
-  const yFootball = useTransform(scrollY, [0, 600], [0, -120]);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1400);
@@ -163,7 +162,7 @@ export default function LandingPage() {
 
           <div className={styles.heroContent}>
             {/* Bottom-left tagline & buttons */}
-            {/* Bottom-left tagline & CTAs */}
+
             <div className={styles.heroOverlay}>
               <h2 className={styles.heroHeading}>
                 LIVE PREMIER LEAGUE ACTION — IN YOUR HANDS LIVE PREMIER LEAGUE
@@ -183,11 +182,6 @@ export default function LandingPage() {
             </div>
 
             {/* Ball (flex sibling; moved left & down via CSS; parallax via yFootball) */}
-            <motion.div style={{ y: yFootball }} className={styles.heroBall}>
-              <ThreeFootball />
-            </motion.div>
-
-            {/* 3D Ball (hidden on mobile via CSS) */}
             <motion.div style={{ y: yFootball }} className={styles.heroBall}>
               <ThreeFootball />
             </motion.div>
