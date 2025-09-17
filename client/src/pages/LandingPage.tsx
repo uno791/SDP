@@ -165,8 +165,7 @@ export default function LandingPage() {
 
             <div className={styles.heroOverlay}>
               <h2 className={styles.heroHeading}>
-                LIVE PREMIER LEAGUE ACTION — IN YOUR HANDS LIVE PREMIER LEAGUE
-                ACTION — IN YOUR HANDS
+                LIVE PREMIER LEAGUE ACTION — IN YOUR HANDS
               </h2>
               <p className={styles.heroSub}>
                 REAL-TIME SCORES, FIXTURES, TABLES, AND NEWS
