@@ -24,9 +24,8 @@ function App() {
             {/* Routes inside Layout will have the NavBar */}
             <Route element={<Layout />}>
               <Route path="/" element={<LandingPage />} />
-              {/* <Route path="/" element={<Home />} /> */}
-              <Route path="/house" element={<House />} />
-              <Route path="/ball" element={<Ball />} />
+              <Route path="/home" element={<Home />} />
+
               <Route path="/doodlehome" element={<DoodleHome />} />
               <Route path="/signuppage" element={<ComicBook />} />
               <Route path="/loginpage" element={<ComicBook />} />

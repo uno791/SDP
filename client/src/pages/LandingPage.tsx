@@ -15,6 +15,7 @@ import NewsCard from "../components/LandingPageComp/NewsCard";
 import MarqueeWide from "../components/LandingPageComp/MarqueeWide";
 import ThreeFootball from "../components/LandingPageComp/ThreeFootball";
 import styles from "../components/LandingPageComp/LandingPage.module.css";
+import Loader3D from "../components/LandingPageComp/Layout/Loader3D";
 
 /* ------------------------------ DATA ------------------------------ */
 const TEAM_NAMES = [
@@ -139,17 +140,8 @@ export default function LandingPage() {
       `}</style>
 
       {/* Loader */}
-      <AnimatePresence>
-        {loading && (
-          <motion.div
-            className={styles.loader}
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            FootBook — loading live data…
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+      <AnimatePresence>{loading && <Loader3D />}</AnimatePresence>
 
       {/* Header & Menu */}
       <Header onOpenMenu={() => setMenuOpen(true)} />

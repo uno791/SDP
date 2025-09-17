@@ -5,10 +5,11 @@ import { X } from "lucide-react";
 type Section = { id: string; label: string };
 
 const SECTIONS: Section[] = [
-  { id: "live", label: "Live Games" },
-  { id: "past", label: "Past Games" },
-  { id: "table", label: "League Table" },
-  { id: "news", label: "News" },
+  { id: "home", label: "Old Home" },
+  { id: "", label: "Home" },
+  { id: "favourite", label: "Favourite Teams" },
+  { id: "profile", label: "Profile" },
+  { id: "mymatches", label: "User Matches" },
 ];
 
 type BurgerMenuProps = {
@@ -29,7 +30,7 @@ export default function BurgerMenu({ open, onClose }: BurgerMenuProps) {
         {SECTIONS.map((s) => (
           <a
             key={s.id}
-            href={`#${s.id}`}
+            href={`/${s.id}`}
             onClick={onClose}
             className={styles.link}
           >
