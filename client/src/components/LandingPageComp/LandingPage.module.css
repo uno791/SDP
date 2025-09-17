@@ -127,7 +127,7 @@
 .heroBall {
   position: absolute;
   top: 100%; /* vertically center in hero */
-  left: 34%; /* push left (default 50%, lower = further left) */
+  left: 32%; /* push left (default 50%, lower = further left) */
   transform: translate(-50%, -50%);
   width: 300px; /* adjust as needed */
   height: 300px; /* adjust as needed */
