@@ -1,8 +1,8 @@
-// client/src/components/LandingPageComp/LiveUserMatches.tsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { baseURL } from "../../config";
-import MatchList from "../MatchPageComp/MatchList";
+import LiveMatchTimeline from "./LiveMatchTimeline";
+import styles from "./LiveUserMatches.module.css";
 
 type Match = {
   id: number;
@@ -13,14 +13,13 @@ type Match = {
   status: string;
   utc_kickoff: string;
   minute?: number | null;
-  notes_json?: {
-    duration?: string | number;
-  };
+  notes_json?: { duration?: string | number };
 };
 
 export default function LiveUserMatches() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [now, setNow] = useState(new Date());
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
     axios
@@ -29,13 +28,11 @@ export default function LiveUserMatches() {
       .catch((err) => console.error("Failed to fetch matches:", err));
   }, []);
 
-  // Update "now" every 30s
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Filter only LIVE matches
   const liveMatches = matches.filter((m) => {
     if (m.status === "final") return false;
     const kickoff = new Date(m.utc_kickoff).getTime();
@@ -44,48 +41,51 @@ export default function LiveUserMatches() {
     return now.getTime() >= kickoff && now.getTime() < end;
   });
 
-  const transform = (m: Match) => {
-    const kickoff = new Date(m.utc_kickoff).getTime();
-    const duration = Number(m.notes_json?.duration ?? 90);
-    const end = kickoff + duration * 60000;
-
-    let status: "live" | "upcoming" | "finished";
-    if (m.status === "final" || now.getTime() >= end) {
-      status = "finished";
-    } else if (now.getTime() < kickoff) {
-      status = "upcoming";
-    } else {
-      status = "live";
-    }
-
-    const minute =
-      status === "live"
-        ? Math.min(Math.floor((now.getTime() - kickoff) / 60000), duration)
-        : undefined;
-
-    return {
-      id: m.id,
-      team1: m.home_team?.name || "TBD",
-      team2: m.away_team?.name || "TBD",
-      score:
-        m.home_score != null && m.away_score != null
-          ? `${m.home_score} - ${m.away_score}`
-          : "",
-      status,
-      minute,
-      date: new Date(m.utc_kickoff).toLocaleString(),
-    };
-  };
-
-  if (liveMatches.length === 0) {
-    return <p>No live matches right now.</p>;
-  }
-
   return (
-    <MatchList
-      title="Live User Matches"
-      matches={liveMatches.map(transform)}
-      onSeeMore={(id) => (window.location.href = `/live/${id}`)}
-    />
+    <div className={styles.container}>
+      <h3 className={styles.heading}>Live User Matches</h3>
+      {liveMatches.map((m) => {
+        const kickoff = new Date(m.utc_kickoff).getTime();
+        const duration = Number(m.notes_json?.duration ?? 90);
+        const end = kickoff + duration * 60000;
+        const isLive = now.getTime() >= kickoff && now.getTime() < end;
+        const minute = isLive
+          ? Math.min(Math.floor((now.getTime() - kickoff) / 60000), duration)
+          : undefined;
+
+        return (
+          <div key={m.id} className={styles.card}>
+            <div
+              className={styles.summary}
+              onClick={() =>
+                setExpandedId((prev) => (prev === m.id ? null : m.id))
+              }
+            >
+              <span className={styles.team}>{m.home_team?.name ?? "TBD"}</span>
+
+              <span className={styles.score}>
+                {m.home_score ?? 0} - {m.away_score ?? 0}
+              </span>
+
+              <span className={styles.team}>{m.away_team?.name ?? "TBD"}</span>
+
+              <span className={styles.status}>
+                {isLive ? `${minute ?? 0}'` : "FT"}
+              </span>
+
+              <span className={styles.arrow}>
+                {expandedId === m.id ? "▲" : "▼"}
+              </span>
+            </div>
+
+            {expandedId === m.id && (
+              <div className={styles.timelineBox}>
+                <LiveMatchTimeline matchId={m.id} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }

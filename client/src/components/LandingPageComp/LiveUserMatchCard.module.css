@@ -1,0 +1,65 @@
+.card {
+  background-color: #5e7a6b; /* green/gray background */
+  color: white;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.team {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+}
+
+.score {
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+.status {
+  margin-left: 8px;
+  color: orange;
+  font-weight: bold;
+}
+
+.arrow {
+  margin-left: 8px;
+}
+
+.timelineBox {
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  padding-top: 8px;
+}
+
+.timelineHeader {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.timeline li {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.noEvents {
+  font-size: 13px;
+  color: #ddd;
+}
