@@ -17,6 +17,8 @@ import ThreeFootball from "../components/LandingPageComp/ThreeFootball";
 import styles from "../components/LandingPageComp/LandingPage.module.css";
 import Loader3D from "../components/LandingPageComp/Layout/Loader3D";
 import PremierLeagueTable from "../components/LandingPageComp/PremierLeagueTable";
+import LiveUserMatches from "../components/LandingPageComp/LiveUserMatches";
+
 /* ------------------------------ DATA ------------------------------ */
 const TEAM_NAMES = [
   "Arsenal",
@@ -191,6 +193,12 @@ export default function LandingPage() {
           <h3 className={styles.sectionHeading}>Live Matches</h3>
           {/* LiveMatchCard already fetches and renders a full grid with fallback & dedupe */}
           <LiveMatchCard />
+        </section>
+
+        {/* USER LIVE MATCHES */}
+        <section id="user-live" className={styles.sectionGray}>
+          <h3 className={styles.sectionHeading}>User Created Live Matches</h3>
+          <LiveUserMatches />
         </section>
 
         {/* PAST MATCHES (your static examples) */}

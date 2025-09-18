@@ -39,6 +39,12 @@ const LiveMatchUpdate = () => {
   const [loading, setLoading] = useState(true);
   const [liveMinute, setLiveMinute] = useState<number | null>(null);
 
+  // Pause/Resume state
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Real-time clock
+  const [now, setNow] = useState(new Date());
+
   // Form state for adding events
   const [eventType, setEventType] = useState("");
   const [teamId, setTeamId] = useState<number | "">("");
@@ -54,7 +60,12 @@ const LiveMatchUpdate = () => {
     try {
       const res = await axios.get(`${baseURL}/matches/${id}`);
       setMatch(res.data.match);
-      setLiveMinute(res.data.match.minute ?? null);
+
+      // ✅ Only update liveMinute if not paused
+      if (!isPaused) {
+        setLiveMinute(res.data.match.minute ?? null);
+      }
+
       console.log(
         `♻️ Refetched at ${new Date().toLocaleTimeString()}`,
         res.data.match
@@ -73,11 +84,11 @@ const LiveMatchUpdate = () => {
 
     const interval = setInterval(fetchMatch, 10000);
     return () => clearInterval(interval);
-  }, [id]);
+  }, [id, isPaused]); // depends on pause state
 
-  // Live ticking clock
+  // Live ticking clock (pause-aware)
   useEffect(() => {
-    if (!match) return;
+    if (!match || isPaused) return;
 
     if (match.status === "in_progress" && liveMinute != null) {
       const interval = setInterval(() => {
@@ -85,7 +96,13 @@ const LiveMatchUpdate = () => {
       }, 60000);
       return () => clearInterval(interval);
     }
-  }, [match, liveMinute]);
+  }, [match, liveMinute, isPaused]);
+
+  // Real-time clock updater
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   const handleAddEvent = async () => {
     if (!eventType || !teamId || !player) {
@@ -175,6 +192,9 @@ const LiveMatchUpdate = () => {
 
       <p className={styles.username}>{user?.username ?? "Guest"}</p>
 
+      {/* ✅ Real-time clock */}
+      <p className={styles.clock}>Current Time: {now.toLocaleTimeString()}</p>
+
       <div className={styles.scoreBox}>
         <div className={styles.team}>{match.home_team?.name ?? "Team A"}</div>
         <div className={styles.score}>
@@ -187,6 +207,22 @@ const LiveMatchUpdate = () => {
       </div>
 
       <div className={styles.actions}>
+        <button
+          className={styles.pause}
+          onClick={() => setIsPaused(true)}
+          disabled={isPaused}
+        >
+          PAUSE
+        </button>
+
+        <button
+          className={styles.resume}
+          onClick={() => setIsPaused(false)}
+          disabled={!isPaused}
+        >
+          RESUME
+        </button>
+
         <select
           value={extraMinutes}
           onChange={(e) => setExtraMinutes(Number(e.target.value))}
