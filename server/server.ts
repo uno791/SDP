@@ -4,8 +4,6 @@ import type { Request, Response } from "express";
 import cors from "cors";
 import "dotenv/config";
 
-
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 const router = express.Router();
@@ -240,7 +238,6 @@ const allowedEventTypes = new Set([
   "injury",
 ]);
 
-
 /* =========================================
    MATCH MANAGEMENT API (NEW)
    - Create matches (scheduled or completed)
@@ -325,8 +322,8 @@ router.post("/matches", async (req, res) => {
         attendance: attendance ?? null,
         home_team_id: homeId,
         away_team_id: awayId,
-        home_score: home_score ?? null,
-        away_score: away_score ?? null,
+        home_score: home_score ?? 0,
+        away_score: away_score ?? 0,
         venue_id: venId,
         created_by: created_by ?? null, // <-- store user who created it
         notes_json: notes_json ?? null,
@@ -552,8 +549,6 @@ router.get("/matches/:id", async (req, res) => {
   }
 });
 
-
-
 /**
  * GET /matches/:id
  * Returns match with team/venue names and events.
@@ -656,7 +651,9 @@ router.post("/matches/:id/events", async (req, res) => {
     if (!event_type || !allowedEventTypes.has(event_type)) {
       console.error("❌ Invalid event_type received:", event_type);
       return res.status(400).json({
-        error: `event_type must be one of: ${Array.from(allowedEventTypes).join(", ")}`,
+        error: `event_type must be one of: ${Array.from(allowedEventTypes).join(
+          ", "
+        )}`,
       });
     }
 
@@ -727,7 +724,6 @@ router.post("/matches/:id/events", async (req, res) => {
     return res.status(500).json({ error: e.message });
   }
 });
-
 
 /*router.post("/matches/:id/events", async (req, res) => {
   try {
@@ -835,7 +831,6 @@ router.patch("/matches/:id/extend", async (req, res) => {
   }
 });
 
-
 /**
  * DELETE /matches/:id/events/:eventId
  * Removes a specific event from the match timeline.
@@ -907,9 +902,15 @@ router.delete("/matches/:id/events/:eventId", async (req, res) => {
           .eq("id", matchId);
 
         if (updateErr) {
-          console.error("❌ Failed to update score after delete:", updateErr.message);
+          console.error(
+            "❌ Failed to update score after delete:",
+            updateErr.message
+          );
         } else {
-          console.log("✅ Score adjusted after delete:", { home_score, away_score });
+          console.log("✅ Score adjusted after delete:", {
+            home_score,
+            away_score,
+          });
         }
       }
     }
@@ -920,7 +921,6 @@ router.delete("/matches/:id/events/:eventId", async (req, res) => {
     return res.status(500).json({ error: e.message });
   }
 });
-
 
 /**
  * DELETE /matches/:id/events/:eventId

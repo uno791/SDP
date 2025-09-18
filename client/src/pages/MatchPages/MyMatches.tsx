@@ -13,7 +13,7 @@ type Match = {
   away_team?: { id: number; name: string } | null;
   home_score?: number | null;
   away_score?: number | null;
-  status: string;
+  status: string; // "scheduled" | "in_progress" | "final"
   utc_kickoff: string;
   minute?: number | null;
   notes_json?: {
@@ -53,8 +53,9 @@ const MyMatches = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // --- Categorize Matches ---
+  // --- Categorize Matches (hybrid: backend + time-based) ---
   const liveMatches = matches.filter((m) => {
+    if (m.status === "final") return false; // finals go to past
     const kickoff = new Date(m.utc_kickoff).getTime();
     const duration = Number(m.notes_json?.duration ?? 90);
     const end = kickoff + duration * 60000;
@@ -62,11 +63,13 @@ const MyMatches = () => {
   });
 
   const upcomingMatches = matches.filter((m) => {
+    if (m.status === "final") return false; // finals go to past
     const kickoff = new Date(m.utc_kickoff).getTime();
     return now.getTime() < kickoff;
   });
 
   const pastMatches = matches.filter((m) => {
+    if (m.status === "final") return true; // trust backend if marked final
     const kickoff = new Date(m.utc_kickoff).getTime();
     const duration = Number(m.notes_json?.duration ?? 90);
     const end = kickoff + duration * 60000;
@@ -80,12 +83,12 @@ const MyMatches = () => {
     const end = kickoff + duration * 60000;
 
     let status: "live" | "upcoming" | "finished";
-    if (now.getTime() < kickoff) {
-      status = "upcoming";
-    } else if (now.getTime() >= kickoff && now.getTime() < end) {
-      status = "live";
-    } else {
+    if (m.status === "final" || now.getTime() >= end) {
       status = "finished";
+    } else if (now.getTime() < kickoff) {
+      status = "upcoming";
+    } else {
+      status = "live";
     }
 
     const minute =
