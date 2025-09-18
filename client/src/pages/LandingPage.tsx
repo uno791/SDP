@@ -209,11 +209,7 @@ export default function LandingPage() {
         {/* NEWS */}
         <section id="news" className={styles.sectionGray}>
           <h3 className={styles.sectionHeading}>Latest News</h3>
-          <div className={styles.grid3}>
-            {newsItems.map((n, i) => (
-              <NewsCard key={i} {...n} />
-            ))}
-          </div>
+          <NewsCard />
         </section>
 
         {/* FOOTER */}
