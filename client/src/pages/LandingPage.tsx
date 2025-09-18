@@ -16,7 +16,7 @@ import MarqueeWide from "../components/LandingPageComp/MarqueeWide";
 import ThreeFootball from "../components/LandingPageComp/ThreeFootball";
 import styles from "../components/LandingPageComp/LandingPage.module.css";
 import Loader3D from "../components/LandingPageComp/Layout/Loader3D";
-
+import PremierLeagueTable from "../components/LandingPageComp/PremierLeagueTable";
 /* ------------------------------ DATA ------------------------------ */
 const TEAM_NAMES = [
   "Arsenal",
@@ -203,17 +203,13 @@ export default function LandingPage() {
         {/* LEAGUE TABLE */}
         <section id="table" className={styles.sectionWhite}>
           <h3 className={styles.sectionHeading}>League Table</h3>
-          <LeagueTable data={leagueTable} />
+          <PremierLeagueTable />
         </section>
 
         {/* NEWS */}
         <section id="news" className={styles.sectionGray}>
           <h3 className={styles.sectionHeading}>Latest News</h3>
-          <div className={styles.grid3}>
-            {newsItems.map((n, i) => (
-              <NewsCard key={i} {...n} />
-            ))}
-          </div>
+          <NewsCard />
         </section>
 
         {/* FOOTER */}

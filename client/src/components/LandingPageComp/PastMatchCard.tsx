@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./PastMatchCard.module.css";
 
-/* Adjust path if your espn API file sits elsewhere */
 import {
   fetchScoreboard,
   extractStatsFromScoreboardEvent,
@@ -10,18 +9,58 @@ import {
 
 type Event = ScoreboardResponse["events"][number];
 
-/* ==================== Strict local date helpers (fixes 2001 bugs) ==================== */
+/* ─────────────────────────  SAST helpers  ───────────────────────── */
+const SAST_TZ = "Africa/Johannesburg";
+
+/** YYYY-MM-DD in SAST (no time) */
+function ymdInSAST(d: Date): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: SAST_TZ }).format(d);
+}
+
+/** “Sunday 14 September” */
+function formatDateSAST(d: Date) {
+  return d.toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    timeZone: SAST_TZ,
+  });
+}
+
+/** “Sun, 14 Sep” */
+function formatShortDateSAST(d: Date): string {
+  return d.toLocaleDateString(undefined, {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    timeZone: SAST_TZ,
+  });
+}
+
+/** 24-hour time in SAST, e.g. “14:30” */
+function formatTimeSAST(d: Date): string {
+  return d.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: SAST_TZ,
+  });
+}
+
+/** “Sunday, 14 September, 14:30” (no timezone string) */
+function formatDateTimeSAST(d: Date): string {
+  return `${formatDateSAST(d)}, ${formatTimeSAST(d)}`;
+}
+
+/* Local day math (we display & navigate by SA calendar days) */
 function formatYMD(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  return ymdInSAST(d);
 }
 function dateFromYMD(ymd: string): Date {
   const [y, m, d] = ymd.split("-").map(Number);
   const dt = new Date();
   dt.setFullYear(y, (m || 1) - 1, d || 1);
-  dt.setHours(12, 0, 0, 0); // local noon prevents TZ rollovers
+  dt.setHours(12, 0, 0, 0); // midday to avoid DST edges; display will force SAST
   return dt;
 }
 function addDaysLocal(ymd: string, delta: number): string {
@@ -30,23 +69,24 @@ function addDaysLocal(ymd: string, delta: number): string {
   return formatYMD(dt);
 }
 function labelLong(ymd: string) {
-  const dt = dateFromYMD(ymd);
-  return dt.toLocaleDateString(undefined, {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-  });
+  return formatDateSAST(dateFromYMD(ymd));
 }
 
-/* ==================== Utilities ==================== */
+/* ───────────── Utilities ───────────── */
 function uniqueEvents(events: Event[] = []) {
   const m = new Map<string, Event>();
   for (const ev of events) if (!m.has(ev.id)) m.set(ev.id, ev);
   return Array.from(m.values());
 }
+
 function team(ev: Event, side: "home" | "away") {
   const comp = ev?.competitions?.[0];
   const c = comp?.competitors?.find((x) => x.homeAway === side);
+  const rawScore = c?.score;
+  const score =
+    rawScore === undefined || rawScore === null || rawScore === ""
+      ? undefined
+      : Number(rawScore);
   return {
     name:
       c?.team?.shortDisplayName ||
@@ -54,9 +94,10 @@ function team(ev: Event, side: "home" | "away") {
       c?.team?.name ||
       (side === "home" ? "Home" : "Away"),
     logo: c?.team?.logo || c?.team?.logos?.[0]?.href || "",
-    score: Number(c?.score ?? "0"),
+    score,
   };
 }
+
 const tidyScorer = (s: any) => {
   let name = (s?.player || s?.name || s?.text || "").trim();
   if (!name) name = "Unknown scorer";
@@ -67,7 +108,21 @@ const tidyScorer = (s: any) => {
   };
 };
 
-/* ==================== Single Card ==================== */
+/** What appears under the score in the collapsed row */
+function subline(ev: Event) {
+  const t = ev?.status?.type;
+  const dt = new Date(ev.date);
+
+  if (!t) return formatShortDateSAST(dt);
+
+  if (t.state === "in") return "LIVE";
+  if (t.state === "post" || t.completed) return "FT";
+
+  // Upcoming: show full SA date + 24h time, with no timezone text
+  return formatDateTimeSAST(dt);
+}
+
+/* ───────────── Single Card ───────────── */
 function Card({
   ev,
   open,
@@ -81,6 +136,7 @@ function Card({
   const away = team(ev, "away");
   const details = useMemo(() => extractStatsFromScoreboardEvent(ev), [ev]);
 
+  const isPre = ev?.status?.type?.state === "pre";
   const poss = details.metrics.find((m) => m.key === "poss");
   const shotsRow =
     details.metrics.find((m) => /shotsontarget|sot|st/i.test(m.key)) ||
@@ -88,28 +144,36 @@ function Card({
   const scorers = (details.scorers ?? []).map(tidyScorer);
 
   const kickoff = new Date(ev.date);
-  const subDate = kickoff.toLocaleDateString(undefined, {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-  });
+  const hasScores =
+    typeof home.score === "number" && typeof away.score === "number";
+
+  // Prevent opening future fixtures
+  const handleToggle = () => {
+    if (isPre) return;
+    onToggle();
+  };
 
   return (
     <div
       className={`${styles.card} ${open ? "open" : ""}`}
       role="button"
-      tabIndex={0}
-      onClick={onToggle}
+      tabIndex={isPre ? -1 : 0}
+      aria-disabled={isPre ? true : undefined}
+      onClick={handleToggle}
       onKeyDown={(e) => {
+        if (isPre) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onToggle();
         }
       }}
+      style={isPre ? { cursor: "default", opacity: 0.98 } : undefined}
+      title={isPre ? "Kickoff in the future" : undefined}
     >
-      {/* Header row (center stack left, caret right) */}
+      {/* Header row */}
       <div className={styles.row}>
         <div className={styles.left}>
+          {/* Teams centered */}
           <div className={styles.rowTeams}>
             <span className={styles.teamWrap}>
               {home.logo ? (
@@ -126,24 +190,50 @@ function Card({
             </span>
           </div>
 
-          {/* Score centered below teams */}
+          {/* Score (or em dash for fixtures) */}
           <div className={styles.score}>
-            {home.score} <span style={{ opacity: 0.6 }}>-</span> {away.score}
+            {hasScores ? (
+              <>
+                {home.score} <span style={{ opacity: 0.6 }}>-</span>{" "}
+                {away.score}
+              </>
+            ) : (
+              <>
+                — <span style={{ opacity: 0.6 }}>-</span> —
+              </>
+            )}
           </div>
 
-          {/* Date centered below score */}
-          <div className={styles.date}>{subDate}</div>
+          {/* SAST subline: LIVE / FT / “Sunday, 14 September, 14:30” */}
+          <div className={styles.date}>{subline(ev)}</div>
         </div>
 
-        {/* Caret on right */}
+        {/* Caret (dim for fixtures) */}
         <div className={styles.right}>
-          <span className={styles.caret}>▾</span>
+          <span
+            className={styles.caret}
+            style={isPre ? { opacity: 0.25, pointerEvents: "none" } : undefined}
+          >
+            ▾
+          </span>
         </div>
       </div>
 
-      {/* Details below header so score stays pinned */}
-      {open && (
+      {/* Expanded details (never for future fixtures) */}
+      {!isPre && open && (
         <div className={styles.details} onClick={(e) => e.stopPropagation()}>
+          {/* Stats if available; otherwise show kickoff info */}
+          {!(poss || shotsRow || scorers.length) && (
+            <div className={styles.statBlock}>
+              <div className={styles.statLabel}>Kickoff</div>
+              <div className={styles.scorers}>
+                <span className={styles.pill}>
+                  {formatDateTimeSAST(kickoff)}
+                </span>
+              </div>
+            </div>
+          )}
+
           {poss && (
             <div className={styles.statBlock}>
               <div className={styles.statLabel}>Possession (%)</div>
@@ -189,22 +279,24 @@ function Card({
             </div>
           )}
 
-          <div className={styles.statBlock}>
-            <div className={styles.statLabel}>Scorers</div>
-            <div className={styles.scorers}>
-              {scorers.length ? (
-                scorers.map((s, i) => (
-                  <span key={i} className={styles.pill}>
-                    {s.minute ? `${s.minute}ʼ — ` : ""}
-                    {s.name}
-                    {s.teamAbbr ? ` (${s.teamAbbr})` : ""}
-                  </span>
-                ))
-              ) : (
-                <span className={styles.pill}>—</span>
-              )}
+          {(scorers.length > 0 || hasScores) && (
+            <div className={styles.statBlock}>
+              <div className={styles.statLabel}>Scorers</div>
+              <div className={styles.scorers}>
+                {scorers.length ? (
+                  scorers.map((s, i) => (
+                    <span key={i} className={styles.pill}>
+                      {s.minute ? `${s.minute}ʼ — ` : ""}
+                      {s.name}
+                      {s.teamAbbr ? ` (${s.teamAbbr})` : ""}
+                    </span>
+                  ))
+                ) : (
+                  <span className={styles.pill}>—</span>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className={styles.ctaWrap}>
             <a
@@ -224,9 +316,8 @@ function Card({
   );
 }
 
-/* ==================== Grid with header controls ==================== */
+/* ───────────── Grid with date controls ───────────── */
 export default function PastMatchCard() {
-  // keep date as YYYY-MM-DD string (prevents timezone parsing issues)
   const [ymd, setYmd] = useState<string | null>(null);
   const [data, setData] = useState<ScoreboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -235,12 +326,21 @@ export default function PastMatchCard() {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /* Auto-pick the most recent day with all games finished */
+  // First day to show: prefer “today” (SAST) if there are any games,
+  // otherwise step back until we find a completed day.
   useEffect(() => {
     let alive = true;
     if (ymd) return;
     (async () => {
-      let probe = formatYMD(new Date());
+      const today = ymdInSAST(new Date());
+      try {
+        const res = await fetchScoreboard(dateFromYMD(today));
+        if ((res?.events?.length ?? 0) > 0) {
+          if (alive) setYmd(today);
+          return;
+        }
+      } catch {}
+      let probe = today;
       for (let i = 0; i < 30; i++) {
         try {
           const res = await fetchScoreboard(dateFromYMD(probe));
@@ -256,19 +356,17 @@ export default function PastMatchCard() {
             if (alive) setYmd(probe);
             return;
           }
-        } catch {
-          /* try previous */
-        }
+        } catch {}
         probe = addDaysLocal(probe, -1);
       }
-      if (alive) setYmd(addDaysLocal(formatYMD(new Date()), -1));
+      if (alive) setYmd(today);
     })();
     return () => {
       alive = false;
     };
   }, [ymd]);
 
-  /* Fetch matches for selected date (post only) */
+  // Fetch all matches (pre/in/post) for the selected SAST date
   useEffect(() => {
     let alive = true;
     if (!ymd) return;
@@ -277,10 +375,7 @@ export default function PastMatchCard() {
       setErr(null);
       try {
         const res = await fetchScoreboard(dateFromYMD(ymd));
-        const evs = uniqueEvents(res?.events ?? []).filter(
-          (e) =>
-            e?.status?.type?.state === "post" || !!e?.status?.type?.completed
-        );
+        const evs = uniqueEvents(res?.events ?? []);
         if (alive) setData({ ...res, events: evs });
       } catch (e: any) {
         if (alive) setErr(e?.message ?? "Failed to load matches.");
@@ -308,16 +403,16 @@ export default function PastMatchCard() {
     if (!el) return;
     // @ts-ignore
     if (el.showPicker) el.showPicker();
-    else el.focus();
+    else el.click();
   };
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) =>
     e.target.value && setYmd(e.target.value);
 
   return (
     <>
-      {/* Title + date controls in one line (use sectionStrip wrapper if you want cream bg) */}
+      {/* Title + date controls */}
       <div className={styles.headerRow}>
-        <h3 className={styles.headerTitle}>Past Matches</h3>
+        <h3 className={styles.headerTitle}>Matches</h3>
 
         <div className={styles.dateControls}>
           <button
@@ -361,10 +456,10 @@ export default function PastMatchCard() {
         </div>
       </div>
 
-      {loading && <div className={styles.state}>Loading past matches…</div>}
+      {loading && <div className={styles.state}>Loading matches…</div>}
       {err && <div className={`${styles.state} ${styles.error}`}>{err}</div>}
       {!loading && !err && events.length === 0 && (
-        <div className={styles.state}>No completed matches on this date.</div>
+        <div className={styles.state}>No matches on this date.</div>
       )}
 
       {!loading &&
