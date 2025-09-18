@@ -4,6 +4,8 @@ import type { Request, Response } from "express";
 import cors from "cors";
 import "dotenv/config";
 
+
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const router = express.Router();
@@ -222,16 +224,22 @@ async function getOrCreateVenue(
 }
 
 // Validate event type
+
 const allowedEventTypes = new Set([
   "goal",
   "own_goal",
-  "penalty_goal",
-  "penalty_miss",
-  "yellow",
-  "red",
+  "yellow_card",
+  "red_card",
+  "foul",
   "substitution",
-  "var",
+  "save",
+  "shot_on_target",
+  "shot_off_target",
+  "assist",
+  "offside",
+  "injury",
 ]);
+
 
 /* =========================================
    MATCH MANAGEMENT API (NEW)
@@ -518,6 +526,85 @@ router.get("/matches/:id", async (req, res) => {
 
     if (eErr) return res.status(500).json({ error: eErr.message });
 
+    // ✅ Ensure scores are never null + embed teams/venue inside match
+    const safeMatch = {
+      ...match,
+      home_score: match.home_score ?? 0,
+      away_score: match.away_score ?? 0,
+      events: events ?? [],
+      home_team: home ?? null,
+      away_team: away ?? null,
+      venue: venue ?? null,
+    };
+
+    console.log(
+      "📤 Returning match with scores:",
+      safeMatch.home_score,
+      safeMatch.away_score,
+      "| Events:",
+      safeMatch.events.length
+    );
+
+    return res.json({ match: safeMatch });
+  } catch (e: any) {
+    console.error("GET /matches/:id error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+
+
+/**
+ * GET /matches/:id
+ * Returns match with team/venue names and events.
+ */
+/*router.get("/matches/:id", async (req, res) => {
+  try {
+    const matchId = Number(req.params.id);
+    if (!matchId) return res.status(400).json({ error: "Invalid match id" });
+
+    // fetch match
+    const { data: match, error: mErr } = await supabase
+      .from("matches")
+      .select("*")
+      .eq("id", matchId)
+      .single();
+    if (mErr || !match)
+      return res.status(404).json({ error: "Match not found" });
+
+    // join names
+    const [{ data: home }, { data: away }, { data: venue }] = await Promise.all(
+      [
+        supabase
+          .from("teams")
+          .select("id,name,abbreviation")
+          .eq("id", match.home_team_id)
+          .maybeSingle(),
+        supabase
+          .from("teams")
+          .select("id,name,abbreviation")
+          .eq("id", match.away_team_id)
+          .maybeSingle(),
+        supabase
+          .from("venues")
+          .select("id,name,city,country")
+          .eq("id", match.venue_id)
+          .maybeSingle(),
+      ]
+    );
+
+    // events ordered by time
+    const { data: events, error: eErr } = await supabase
+      .from("match_events")
+      .select(
+        "id,team_id,player_name,minute,added_time,event_type,detail,outcome,created_at"
+      )
+      .eq("match_id", matchId)
+      .order("minute", { ascending: true })
+      .order("id", { ascending: true });
+
+    if (eErr) return res.status(500).json({ error: eErr.message });
+
     return res.json({
       match,
       home_team: home ?? null,
@@ -529,7 +616,7 @@ router.get("/matches/:id", async (req, res) => {
     console.error("GET /matches/:id error", e);
     return res.status(500).json({ error: e.message });
   }
-});
+});*/
 
 /**
  * POST /matches/:id/events
@@ -545,7 +632,104 @@ router.get("/matches/:id", async (req, res) => {
  *   "outcome": "scored" | "missed" | "saved"  // for pens (optional)
  * }
  */
+
+/**
+ * POST /matches/:id/events
+ * Adds a timeline event (goal, card, foul, etc.)
+ */
 router.post("/matches/:id/events", async (req, res) => {
+  try {
+    const match_id = Number(req.params.id);
+    if (!match_id) return res.status(400).json({ error: "Invalid match id" });
+
+    const {
+      event_type,
+      team_id,
+      player_name,
+      minute,
+      added_time,
+      detail,
+      outcome,
+    } = req.body || {};
+
+    // ✅ Step 1: log if event_type invalid
+    if (!event_type || !allowedEventTypes.has(event_type)) {
+      console.error("❌ Invalid event_type received:", event_type);
+      return res.status(400).json({
+        error: `event_type must be one of: ${Array.from(allowedEventTypes).join(", ")}`,
+      });
+    }
+
+    // ✅ Step 3: sanitize empty strings → null
+    const insertPayload = {
+      match_id,
+      team_id: team_id === "" ? null : team_id,
+      player_name: player_name === "" ? null : player_name,
+      minute: minute === "" ? null : minute,
+      added_time: added_time === "" ? null : added_time,
+      event_type,
+      detail: detail === "" ? null : detail,
+      outcome: outcome === "" ? null : outcome,
+    };
+
+    console.log("📥 Final insert payload:", insertPayload);
+
+    // Insert event
+    const { data: event, error: insertErr } = await supabase
+      .from("match_events")
+      .insert(insertPayload)
+      .select("*")
+      .single();
+
+    if (insertErr) {
+      console.error("❌ Supabase insert error:", insertErr.message);
+      return res.status(500).json({ error: insertErr.message });
+    }
+
+    // Optional: update score if goal/own goal
+    if (event_type === "goal" || event_type === "own_goal") {
+      const { data: match, error: matchErr } = await supabase
+        .from("matches")
+        .select("home_team_id, away_team_id, home_score, away_score")
+        .eq("id", match_id)
+        .single();
+
+      if (!match || matchErr) {
+        console.error("❌ Failed to fetch match for score update:", matchErr);
+      } else {
+        let home_score = match.home_score ?? 0;
+        let away_score = match.away_score ?? 0;
+
+        if (event_type === "goal") {
+          if (team_id === match.home_team_id) home_score++;
+          if (team_id === match.away_team_id) away_score++;
+        } else if (event_type === "own_goal") {
+          if (team_id === match.home_team_id) away_score++;
+          if (team_id === match.away_team_id) home_score++;
+        }
+
+        const { error: updateErr } = await supabase
+          .from("matches")
+          .update({ home_score, away_score })
+          .eq("id", match_id);
+
+        if (updateErr) {
+          console.error("❌ Failed to update score:", updateErr.message);
+        } else {
+          console.log("✅ Score updated:", { home_score, away_score });
+        }
+      }
+    }
+
+    return res.status(201).json({ event });
+  } catch (e: any) {
+    console.error("POST /matches/:id/events error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+
+/*router.post("/matches/:id/events", async (req, res) => {
   try {
     const match_id = Number(req.params.id);
     if (!match_id) return res.status(400).json({ error: "Invalid match id" });
@@ -588,13 +772,161 @@ router.post("/matches/:id/events", async (req, res) => {
     console.error("POST /matches/:id/events error", e);
     return res.status(500).json({ error: e.message });
   }
+});*/
+
+// PATCH /matches/:id/extend
+router.patch("/matches/:id/extend", async (req, res) => {
+  try {
+    const matchId = Number(req.params.id);
+    const { extra_minutes } = req.body;
+
+    console.log("🔍 Incoming extend request");
+    console.log("   ➡️ matchId:", matchId);
+    console.log("   ➡️ extra_minutes:", extra_minutes);
+
+    if (!matchId || !extra_minutes) {
+      console.error("❌ Missing parameters: matchId or extra_minutes");
+      return res
+        .status(400)
+        .json({ error: "matchId and extra_minutes required" });
+    }
+
+    // Fetch the match row
+    const { data: match, error: fetchErr } = await supabase
+      .from("matches")
+      .select("id, notes_json")
+      .eq("id", matchId)
+      .maybeSingle(); // ✅ use maybeSingle so it doesn't throw if no row
+
+    console.log("📦 Supabase response:", { match, fetchErr });
+
+    if (fetchErr || !match) {
+      console.error("❌ Match not found or query failed:", fetchErr?.message);
+      return res.status(404).json({ error: "Match not found" });
+    }
+
+    // Default duration to 90 if missing
+    const currentDuration = Number(match.notes_json?.duration ?? 90);
+    const newDuration = currentDuration + Number(extra_minutes);
+
+    console.log(
+      `⏱️ Extending match ${matchId}: ${currentDuration} → ${newDuration}`
+    );
+
+    const { data: updated, error: updateErr } = await supabase
+      .from("matches")
+      .update({
+        notes_json: { ...match.notes_json, duration: newDuration },
+      })
+      .eq("id", matchId)
+      .select("*")
+      .single();
+
+    if (updateErr) {
+      console.error("❌ Failed to update duration:", updateErr.message);
+      return res.status(500).json({ error: updateErr.message });
+    }
+
+    console.log("✅ Duration updated successfully:", updated.notes_json);
+    res.json({ match: updated });
+  } catch (e: any) {
+    console.error("💥 PATCH /matches/:id/extend error", e);
+    res.status(500).json({ error: e.message });
+  }
 });
+
+
+/**
+ * DELETE /matches/:id/events/:eventId
+ * Removes a specific event from the match timeline.
+ * If it's a goal/own_goal, adjust scores accordingly.
+ */
+router.delete("/matches/:id/events/:eventId", async (req, res) => {
+  try {
+    const matchId = Number(req.params.id);
+    const eventId = Number(req.params.eventId);
+    if (!matchId || !eventId)
+      return res.status(400).json({ error: "Invalid ids" });
+
+    // Fetch the event before deleting
+    const { data: event, error: fetchErr } = await supabase
+      .from("match_events")
+      .select("*")
+      .eq("id", eventId)
+      .eq("match_id", matchId)
+      .single();
+
+    if (fetchErr || !event) {
+      console.error("❌ Event not found:", fetchErr?.message);
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    console.log("🗑️ Deleting event:", event);
+
+    // Delete the event
+    const { error: delErr } = await supabase
+      .from("match_events")
+      .delete()
+      .eq("id", eventId)
+      .eq("match_id", matchId);
+
+    if (delErr) {
+      console.error("❌ Failed to delete event:", delErr.message);
+      return res.status(500).json({ error: delErr.message });
+    }
+
+    // Adjust score if it was a goal / own goal
+    if (event.event_type === "goal" || event.event_type === "own_goal") {
+      const { data: match, error: matchErr } = await supabase
+        .from("matches")
+        .select("home_team_id, away_team_id, home_score, away_score")
+        .eq("id", matchId)
+        .single();
+
+      if (!match || matchErr) {
+        console.error("❌ Failed to fetch match for score adjust:", matchErr);
+      } else {
+        let home_score = match.home_score ?? 0;
+        let away_score = match.away_score ?? 0;
+
+        if (event.event_type === "goal") {
+          if (event.team_id === match.home_team_id) home_score--;
+          if (event.team_id === match.away_team_id) away_score--;
+        } else if (event.event_type === "own_goal") {
+          if (event.team_id === match.home_team_id) away_score--;
+          if (event.team_id === match.away_team_id) home_score--;
+        }
+
+        // prevent negative scores
+        home_score = Math.max(home_score, 0);
+        away_score = Math.max(away_score, 0);
+
+        const { error: updateErr } = await supabase
+          .from("matches")
+          .update({ home_score, away_score })
+          .eq("id", matchId);
+
+        if (updateErr) {
+          console.error("❌ Failed to update score after delete:", updateErr.message);
+        } else {
+          console.log("✅ Score adjusted after delete:", { home_score, away_score });
+        }
+      }
+    }
+
+    return res.json({ ok: true });
+  } catch (e: any) {
+    console.error("DELETE /matches/:id/events/:eventId error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
 
 /**
  * DELETE /matches/:id/events/:eventId
  * Removes a specific event from the match timeline.
  */
-router.delete("/matches/:id/events/:eventId", async (req, res) => {
+/*router.delete("/matches/:id/events/:eventId", async (req, res) => {
   try {
     const matchId = Number(req.params.id);
     const eventId = Number(req.params.eventId);
@@ -613,7 +945,7 @@ router.delete("/matches/:id/events/:eventId", async (req, res) => {
     console.error("DELETE /matches/:id/events/:eventId error", e);
     return res.status(500).json({ error: e.message });
   }
-});
+});*/
 
 /**
  * GET /matches (optional convenience)
