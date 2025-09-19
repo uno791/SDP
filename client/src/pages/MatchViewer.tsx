@@ -5,6 +5,8 @@ import { useSearchParams } from "react-router-dom";
 import ComicCard from "../components/MatchViewerComp/ComicCard";
 import GameSummaryCard from "../components/MatchViewerComp/GameSummaryCard";
 import PlayerStatsCard from "../components/MatchViewerComp/PlayerStatsCard";
+import PlayerStats from "./PlayerStats";
+import { Link } from "react-router-dom";
 
 import {
   fetchSummaryNormalized,
@@ -306,30 +308,38 @@ export default function MatchViewer() {
     <ComicCard>
       <div style={{ padding: "1rem" }}>
         {/* Top buttons (non-functional for now) */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-          <button
-            style={{
-              border: "2px solid black",
-              background: "orange",
-              padding: "6px 10px",
-              fontWeight: 700,
-              boxShadow: "2px 2px 0 black",
-            }}
-          >
-            Team Stats
-          </button>
-          <button
-            style={{
-              border: "2px solid black",
-              background: "white",
-              padding: "6px 10px",
-              fontWeight: 700,
-              boxShadow: "2px 2px 0 black",
-            }}
-          >
-            Player Stats
-          </button>
-        </div>
+       <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+        <button
+          style={{
+            border: "2px solid black",
+            background: "orange",
+            padding: "6px 10px",
+            fontWeight: 700,
+            boxShadow: "2px 2px 0 black",
+            cursor: "pointer",
+          }}
+        >
+          Team Stats
+        </button>
+
+        {/* Use <Link> styled as a button for Player Stats */}
+        <Link
+          to={`/playerstats?id=${encodeURIComponent(eventId ?? "")}`}
+          style={{
+            display: "inline-block",
+            border: "2px solid black",
+            background: "white",
+            padding: "6px 10px",
+            fontWeight: 700,
+            boxShadow: "2px 2px 0 black",
+            textDecoration: "none",
+            color: "inherit",
+            cursor: "pointer",
+          }}
+        >
+          Player Stats
+        </Link>
+      </div>
 
         {/* Header */}
         <h1
