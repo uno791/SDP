@@ -18,6 +18,8 @@ import styles from "../components/LandingPageComp/LandingPage.module.css";
 import Loader3D from "../components/LandingPageComp/Layout/Loader3D";
 import PremierLeagueTable from "../components/LandingPageComp/PremierLeagueTable";
 import LiveUserMatches from "../components/LandingPageComp/LiveUserMatches";
+import UserMatches from "../components/LandingPageComp/UserMatches";
+
 
 /* ------------------------------ DATA ------------------------------ */
 const TEAM_NAMES = [
@@ -207,6 +209,12 @@ export default function LandingPage() {
             <PastMatchCard />
           </div>
         </section>
+
+        {/* USER MATCHES (DATE PICKER) */}
+        <section id="user-matches" className={styles.sectionWhite}>
+          <UserMatches />
+        </section>
+
 
         {/* LEAGUE TABLE */}
         <section id="table" className={styles.sectionWhite}>

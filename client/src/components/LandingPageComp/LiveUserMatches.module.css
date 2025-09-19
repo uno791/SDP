@@ -52,3 +52,35 @@
   border-top: 1px solid rgba(255, 255, 255, 0.4);
   padding-top: 8px;
 }
+
+.headingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.datePicker {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.viewerBtn {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: #2563eb; /* blue */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.viewerBtn:hover {
+  background-color: #1d4ed8;
+}
+

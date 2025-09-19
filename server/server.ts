@@ -831,6 +831,97 @@ router.patch("/matches/:id/extend", async (req, res) => {
   }
 });
 
+// ======================
+// GET /matches/:id/details
+// ======================
+/*router.get("/matches/:id/details", async (req, res) => {
+  const matchId = Number(req.params.id);
+  console.log(`[API] Incoming request: /matches/${matchId}/details`);
+
+  try {
+    // Fetch match
+    const { data: match, error: matchErr } = await supabase
+      .from("matches")
+      .select("*, home_team:home_team_id(*), away_team:away_team_id(*), venue:venue_id(*)")
+      .eq("id", matchId)
+      .single();
+
+    if (matchErr) {
+      console.error("[API] Error fetching match:", matchErr);
+      return res.status(500).json({ error: "Failed to fetch match" });
+    }
+    if (!match) {
+      console.warn("[API] No match found for id", matchId);
+      return res.status(404).json({ error: "Match not found" });
+    }
+
+    // Fetch events
+    const { data: events, error: eventErr } = await supabase
+      .from("match_events")
+      .select("*")
+      .eq("match_id", matchId)
+      .order("minute", { ascending: true });
+
+    if (eventErr) {
+      console.error("[API] Error fetching events:", eventErr);
+      return res.status(500).json({ error: "Failed to fetch events" });
+    }
+
+    console.log(
+      `[API] Success: Match ${matchId} details fetched with ${events?.length || 0} events`
+    );
+
+    res.json({ match, events });
+  } catch (err) {
+    console.error("[API] Unexpected error:", err);
+    res.status(500).json({ error: "Unexpected server error" });
+  }
+});*/
+
+router.get("/matches/:id/details", async (req, res) => {
+  const matchId = Number(req.params.id);
+  console.log(`[API] Incoming request: /matches/${matchId}/details`);
+
+  try {
+    const { data: match, error: matchErr } = await supabase
+      .from("matches")
+      .select("*, home_team:home_team_id(*), away_team:away_team_id(*), venue:venue_id(*)")
+      .eq("id", matchId)
+      .single();
+
+    if (matchErr) {
+      console.error("[API] Error fetching match:", matchErr);
+      return res.status(500).json({ error: "Failed to fetch match" });
+    }
+
+    if (!match) {
+      return res.status(404).json({ error: "Match not found" });
+    }
+
+    const { data: events, error: eventErr } = await supabase
+      .from("match_events")
+      .select("*")
+      .eq("match_id", matchId)
+      .order("minute", { ascending: true });
+
+    if (eventErr) {
+      console.error("[API] Error fetching events:", eventErr);
+      return res.status(500).json({ error: "Failed to fetch events" });
+    }
+
+    // Extract squads from notes_json
+    const lineupTeam1 = match.notes_json?.lineupTeam1 ?? [];
+    const lineupTeam2 = match.notes_json?.lineupTeam2 ?? [];
+
+    res.json({ match, events, lineupTeam1, lineupTeam2 });
+  } catch (err) {
+    console.error("[API] Unexpected error:", err);
+    res.status(500).json({ error: "Unexpected server error" });
+  }
+});
+
+
+
 /**
  * DELETE /matches/:id/events/:eventId
  * Removes a specific event from the match timeline.
@@ -952,7 +1043,7 @@ router.delete("/matches/:id/events/:eventId", async (req, res) => {
  * Query params: league_code? status? from? to?
  * Returns recent matches with names joined.
  */
-router.get("/matches", async (req, res) => {
+/*router.get("/matches", async (req, res) => {
   try {
     const { league_code, status, from, to, created_by } = req.query as {
       league_code?: string;
@@ -1021,7 +1112,105 @@ router.get("/matches", async (req, res) => {
     console.error("GET /matches error", e);
     return res.status(500).json({ error: e.message });
   }
+});*/
+
+router.get("/matches", async (req, res) => {
+  try {
+    const { league_code, status, from, to, created_by, type } = req.query as {
+      league_code?: string;
+      status?: string;
+      from?: string;
+      to?: string;
+      created_by?: string;
+      type?: string; // <-- NEW
+    };
+
+    let q = supabase.from("matches").select("*");
+
+    if (league_code) q = q.eq("league_code", league_code);
+    if (status) q = q.eq("status", status);
+    if (from) q = q.gte("utc_kickoff", from);
+    if (to) q = q.lte("utc_kickoff", to);
+    if (created_by) q = q.eq("created_by", created_by);
+
+    q = q.order("utc_kickoff", { ascending: false }).limit(100);
+
+    const { data: matches, error } = await q;
+    if (error) return res.status(500).json({ error: error.message });
+
+    // join names (batched lookups)
+    const teamIds = Array.from(
+      new Set(
+        (matches ?? [])
+          .flatMap((m) => [m.home_team_id, m.away_team_id])
+          .filter(Boolean)
+      )
+    ) as number[];
+    const venueIds = Array.from(
+      new Set((matches ?? []).map((m) => m.venue_id).filter(Boolean))
+    ) as number[];
+
+    const [teamsRes, venuesRes] = await Promise.all([
+      teamIds.length
+        ? supabase
+            .from("teams")
+            .select("id,name,abbreviation")
+            .in("id", teamIds)
+        : Promise.resolve({ data: [] as any[] }),
+      venueIds.length
+        ? supabase
+            .from("venues")
+            .select("id,name,city,country")
+            .in("id", venueIds)
+        : Promise.resolve({ data: [] as any[] }),
+    ]);
+
+    const teamMap = new Map<number, any>(
+      (teamsRes.data ?? []).map((t) => [t.id, t])
+    );
+    const venueMap = new Map<number, any>(
+      (venuesRes.data ?? []).map((v) => [v.id, v])
+    );
+
+    let enriched = (matches ?? []).map((m) => ({
+      ...m,
+      home_team: m.home_team_id ? teamMap.get(m.home_team_id) : null,
+      away_team: m.away_team_id ? teamMap.get(m.away_team_id) : null,
+      venue: m.venue_id ? venueMap.get(m.venue_id) : null,
+    }));
+
+    // ✅ Apply type filter if requested
+    if (type) {
+      const now = new Date();
+      enriched = enriched.filter((m) => {
+        const kickoff = new Date(m.utc_kickoff);
+        const duration = Number(m.notes_json?.duration ?? 90);
+        const end = new Date(kickoff.getTime() + duration * 60000);
+
+        switch (type) {
+          case "live":
+            return m.status !== "final" && now >= kickoff && now <= end;
+          case "past":
+            return m.status === "final" || now > end;
+          case "upcoming":
+            return now < kickoff;
+          default:
+            return true;
+        }
+      });
+    }
+
+    console.log(
+      `[Backend] /matches type=${type || "all"} → ${enriched.length} matches`
+    );
+
+    return res.json({ matches: enriched });
+  } catch (e: any) {
+    console.error("GET /matches error", e);
+    return res.status(500).json({ error: e.message });
+  }
 });
+
 
 /* --------------- Start server --------------- */
 app.listen(PORT, () => {

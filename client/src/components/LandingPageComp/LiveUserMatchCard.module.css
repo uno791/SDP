@@ -63,3 +63,66 @@
   font-size: 13px;
   color: #ddd;
 }
+
+/* -------- Stats Preview -------- */
+.statsPreview {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.statBarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statBarRow span {
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 24px;
+  text-align: center;
+}
+
+.barWrapper {
+  flex: 1;
+  margin: 0 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: #00ff99;
+  border-radius: 4px 0 0 4px;
+}
+
+.barAway {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: #ff5555;
+  border-radius: 0 4px 4px 0;
+}
