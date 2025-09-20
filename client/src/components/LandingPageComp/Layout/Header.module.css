@@ -1,12 +1,16 @@
 .header {
+  --header-height: 4rem;
+
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 40;
   backdrop-filter: blur(4px);
-  background: rgba(5, 78, 49, 0.5);
+  background: #01532db9;
   border-bottom: 1px solid rgba(6, 95, 70, 0.2);
+
+  height: var(--header-height);
 }
 
 .container {

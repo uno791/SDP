@@ -1,21 +1,21 @@
 /* ===== Theming (tweak these if you want) ===== */
 :root {
-  --card-bg: #6f8a80;       /* muted green/teal like your screenshot */
-  --card-fg: #f3f7f5;       /* main text on card */
-  --card-fg-soft: #e6efec;  /* softer text */
-  --card-border: rgba(0,0,0,.08);
-  --shadow: 0 6px 24px rgba(0,0,0,.12);
+  --card-bg: #6f8a80; /* muted green/teal like your screenshot */
+  --card-fg: #f3f7f5; /* main text on card */
+  --card-fg-soft: #e6efec; /* softer text */
+  --card-border: rgba(0, 0, 0, 0.08);
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
 
-  --accent: #ffb020;        /* FT amber */
-  --bar-track: rgba(255,255,255,.28);
-  --bar-fill: rgba(255,255,255,.92);
+  --accent: #ffb020; /* FT amber */
+  --bar-track: rgba(255, 255, 255, 0.28);
+  --bar-fill: rgba(255, 255, 255, 0.92);
 
-  --pill-bg: rgba(255,255,255,.15);
-  --pill-border: rgba(255,255,255,.35);
+  --pill-bg: rgba(255, 255, 255, 0.15);
+  --pill-border: rgba(255, 255, 255, 0.35);
 
-  --cta-border: rgba(255,255,255,.8);
+  --cta-border: rgba(255, 255, 255, 0.8);
   --cta-fg: #ffffff;
-  --cta-hover: rgba(255,255,255,.1);
+  --cta-hover: rgba(255, 255, 255, 0.1);
 }
 
 /* Card shell — clickable */
@@ -29,7 +29,9 @@
   outline: none;
   color: var(--card-fg);
 }
-.card:focus-visible { box-shadow: 0 0 0 3px rgba(255,255,255,.35); }
+.card:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+}
 
 /* Header: Home | Score/FT | Away  */
 .header {
@@ -48,7 +50,9 @@
   font-weight: 700;
   color: var(--card-fg);
 }
-.teamRight { justify-content: flex-end; }
+.teamRight {
+  justify-content: flex-end;
+}
 .teamName {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -60,32 +64,48 @@
   flex: 0 0 28px;
   border-radius: 6px;
   object-fit: contain;
-  background: rgba(255,255,255,.35);
+  background: rgba(255, 255, 255, 0.35);
 }
 
 /* Center stack (score, FT, chevron) */
-.center { display: flex; flex-direction: column; align-items: center; }
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 .score {
   font-size: 32px;
   line-height: 1;
   font-weight: 800;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
   color: var(--card-fg);
   text-align: center;
 }
-.ft { margin-top: 4px; color: var(--accent); font-weight: 800; user-select: none; }
+.ft {
+  margin-top: 4px;
+  color: var(--accent);
+  font-weight: 800;
+  user-select: none;
+}
 .chev {
   margin-top: 6px;
   font-size: 14px;
   line-height: 1;
   color: var(--card-fg-soft);
-  opacity: .85;
+  opacity: 0.85;
   transition: transform 200ms ease, opacity 150ms ease;
 }
-.open .chev { transform: rotate(180deg); opacity: 1; }
+.open .chev {
+  transform: rotate(180deg);
+  opacity: 1;
+}
 
 /* Divider (shown when open) */
-.rule { margin: 12px 0; border: 0; border-top: 2px dashed rgba(255,255,255,.35); }
+.rule {
+  margin: 12px 0;
+  border: 0;
+  border-top: 2px dashed rgba(255, 255, 255, 0.35);
+}
 
 /* Collapse with smooth height transition */
 .collapse {
@@ -95,8 +115,13 @@
   grid-template-rows: 0fr;
   opacity: 0;
 }
-.openCollapse { grid-template-rows: 1fr; opacity: 1; }
-.collapseInner { min-height: 0; }
+.openCollapse {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.collapseInner {
+  min-height: 0;
+}
 
 /* Stat rows */
 .statLabel {
@@ -121,7 +146,10 @@
   border-radius: 999px;
   overflow: hidden;
 }
-.barInner { height: 100%; background: var(--bar-fill); }
+.barInner {
+  height: 100%;
+  background: var(--bar-fill);
+}
 
 /* Scorers */
 .scorersTitle {
@@ -146,7 +174,11 @@
 }
 
 /* CTA */
-.ctaWrap { display: flex; justify-content: flex-end; margin-top: 12px; }
+.ctaWrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
 .cta {
   border: 2px solid var(--cta-border);
   color: var(--cta-fg);
@@ -155,11 +187,22 @@
   font-weight: 800;
   background: transparent;
 }
-.cta:hover { background: var(--cta-hover); }
+.cta:hover {
+  background: var(--cta-hover);
+}
 
 /* Grid wrapper (multi-cards) */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
 
 /* Loading / error */
-.state { padding: 12px 8px; color: #0f172a; } /* page text outside cards */
-.error { color: #b00020; }
+.state {
+  padding: 12px 8px;
+  color: #0f172a;
+} /* page text outside cards */
+.error {
+  color: #b00020;
+}

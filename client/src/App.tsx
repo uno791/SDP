@@ -24,7 +24,6 @@ function App() {
           <Routes>
             {/* Routes inside Layout will have the NavBar */}
             <Route element={<Layout />}>
-              <Route path="/" element={<LandingPage />} />
               <Route path="/home" element={<Home />} />
 
               <Route path="/doodlehome" element={<DoodleHome />} />
@@ -38,8 +37,8 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/matchviewer" element={<MatchViewer />} />
               <Route path="/playerstats" element={<PlayerStats />} />
-
             </Route>
+            <Route path="/" element={<LandingPage />} />
           </Routes>
         </Router>
       </UserProvider>

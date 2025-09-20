@@ -1,5 +1,5 @@
 import React from "react";
-
+import styles from "./GameSummaryCard.module.css";
 type ScorerLike =
   | string
   | {
@@ -48,7 +48,11 @@ function normalizeMinute(min?: string) {
   const m = min.match(/\d+(?:\+\d+)?/);
   if (!m) return ` ${min.trim()}`;
   const core = m[0];
-  return ` ${hasTick(min) ? core + min.trim().slice(min.trim().indexOf(core) + core.length) : core + "'"}`;
+  return ` ${
+    hasTick(min)
+      ? core + min.trim().slice(min.trim().indexOf(core) + core.length)
+      : core + "'"
+  }`;
 }
 
 function detectPenalty(hay: string) {
@@ -87,7 +91,9 @@ function fmtScorer(s: ScorerLike): string {
     // Strings are assumed already formatted upstream (may include (p)/(OG) and minute)
     return s;
   }
-  const hay = `${s?.player ?? ""} ${s?.minute ?? ""} ${(s as any)?.text ?? ""} ${(s as any)?.rawText ?? ""}`.trim();
+  const hay = `${s?.player ?? ""} ${s?.minute ?? ""} ${
+    (s as any)?.text ?? ""
+  } ${(s as any)?.rawText ?? ""}`.trim();
 
   // detect flags from explicit fields or text
   const pen = Boolean((s as any).isPenalty) || detectPenalty(hay);
@@ -147,7 +153,9 @@ export default function GameSummaryCard({
             style={{ borderRadius: 8, objectFit: "contain", display: "block" }}
           />
         ) : null}
-        <span style={{ fontWeight: 700, fontSize: 16, whiteSpace: "nowrap" }}>{name}</span>
+        <span style={{ fontWeight: 700, fontSize: 16, whiteSpace: "nowrap" }}>
+          {name}
+        </span>
         {align === "right" && url ? (
           <img
             src={url}
@@ -160,95 +168,47 @@ export default function GameSummaryCard({
       </div>
     );
   };
-
   return (
-    <div
-      style={{
-        border: "2px solid black",
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        background: "linear-gradient(0deg, #fff, #fff)",
-        boxShadow: "4px 4px 0 black",
-      }}
-    >
-      {/* teams + big score */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
-          alignItems: "center",
-          gap: 12,
-        }}
-      >
-        <div style={{ justifySelf: "start" }}>
-          <NameWithLogo name={homeName} logo={homeLogoUrl ?? undefined} align="left" />
+    <div className={styles.card}>
+      <div className={styles.header}>
+        <div className={styles.teamLeft}>
+          <NameWithLogo
+            name={homeName}
+            logo={homeLogoUrl ?? undefined}
+            align="left"
+          />
         </div>
 
-        <div style={{ textAlign: "center", minWidth: 0 }}>
-          <div
-            style={{
-              fontWeight: 900,
-              fontSize: "2.125rem",
-              lineHeight: 1,
-              letterSpacing: 0.5,
-            }}
-          >
+        <div className={styles.scoreBlock}>
+          <div className={styles.score}>
             {showScore(homeScore)}–{showScore(awayScore)}
           </div>
-          <div style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
-            {statusText || "Match"}
-          </div>
+          <div className={styles.status}>{statusText || "Match"}</div>
         </div>
 
-        <div style={{ justifySelf: "end" }}>
-          <NameWithLogo name={awayName} logo={awayLogoUrl ?? undefined} align="right" />
+        <div className={styles.teamRight}>
+          <NameWithLogo
+            name={awayName}
+            logo={awayLogoUrl ?? undefined}
+            align="right"
+          />
         </div>
       </div>
 
-      {/* per-side scorers */}
-      {(leftItems.length || rightItems.length) ? (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 8,
-            marginTop: 12,
-          }}
-        >
-          <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              margin: 0,
-              justifySelf: "start",
-              fontSize: 14,
-            }}
-          >
+      {(leftItems.length || rightItems.length) > 0 && (
+        <div className={styles.scorers}>
+          <ul className={styles.scorerListLeft}>
             {leftItems.map((txt, i) => (
-              <li key={`home-s-${i}`} style={{ opacity: 0.9 }}>
-                {txt}
-              </li>
+              <li key={`home-s-${i}`}>{txt}</li>
             ))}
           </ul>
-          <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              margin: 0,
-              justifySelf: "end",
-              textAlign: "right",
-              fontSize: 14,
-            }}
-          >
+          <ul className={styles.scorerListRight}>
             {rightItems.map((txt, i) => (
-              <li key={`away-s-${i}`} style={{ opacity: 0.9 }}>
-                {txt}
-              </li>
+              <li key={`away-s-${i}`}>{txt}</li>
             ))}
           </ul>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

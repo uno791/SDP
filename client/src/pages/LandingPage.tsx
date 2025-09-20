@@ -144,6 +144,7 @@ export default function LandingPage() {
       <AnimatePresence>{loading && <Loader3D />}</AnimatePresence>
 
       {/* Header & Menu */}
+
       <Header onOpenMenu={() => setMenuOpen(true)} />
       <BurgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 
