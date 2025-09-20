@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import ComicCard from "../components/MatchViewerComp/ComicCard";
 import GameSummaryCard from "../components/MatchViewerComp/GameSummaryCard";
 import PlayerStatsCard from "../components/MatchViewerComp/PlayerStatsCard";
+import TriStatRow from "../components/MatchViewerComp/TriStatRow";
 
 import {
   fetchSummaryNormalized,
@@ -14,32 +15,9 @@ import {
   type ScoreboardResponse,
 } from "../api/espn";
 
-import triStyles from "../components/MatchViewerComp/TriStatRow.module.css";
 import styles from "../components/MatchViewerComp/MatchView.module.css";
 
-/* ───────────────── TriStatRow ───────────────── */
-function TriStatRow({
-  label,
-  left,
-  right,
-}: {
-  label: string;
-  left?: React.ReactNode;
-  right?: React.ReactNode;
-}) {
-  return (
-    <div className={triStyles.row}>
-      <div className={triStyles.left}>{left ?? "—"}</div>
-      <div className={triStyles.label}>{label}</div>
-      <div className={triStyles.right}>{right ?? "—"}</div>
-    </div>
-  );
-}
-
-/* ───────────────── Helpers ───────────────── */
-function first<T>(arr: T[] | undefined | null): T | undefined {
-  return Array.isArray(arr) && arr.length ? arr[0] : undefined;
-}
+/* ───────── Helpers ───────── */
 function normalizeMinute(v?: string | number) {
   if (v == null) return undefined;
   const s = String(v);
@@ -55,54 +33,95 @@ function parseNameFromText(raw?: string): {
   const text = String(raw).trim();
   const isPenalty = /\bpen(?:alty|alties)?\b|\(PEN\)|\((?:P)\)/i.test(text);
   const isOG = /\bown[- ]goal\b|\(OG\)/i.test(text);
-
-  const patterns = [
-    /\bby\s+([\p{L}][\p{L}'\.\-\s]+)/iu,
-    /^([\p{L}][\p{L}'\.\-\s]+?)\s*(?:\(|\s+)(?:converts|scores|nets|finishes|heads|strikes|fires)/iu,
-    /\.\s*([\p{L}][\p{L}'\.\-\s]+?)\s+(?:converts|scores|nets|finishes|heads|strikes|fires)/iu,
-    /-\s*([\p{L}][\p{L}'\.\-\s]+)/iu,
-    /^([\p{L}][\p{L}'\.\-\s]+?)\s*\(/iu,
-  ];
-  for (const re of patterns) {
-    const m = text.match(re);
-    if (m?.[1]) return { name: m[1].trim(), isPenalty, isOG };
-  }
-  return { isPenalty, isOG };
+  return { name: undefined, isPenalty, isOG };
 }
-function isPenaltyPlay(p: any): boolean {
+function isPenaltyPlay(p: any) {
   const t = `${p?.type?.id ?? ""} ${p?.type?.text ?? ""} ${p?.text ?? ""}`;
   return /\bpen(?:alty|alties)?\b|\(PEN\)|\((?:P)\)/i.test(t);
 }
-function isOwnGoalPlay(p: any): boolean {
+function isOwnGoalPlay(p: any) {
   const t = `${p?.type?.id ?? ""} ${p?.type?.text ?? ""} ${p?.text ?? ""}`;
   return (
     /\bown[- ]goal\b|\(OG\)/i.test(t) || /owngoal/i.test(p?.type?.id ?? "")
   );
 }
-function fmtScorer(s: Scorer | any): string {
-  let name =
-    s?.player ??
-    s?.name ??
-    s?.scorer ??
-    s?.athlete?.displayName ??
-    s?.athleteName ??
-    "Goal";
+function buildDisplayScorers(
+  allScorers: Scorer[],
+  sbEvent: ScoreboardResponse["events"][number] | null
+): { home: string[]; away: string[] } {
+  const baseHome = allScorers
+    .filter((x: any) => x.homeAway === "home")
+    .map((s) => s.player ?? "Goal");
+  const baseAway = allScorers
+    .filter((x: any) => x.homeAway === "away")
+    .map((s) => s.player ?? "Goal");
 
-  name = String(name)
-    .replace(/\s*\((?:P|p)\)\s*/g, "")
-    .replace(/\s*\(OG\)\s*/g, "");
+  const needsFix =
+    [...baseHome, ...baseAway].some((s) => /^Goal\b/i.test(s)) &&
+    sbEvent &&
+    sbEvent.competitions &&
+    sbEvent.competitions[0];
 
-  const minuteRaw =
-    s?.minute ?? s?.min ?? s?.time ?? s?.minuteText ?? s?.clock ?? undefined;
+  if (!needsFix) return { home: baseHome, away: baseAway };
 
-  const min = normalizeMinute(minuteRaw);
-  if (s?.isPenalty) name += " (p)";
-  if (s?.isOG) name += " (OG)";
+  const comp = sbEvent!.competitions[0];
+  const competitors = comp?.competitors ?? [];
+  const idToSide: Record<string, "home" | "away"> = {};
+  (competitors ?? []).forEach((c: any) => {
+    const id = String(c?.team?.id ?? c?.id ?? "");
+    const side = c?.homeAway as "home" | "away";
+    if (id && side) idToSide[id] = side;
+  });
 
-  return `${name}${min ? ` ${min}` : ""}`.trim();
+  const fromArray = Array.isArray(comp?.details) ? comp?.details : [];
+  const fromScoring = !Array.isArray(comp?.details)
+    ? comp?.details?.scoringPlays ?? []
+    : [];
+  const plays = [
+    ...fromArray.filter((p: any) => p?.scoringPlay),
+    ...fromScoring,
+  ];
+
+  const homeOut: string[] = [];
+  const awayOut: string[] = [];
+
+  for (const p of plays ?? []) {
+    const ai0: any = Array.isArray(p?.athletesInvolved)
+      ? p.athletesInvolved[0]
+      : null;
+
+    let name: string | undefined =
+      ai0?.displayName ??
+      ai0?.athlete?.displayName ??
+      (p as any)?.athlete?.displayName;
+
+    const parsed = parseNameFromText(p?.text);
+    if (!name && parsed.name) name = parsed.name;
+    if (!name) name = "Goal";
+
+    if (isPenaltyPlay(p) || parsed.isPenalty) name += " (p)";
+    if (isOwnGoalPlay(p) || parsed.isOG) name += " (OG)";
+
+    const minute =
+      normalizeMinute(p?.clock?.displayValue) ?? normalizeMinute(p?.text);
+    const label = `${name}${minute ? ` ${minute}` : ""}`.trim();
+
+    const teamId = p?.team?.id ? String(p.team.id) : undefined;
+    const side =
+      (p?.homeAway as "home" | "away" | undefined) ??
+      (teamId ? idToSide[teamId] : undefined);
+
+    if (side === "home") homeOut.push(label);
+    else if (side === "away") awayOut.push(label);
+  }
+
+  return {
+    home: homeOut.length ? homeOut : baseHome,
+    away: awayOut.length ? awayOut : baseAway,
+  };
 }
 
-/* ───────────────── Component ───────────────── */
+/* ───────── Component ───────── */
 export default function MatchViewer() {
   const [sp] = useSearchParams();
   const eventId = sp.get("id") ?? undefined;
@@ -110,14 +129,17 @@ export default function MatchViewer() {
   const [data, setData] = useState<SummaryNormalized | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
-
   const [sbScorers, setSbScorers] = useState<Scorer[] | null>(null);
   const [sbEvent, setSbEvent] = useState<
     ScoreboardResponse["events"][number] | null
   >(null);
 
+  const [goalAnim, setGoalAnim] = useState(false);
+  const [lastGoalCount, setLastGoalCount] = useState(0);
+
   const today = useMemo(() => new Date(), []);
 
+  // fetch data
   useEffect(() => {
     if (!eventId) {
       setLoading(false);
@@ -134,38 +156,32 @@ export default function MatchViewer() {
         if (cancelled) return;
         setData(d);
 
-        try {
-          const when =
-            (d as any)?.compDate &&
-            !Number.isNaN(Date.parse((d as any).compDate))
-              ? new Date((d as any).compDate)
-              : today;
+        const when =
+          (d as any)?.compDate && !Number.isNaN(Date.parse((d as any).compDate))
+            ? new Date((d as any).compDate)
+            : today;
 
-          const sb = await fetchScoreboard(when);
-          if (cancelled) return;
+        const sb = await fetchScoreboard(when);
+        if (cancelled) return;
 
-          const ev =
-            (sb.events ?? []).find((e) => String(e.id) === String(eventId)) ||
-            null;
-          setSbEvent(ev);
+        const ev =
+          (sb.events ?? []).find((e) => String(e.id) === String(eventId)) ??
+          null;
+        setSbEvent(ev);
 
-          const details = ev
-            ? extractStatsFromScoreboardEvent(ev)
-            : { scorers: [] as Scorer[] };
+        const details = ev
+          ? extractStatsFromScoreboardEvent(ev)
+          : { scorers: [] as Scorer[] };
 
-          const hasGoodSummaryScorers =
-            Array.isArray(d.scorers) &&
-            d.scorers.length > 0 &&
-            d.scorers.some(
-              (s: any) =>
-                typeof s?.player === "string" && !/^Goal\b/i.test(s.player)
-            );
+        const hasGoodSummaryScorers =
+          Array.isArray(d.scorers) &&
+          d.scorers.length > 0 &&
+          d.scorers.some(
+            (s: any) =>
+              typeof s?.player === "string" && !/^Goal\b/i.test(s.player)
+          );
 
-          setSbScorers(hasGoodSummaryScorers ? null : details.scorers ?? []);
-        } catch {
-          setSbScorers(null);
-          setSbEvent(null);
-        }
+        setSbScorers(hasGoodSummaryScorers ? null : details.scorers ?? []);
       } catch (e: any) {
         if (!cancelled) setErr(e?.message ?? String(e));
       } finally {
@@ -178,7 +194,29 @@ export default function MatchViewer() {
     };
   }, [eventId, today]);
 
-  if (!eventId)
+  // derive scorers
+  const { homeScorers, awayScorers } = useMemo(() => {
+    if (!data) return { homeScorers: [], awayScorers: [] };
+    const allScorers: Scorer[] = (data as any)?.scorers?.length
+      ? (data as any).scorers
+      : sbScorers ?? [];
+    const fixed = buildDisplayScorers(allScorers, sbEvent);
+    return { homeScorers: fixed.home, awayScorers: fixed.away };
+  }, [data, sbScorers, sbEvent]);
+
+  // trigger animation on goal change
+  useEffect(() => {
+    const totalGoals = homeScorers.length + awayScorers.length;
+    if (totalGoals > lastGoalCount) {
+      setGoalAnim(true);
+      const t = setTimeout(() => setGoalAnim(false), 2500);
+      return () => clearTimeout(t);
+    }
+    setLastGoalCount(totalGoals);
+  }, [homeScorers, awayScorers, lastGoalCount]);
+
+  /* early returns */
+  if (!eventId) {
     return (
       <ComicCard>
         <div className="p-4">
@@ -186,149 +224,82 @@ export default function MatchViewer() {
         </div>
       </ComicCard>
     );
-  if (loading)
+  }
+  if (loading) {
     return (
       <ComicCard>
         <div className="p-4">Loading…</div>
       </ComicCard>
     );
-  if (err || !data)
+  }
+  if (err || !data) {
     return (
       <ComicCard>
         <div className="p-4">Failed to load: {err}</div>
       </ComicCard>
     );
+  }
 
-  const H = data.home;
-  const A = data.away;
-  const fmt = (n?: number | null, suffix = "") =>
-    n == null ? "—" : `${n}${suffix}`;
-
+  // safe destructuring
+  const { home: H, away: A } = data;
   const homeScore = (data as any)?.score?.home ?? null;
   const awayScore = (data as any)?.score?.away ?? null;
   const statusText = (data as any)?.statusText ?? null;
-  // summary → scoreboard fallback
-  const allScorers: Scorer[] = (data as any)?.scorers?.length
-    ? (data as any).scorers
-    : sbScorers ?? [];
 
-  /** Rebuild/repair scorer list from raw scoreboard plays (ensures scorer names + tags) */
-  function buildDisplayScorers(): { home: string[]; away: string[] } {
-    const baseHome = allScorers
-      .filter((x: any) => x.homeAway === "home")
-      .map(fmtScorer);
-    const baseAway = allScorers
-      .filter((x: any) => x.homeAway === "away")
-      .map(fmtScorer);
+  const fmt = (n?: number | null, suffix = "") =>
+    n == null ? "—" : `${n}${suffix}`;
 
-    const needsFix =
-      [...baseHome, ...baseAway].some((s) => /^Goal\b/i.test(s)) &&
-      sbEvent &&
-      sbEvent.competitions &&
-      sbEvent.competitions[0];
-
-    if (!needsFix) return { home: baseHome, away: baseAway };
-
-    const comp = sbEvent!.competitions[0];
-    const competitors = comp?.competitors ?? [];
-    const idToSide: Record<string, "home" | "away"> = {};
-    (competitors ?? []).forEach((c: any) => {
-      const id = String(c?.team?.id ?? c?.id ?? "");
-      const side = c?.homeAway as "home" | "away";
-      if (id && side) idToSide[id] = side;
-    });
-
-    const fromArray = Array.isArray(comp?.details) ? comp?.details : [];
-    const fromScoring = !Array.isArray(comp?.details)
-      ? comp?.details?.scoringPlays ?? []
-      : [];
-    const plays = [
-      ...fromArray.filter((p: any) => p?.scoringPlay),
-      ...fromScoring,
-    ];
-
-    const homeOut: string[] = [];
-    const awayOut: string[] = [];
-
-    for (const p of plays ?? []) {
-      const ai0: any = first(p?.athletesInvolved as any[]);
-      let name: string | undefined = undefined;
-
-      if (ai0?.displayName) name = ai0.displayName;
-      else if (ai0?.athlete?.displayName) name = ai0.athlete.displayName;
-      else if ((p as any)?.athlete?.displayName)
-        name = (p as any).athlete.displayName;
-
-      const parsed = parseNameFromText(p?.text);
-      if (!name && parsed.name) name = parsed.name;
-      if (!name) name = "Goal";
-
-      const pen = isPenaltyPlay(p) || !!parsed.isPenalty;
-      const og = isOwnGoalPlay(p) || !!parsed.isOG;
-
-      name = name
-        .replace(/\s*\((?:P|p)\)\s*/g, "")
-        .replace(/\s*\(OG\)\s*/g, "");
-      if (pen) name = `${name} (p)`;
-      if (og) name = `${name} (OG)`;
-
-      const minute =
-        normalizeMinute(p?.clock?.displayValue) ?? normalizeMinute(p?.text);
-      const label = `${name}${minute ? ` ${minute}` : ""}`.trim();
-
-      const teamId = p?.team?.id ? String(p.team.id) : undefined;
-      const side =
-        (p?.homeAway as "home" | "away" | undefined) ??
-        (teamId ? idToSide[teamId] : undefined);
-
-      if (side === "home") homeOut.push(label);
-      else if (side === "away") awayOut.push(label);
-    }
-
-    return {
-      home: homeOut.length ? homeOut : baseHome,
-      away: awayOut.length ? awayOut : baseAway,
-    };
-  }
-
-  const fixed = buildDisplayScorers();
-  const homeScorers = fixed.home;
-  const awayScorers = fixed.away;
-
-  // Logos (scoreboard → summary fallback)
   const comp = (sbEvent as any)?.competitions?.[0];
   const homeC = comp?.competitors?.find((c: any) => c.homeAway === "home");
   const awayC = comp?.competitors?.find((c: any) => c.homeAway === "away");
+
   const homeLogoUrl =
     homeC?.team?.logo ??
     homeC?.team?.logos?.[0]?.href ??
-    (H as any)?.logoUrl ??
-    (H as any)?.logo ??
     (H as any)?.crest ??
     null;
   const awayLogoUrl =
     awayC?.team?.logo ??
     awayC?.team?.logos?.[0]?.href ??
-    (A as any)?.logoUrl ??
-    (A as any)?.logo ??
     (A as any)?.crest ??
     null;
 
+  /* render */
   return (
     <ComicCard>
-      <div className={styles.container}>
-        {/* Buttons */}
-        <div className={styles.buttonRow}>
-          <button className={styles.teamButton}>Team Stats</button>
-          <Link
-            to={`/playerstats?id=${encodeURIComponent(eventId ?? "")}`}
-            className={styles.playerButton}
-          >
-            Player Stats
-          </Link>
-        </div>
+      <div className={styles.buttonRow}>
+        <button className={styles.teamButton}>Team Stats</button>
+        <Link
+          to={`/playerstats?id=${encodeURIComponent(eventId ?? "")}`}
+          className={styles.playerButton}
+        >
+          Player Stats
+        </Link>
+      </div>
+      <div className={`${styles.container} `}>
+        {/* 🎉 Confetti */}
+        {goalAnim && (
+          <div className="fixed inset-0 pointer-events-none flex justify-center items-start z-50">
+            {Array.from({ length: 30 }).map((_, i) => (
+              <div
+                key={i}
+                className="animate-confetti absolute w-2 h-2 rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  backgroundColor: [
+                    "#f87171",
+                    "#34d399",
+                    "#60a5fa",
+                    "#fbbf24",
+                    "#ec4899",
+                  ][Math.floor(Math.random() * 5)],
+                  animationDelay: `${Math.random() * 0.5}s`,
+                }}
+              />
+            ))}
+          </div>
+        )}
 
-        {/* Header */}
         <h1 className={styles.heading}>
           {H.teamName} vs {A.teamName}
         </h1>
@@ -337,13 +308,14 @@ export default function MatchViewer() {
         <GameSummaryCard
           homeName={H.teamName}
           awayName={A.teamName}
-          homeScore={homeScore ?? (H as any)?.score ?? null}
-          awayScore={awayScore ?? (A as any)?.score ?? null}
+          homeScore={homeScore}
+          awayScore={awayScore}
           statusText={statusText}
           homeLogoUrl={homeLogoUrl}
           awayLogoUrl={awayLogoUrl}
           homeScorers={homeScorers}
           awayScorers={awayScorers}
+          className={goalAnim ? "animate-goal" : ""}
         />
         {/* Possession & Passing */}
         <section className={styles.section}>

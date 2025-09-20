@@ -1,4 +1,5 @@
 import React from "react";
+import styles from "./StatKey.module.css";
 
 export default function StatKey() {
   const SECTIONS: { title: string; items: [string, string][] }[] = [
@@ -41,23 +42,19 @@ export default function StatKey() {
   ];
 
   return (
-    <section style={{ border: "1px solid #eee", borderRadius: 10, padding: 12, background: "#fff", marginBottom: 16 }}>
-      <h3 style={{ margin: "0 0 8px" }}>Stat Key</h3>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "12px 24px",
-          fontSize: 14,
-        }}
-      >
+    <section className={styles.container}>
+      <h3 className={styles.heading}>Stat Key</h3>
+      <div className={styles.grid}>
         {SECTIONS.map((sec) => (
-          <div key={sec.title}>
-            <h4 style={{ margin: "0 0 6px", fontSize: "1rem" }}>{sec.title}</h4>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          <div key={sec.title} className={styles.section}>
+            <h4 className={styles.subheading}>{sec.title}</h4>
+            <ul className={styles.list}>
               {sec.items.map(([code, desc]) => (
-                <li key={code} style={{ marginBottom: 4 }}>
-                  <code style={{ fontWeight: 700 }}>{code}</code> — {desc}
+                <li key={code} className={styles.listItem}>
+                  <code className={styles.code} data-code={code}>
+                    {code}
+                  </code>{" "}
+                  — {desc}
                 </li>
               ))}
             </ul>

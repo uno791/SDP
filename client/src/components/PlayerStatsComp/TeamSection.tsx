@@ -1,5 +1,6 @@
 import React from "react";
 import PlayerTable, { type PlayerRow } from "./PlayerTable";
+import styles from "./TeamSection.module.css";
 
 export default function TeamSection({
   teamName,
@@ -13,8 +14,8 @@ export default function TeamSection({
   compact?: boolean;
 }) {
   return (
-    <section style={{ marginBottom: compact ? 20 : 28 }}>
-      <h2 style={{ margin: "0 0 8px" }}>{teamName}</h2>
+    <section className={compact ? styles.sectionCompact : styles.section}>
+      <h2 className={styles.teamName}>{teamName}</h2>
 
       <PlayerTable title="Starting XI" rows={starters} />
       <PlayerTable title="Substitutes" rows={subs} />

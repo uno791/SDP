@@ -124,7 +124,7 @@ function RotatingFootball({ url }: { url: string }) {
 
 /* Main exported football canvas */
 export default function ThreeFootball() {
-  const modelUrl = "/jabulani.glb";
+  const modelUrl = "/hot_girls_04.glb";
   useGLTF.preload?.(modelUrl);
 
   // Parallax (gentle) — keep small so the ball stays in the hero area

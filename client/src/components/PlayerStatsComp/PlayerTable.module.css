@@ -1,0 +1,68 @@
+.tableWrapper {
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tableWrapper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.title {
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 1rem;
+  color: #065f46;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.tr {
+  border-top: 1px solid #f0f0f0;
+  transition: background 0.15s ease;
+}
+
+.tr:hover {
+  background: #f9fafb;
+}
+
+.td {
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  color: #111827;
+}
+
+.noPlayers {
+  padding: 1rem;
+  text-align: center;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.avatarCell {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 260px;
+}

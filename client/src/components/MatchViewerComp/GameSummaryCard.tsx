@@ -120,7 +120,8 @@ export default function GameSummaryCard({
   awayLogoUrl,
   homeScorers,
   awayScorers,
-}: Props) {
+  className,
+}: Props & { className?: string }) {
   const leftItems = (homeScorers ?? []).map(fmtScorer);
   const rightItems = (awayScorers ?? []).map(fmtScorer);
 
@@ -135,36 +136,46 @@ export default function GameSummaryCard({
   }) => {
     const url = logo && String(logo).trim() !== "" ? String(logo) : undefined;
     return (
-      <div
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 12,
-          justifyContent: align === "left" ? "flex-start" : "flex-end",
-          minWidth: 0,
-        }}
-      >
-        {align === "left" && url ? (
-          <img
-            src={url}
-            alt={`${name} logo`}
-            width={64}
-            height={64}
-            style={{ borderRadius: 8, objectFit: "contain", display: "block" }}
-          />
-        ) : null}
-        <span style={{ fontWeight: 700, fontSize: 16, whiteSpace: "nowrap" }}>
-          {name}
-        </span>
-        {align === "right" && url ? (
-          <img
-            src={url}
-            alt={`${name} logo`}
-            width={64}
-            height={64}
-            style={{ borderRadius: 8, objectFit: "contain", display: "block" }}
-          />
-        ) : null}
+      <div className={`${className ?? ""}`}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 12,
+            justifyContent: align === "left" ? "flex-start" : "flex-end",
+            minWidth: 0,
+          }}
+        >
+          {align === "left" && url ? (
+            <img
+              src={url}
+              alt={`${name} logo`}
+              width={64}
+              height={64}
+              style={{
+                borderRadius: 8,
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+          ) : null}
+          <span style={{ fontWeight: 700, fontSize: 16, whiteSpace: "nowrap" }}>
+            {name}
+          </span>
+          {align === "right" && url ? (
+            <img
+              src={url}
+              alt={`${name} logo`}
+              width={64}
+              height={64}
+              style={{
+                borderRadius: 8,
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+          ) : null}
+        </div>
       </div>
     );
   };
