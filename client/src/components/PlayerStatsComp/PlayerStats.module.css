@@ -11,10 +11,11 @@
   gap: 1rem;
   padding: 1.25rem 1.5rem;
   border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #ffffff, #f9fafb);
+  border-radius: 9px;
+  background: linear-gradient(135deg, #064e3b, #0d755a, #064e3b);
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
   margin-bottom: 1.5rem;
+  color: #ffffff;
 }
 .teamLeft {
   display: inline-flex;
