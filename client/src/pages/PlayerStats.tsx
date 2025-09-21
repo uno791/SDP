@@ -8,7 +8,7 @@ import type {
   Side,
 } from "../components/PlayerStatsComp/PlayerTable";
 import { fetchSummaryNormalized, type PlayerLine } from "../api/espn";
-
+import MatchNavBar from "../components/PlayerStatsComp/MatchNavBar";
 import styles from "../components/PlayerStatsComp/PlayerStats.module.css";
 
 type TeamTable = { teamName: string; starters: PlayerRow[]; subs: PlayerRow[] };
@@ -76,7 +76,6 @@ function toRow(p: PlayerLine, side: Side): PlayerRow {
     OF: p.offsides ?? undefined,
   };
 }
-
 function partitionTeam(players: PlayerLine[], side: Side) {
   const rows: PlayerRow[] = players.map((p) => toRow(p, side));
 
@@ -92,19 +91,34 @@ function partitionTeam(players: PlayerLine[], side: Side) {
     return r.subIn === true || r.subOut === true || anyCount > 0;
   };
 
-  let starters = rows.filter((r) => played(r) && r.subIn !== true);
-  let subs = rows.filter((r) => r.subIn === true || !played(r));
+  // Starters = not subbed in, or flagged as starter
+  let starters = rows.filter(
+    (r) => (r.subIn !== true && r.subInMinute == null) || r.starter === true
+  );
 
-  if (starters.length === 0) {
-    const sorted = [...rows].sort((a, b) =>
-      String(a.name).localeCompare(String(b.name))
+  // Subs = everyone else who either subbed in or never played
+  let subs = rows.filter((r) => !starters.includes(r));
+
+  // --- Fallbacks ---
+  if (starters.length > 11) {
+    // Too many, trim to 11 by keeping "most played" first
+    const sorted = [...starters].sort(
+      (a, b) => (played(b) ? 1 : 0) - (played(a) ? 1 : 0)
     );
-    starters = sorted
-      .slice(0, Math.min(sorted.length, 11))
-      .map((r) => ({ ...r, subIn: false }));
-    subs = sorted.slice(starters.length);
+    subs = [...subs, ...sorted.slice(11)];
+    starters = sorted.slice(0, 11);
+  } else if (starters.length < 11 && rows.length >= 11) {
+    // Too few, promote extra active players
+    const need = 11 - starters.length;
+    const candidates = rows.filter((r) => !starters.includes(r));
+    const sorted = candidates.sort(
+      (a, b) => (played(b) ? 1 : 0) - (played(a) ? 1 : 0)
+    );
+    starters = [...starters, ...sorted.slice(0, need)];
+    subs = rows.filter((r) => !starters.includes(r));
   }
 
+  // Flag
   starters = starters.map((r) => ({ ...r, starter: true }));
   subs = subs.map((r) => ({ ...r, starter: false }));
 
@@ -315,31 +329,35 @@ export default function PlayerStats() {
     0;
 
   return (
-    <section className={styles.container}>
-      <header className={styles.header}>
-        <strong className={styles.teamLeft}>{data.home.teamName}</strong>
-        <div className={styles.headerTitle}>Player Statistics</div>
-        <strong className={styles.teamRight}>{data.away.teamName}</strong>
-      </header>
+    <>
+      <MatchNavBar />
+      <section className={styles.container}>
+        <header className={styles.header}>
+          <strong className={styles.teamLeft}>{data.home.teamName}</strong>
+          <div className={styles.headerTitle}>Player Statistics</div>
+          <strong className={styles.teamRight}>{data.away.teamName}</strong>
+        </header>
 
-      <StatKey />
+        <StatKey />
 
-      {noPlayerStats ? (
-        <section className={styles.noStats}>
-          Detailed player-level stats were not provided by ESPN for this match.
-        </section>
-      ) : null}
+        {noPlayerStats ? (
+          <section className={styles.noStats}>
+            Detailed player-level stats were not provided by ESPN for this
+            match.
+          </section>
+        ) : null}
 
-      <TeamSection
-        teamName={data.home.teamName}
-        starters={data.home.starters}
-        subs={data.home.subs}
-      />
-      <TeamSection
-        teamName={data.away.teamName}
-        starters={data.away.starters}
-        subs={data.away.subs}
-      />
-    </section>
+        <TeamSection
+          teamName={data.home.teamName}
+          starters={data.home.starters}
+          subs={data.home.subs}
+        />
+        <TeamSection
+          teamName={data.away.teamName}
+          starters={data.away.starters}
+          subs={data.away.subs}
+        />
+      </section>
+    </>
   );
 }

@@ -1,0 +1,89 @@
+.nav {
+  top: 0;
+  z-index: 50;
+
+  backdrop-filter: blur(4px);
+  background: #01532db9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  --header-height: 4rem;
+  position: fixed;
+
+  left: 0;
+  right: 0;
+
+  border-bottom: 1px solid rgba(6, 95, 70, 0.2);
+
+  height: var(--header-height);
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 2rem;
+  flex: 1;
+  justify-content: center; /* center nav items */
+}
+
+.navLink {
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #d1fae5;
+  padding-bottom: 0.25rem;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.navLink:hover {
+  color: #ffffff;
+  border-bottom: 2px solid #34d399; /* emerald-400 */
+}
+
+.active {
+  color: #ffffff;
+  border-bottom: 2px solid #10b981; /* emerald-500 */
+}
+.logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: 7rem !important;
+  margin-right: -7rem !important;
+}
+.title {
+  color: white;
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: 0.05em;
+}
+.burgerButton {
+  background: none;
+  border: none;
+  color: #d1fae5; /* emerald-100 */
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-right: 7rem !important;
+  margin-left: 2rem !important;
+}
+
+.burgerButton:hover {
+  color: #ffffff;
+}

@@ -1,19 +1,13 @@
-.tableWrapper {
+.tableContainer {
   margin-bottom: 1.5rem;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  overflow: hidden;
   background: #ffffff;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
 }
 
-.tableWrapper:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
-}
-
-.title {
+.tableTitle {
   padding: 0.75rem 1rem;
   font-weight: 700;
   background: #f9fafb;
@@ -60,9 +54,109 @@
   font-style: italic;
 }
 
-.avatarCell {
+/* --- Avatar + Info --- */
+.avatarNameCell {
   display: flex;
   align-items: center;
   gap: 1rem;
-  min-width: 260px;
+  min-width: 220px;
+}
+
+.avatarWrapper {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.avatarImg {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+  background: #f3f4f6;
+}
+
+.shirtBadge {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  background: #111;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.infoWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.playerName {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.playerPosition {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.subIndicatorContainer {
+  margin-top: 4px;
+}
+
+/* --- Sub Indicators --- */
+.subIndicatorWrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.subOut {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.subOutCircle {
+  background: #dc2626;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+}
+
+.subIn {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.subInCircle {
+  background: #047857;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
 }

@@ -36,12 +36,11 @@ function App() {
 
               {/* New Profile route */}
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/matchviewer" element={<MatchViewer />} />
-              <Route path="/playerstats" element={<PlayerStats />} />
-              <Route path="/commentary" element={<Commentary />} />
-
             </Route>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/matchviewer" element={<MatchViewer />} />
+            <Route path="/playerstats" element={<PlayerStats />} />
+            <Route path="/commentary" element={<Commentary />} />
           </Routes>
         </Router>
       </UserProvider>

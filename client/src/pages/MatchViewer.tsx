@@ -5,7 +5,7 @@ import ComicCard from "../components/MatchViewerComp/ComicCard";
 import GameSummaryCard from "../components/MatchViewerComp/GameSummaryCard";
 import PlayerStatsCard from "../components/MatchViewerComp/PlayerStatsCard";
 import TriStatRow from "../components/MatchViewerComp/TriStatRow";
-
+import MatchNavBar from "../components/PlayerStatsComp/MatchNavBar";
 import {
   fetchSummaryNormalized,
   type SummaryNormalized,
@@ -177,7 +177,8 @@ export default function MatchViewer() {
           Array.isArray(d.scorers) &&
           d.scorers.length > 0 &&
           d.scorers.some(
-            (s: any) => typeof s?.player === "string" && !/^Goal\b/i.test(s.player)
+            (s: any) =>
+              typeof s?.player === "string" && !/^Goal\b/i.test(s.player)
           );
 
         setSbScorers(hasGoodSummaryScorers ? null : details.scorers ?? []);
@@ -265,194 +266,181 @@ export default function MatchViewer() {
 
   /* render */
   return (
-    <ComicCard>
-      <div className={styles.buttonRow}>
-        <button className={styles.teamButton}>Team Stats</button>
-        <Link
-          to={`/playerstats?id=${encodeURIComponent(eventId ?? "")}`}
-          className={styles.playerButton}
-        >
-          Player Stats
-        </Link>
-        {/* 👇 NEW: Commentary button next to Player Stats */}
-        <Link
-          to={`/commentary?id=${encodeURIComponent(eventId ?? "")}`}
-          className={styles.playerButton}
-        >
-          Commentary
-        </Link>
-      </div>
+    <>
+      <MatchNavBar />
 
-      <div className={`${styles.container} `}>
-        {/* 🎉 Confetti */}
-        {goalAnim && (
-          <div className="fixed inset-0 pointer-events-none flex justify-center items-start z-50">
-            {Array.from({ length: 30 }).map((_, i) => (
-              <div
-                key={i}
-                className="animate-confetti absolute w-2 h-2 rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  backgroundColor: [
-                    "#f87171",
-                    "#34d399",
-                    "#60a5fa",
-                    "#fbbf24",
-                    "#ec4899",
-                  ][Math.floor(Math.random() * 5)],
-                  animationDelay: `${Math.random() * 0.5}s`,
-                }}
-              />
-            ))}
-          </div>
-        )}
+      <ComicCard>
+        <div className={`${styles.container} `}>
+          {/* 🎉 Confetti */}
+          {goalAnim && (
+            <div className="fixed inset-0 pointer-events-none flex justify-center items-start z-50">
+              {Array.from({ length: 30 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="animate-confetti absolute w-2 h-2 rounded-full"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    backgroundColor: [
+                      "#f87171",
+                      "#34d399",
+                      "#60a5fa",
+                      "#fbbf24",
+                      "#ec4899",
+                    ][Math.floor(Math.random() * 5)],
+                    animationDelay: `${Math.random() * 0.5}s`,
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
-        <h1 className={styles.heading}>
-          {H.teamName} vs {A.teamName}
-        </h1>
-        <div className={styles.subheading}>Match Statistics</div>
+          <h1 className={styles.heading}>
+            {H.teamName} vs {A.teamName}
+          </h1>
+          <div className={styles.subheading}>Match Statistics</div>
 
-        <GameSummaryCard
-          homeName={H.teamName}
-          awayName={A.teamName}
-          homeScore={homeScore}
-          awayScore={awayScore}
-          statusText={statusText}
-          homeLogoUrl={homeLogoUrl}
-          awayLogoUrl={awayLogoUrl}
-          homeScorers={homeScorers}
-          awayScorers={awayScorers}
-          className={goalAnim ? "animate-goal" : ""}
-        />
+          <GameSummaryCard
+            homeName={H.teamName}
+            awayName={A.teamName}
+            homeScore={homeScore}
+            awayScore={awayScore}
+            statusText={statusText}
+            homeLogoUrl={homeLogoUrl}
+            awayLogoUrl={awayLogoUrl}
+            homeScorers={homeScorers}
+            awayScorers={awayScorers}
+            className={goalAnim ? "animate-goal" : ""}
+          />
 
-        {/* Possession & Passing */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Possession &amp; Passing</h2>
-          <TriStatRow
-            label="Possession"
-            left={<b>{fmt(H.possessionPassing?.possessionPct, "%")}</b>}
-            right={<b>{fmt(A.possessionPassing?.possessionPct, "%")}</b>}
-          />
-          <TriStatRow
-            label="Passes attempted"
-            left={fmt(H.possessionPassing?.passesAttempted)}
-            right={fmt(A.possessionPassing?.passesAttempted)}
-          />
-          <TriStatRow
-            label="Accurate passes"
-            left={fmt(H.possessionPassing?.accuratePasses)}
-            right={fmt(A.possessionPassing?.accuratePasses)}
-          />
-          <TriStatRow
-            label="Pass completion %"
-            left={fmt(H.possessionPassing?.passCompletionPct, "%")}
-            right={fmt(A.possessionPassing?.passCompletionPct, "%")}
-          />
-        </section>
+          {/* Possession & Passing */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Possession &amp; Passing</h2>
+            <TriStatRow
+              label="Possession"
+              left={<b>{fmt(H.possessionPassing?.possessionPct, "%")}</b>}
+              right={<b>{fmt(A.possessionPassing?.possessionPct, "%")}</b>}
+            />
+            <TriStatRow
+              label="Passes attempted"
+              left={fmt(H.possessionPassing?.passesAttempted)}
+              right={fmt(A.possessionPassing?.passesAttempted)}
+            />
+            <TriStatRow
+              label="Accurate passes"
+              left={fmt(H.possessionPassing?.accuratePasses)}
+              right={fmt(A.possessionPassing?.accuratePasses)}
+            />
+            <TriStatRow
+              label="Pass completion %"
+              left={fmt(H.possessionPassing?.passCompletionPct, "%")}
+              right={fmt(A.possessionPassing?.passCompletionPct, "%")}
+            />
+          </section>
 
-        {/* Discipline & Fouls */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Discipline &amp; Fouls</h2>
-          <TriStatRow
-            label="Fouls committed"
-            left={fmt(H.disciplineFouls?.foulsCommitted)}
-            right={fmt(A.disciplineFouls?.foulsCommitted)}
-          />
-          <TriStatRow
-            label="Yellow cards"
-            left={fmt(H.disciplineFouls?.yellowCards)}
-            right={fmt(A.disciplineFouls?.yellowCards)}
-          />
-          <TriStatRow
-            label="Red cards"
-            left={fmt(H.disciplineFouls?.redCards)}
-            right={fmt(A.disciplineFouls?.redCards)}
-          />
-          <TriStatRow
-            label="Offsides"
-            left={fmt(H.disciplineFouls?.offsides)}
-            right={fmt(A.disciplineFouls?.offsides)}
-          />
-        </section>
+          {/* Discipline & Fouls */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Discipline &amp; Fouls</h2>
+            <TriStatRow
+              label="Fouls committed"
+              left={fmt(H.disciplineFouls?.foulsCommitted)}
+              right={fmt(A.disciplineFouls?.foulsCommitted)}
+            />
+            <TriStatRow
+              label="Yellow cards"
+              left={fmt(H.disciplineFouls?.yellowCards)}
+              right={fmt(A.disciplineFouls?.yellowCards)}
+            />
+            <TriStatRow
+              label="Red cards"
+              left={fmt(H.disciplineFouls?.redCards)}
+              right={fmt(A.disciplineFouls?.redCards)}
+            />
+            <TriStatRow
+              label="Offsides"
+              left={fmt(H.disciplineFouls?.offsides)}
+              right={fmt(A.disciplineFouls?.offsides)}
+            />
+          </section>
 
-        {/* Shooting */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Shooting</h2>
-          <TriStatRow
-            label="Total shots"
-            left={fmt(H.shooting?.totalShots)}
-            right={fmt(A.shooting?.totalShots)}
-          />
-          <TriStatRow
-            label="Shots on target"
-            left={fmt(H.shooting?.shotsOnTarget)}
-            right={fmt(A.shooting?.shotsOnTarget)}
-          />
-          <TriStatRow
-            label="Blocked shots"
-            left={fmt(H.shooting?.blockedShots)}
-            right={fmt(A.shooting?.blockedShots)}
-          />
-          <TriStatRow
-            label="Penalty kicks taken"
-            left={fmt(H.shooting?.penaltyKicksTaken)}
-            right={fmt(A.shooting?.penaltyKicksTaken)}
-          />
-          <TriStatRow
-            label="Penalty goals"
-            left={fmt(H.shooting?.penaltyGoals)}
-            right={fmt(A.shooting?.penaltyGoals)}
-          />
-        </section>
+          {/* Shooting */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Shooting</h2>
+            <TriStatRow
+              label="Total shots"
+              left={fmt(H.shooting?.totalShots)}
+              right={fmt(A.shooting?.totalShots)}
+            />
+            <TriStatRow
+              label="Shots on target"
+              left={fmt(H.shooting?.shotsOnTarget)}
+              right={fmt(A.shooting?.shotsOnTarget)}
+            />
+            <TriStatRow
+              label="Blocked shots"
+              left={fmt(H.shooting?.blockedShots)}
+              right={fmt(A.shooting?.blockedShots)}
+            />
+            <TriStatRow
+              label="Penalty kicks taken"
+              left={fmt(H.shooting?.penaltyKicksTaken)}
+              right={fmt(A.shooting?.penaltyKicksTaken)}
+            />
+            <TriStatRow
+              label="Penalty goals"
+              left={fmt(H.shooting?.penaltyGoals)}
+              right={fmt(A.shooting?.penaltyGoals)}
+            />
+          </section>
 
-        {/* Set Pieces & Saves */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Set Pieces &amp; Saves</h2>
-          <TriStatRow
-            label="Corner kicks won"
-            left={fmt(H.setPiecesSaves?.cornerKicksWon)}
-            right={fmt(A.setPiecesSaves?.cornerKicksWon)}
-          />
-          <TriStatRow
-            label="Saves (GK)"
-            left={fmt(H.setPiecesSaves?.savesByGK)}
-            right={fmt(A.setPiecesSaves?.savesByGK)}
-          />
-        </section>
+          {/* Set Pieces & Saves */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Set Pieces &amp; Saves</h2>
+            <TriStatRow
+              label="Corner kicks won"
+              left={fmt(H.setPiecesSaves?.cornerKicksWon)}
+              right={fmt(A.setPiecesSaves?.cornerKicksWon)}
+            />
+            <TriStatRow
+              label="Saves (GK)"
+              left={fmt(H.setPiecesSaves?.savesByGK)}
+              right={fmt(A.setPiecesSaves?.savesByGK)}
+            />
+          </section>
 
-        {/* Crossing & Long Balls */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Crossing &amp; Long Balls</h2>
-          <TriStatRow
-            label="Crosses attempted"
-            left={fmt(H.crossingLongBalls?.crossesAttempted)}
-            right={fmt(A.crossingLongBalls?.crossesAttempted)}
-          />
-          <TriStatRow
-            label="Accurate crosses"
-            left={fmt(H.crossingLongBalls?.accurateCrosses)}
-            right={fmt(A.crossingLongBalls?.accurateCrosses)}
-          />
-          <TriStatRow
-            label="Long balls attempted"
-            left={fmt(H.crossingLongBalls?.longBallsAttempted)}
-            right={fmt(A.crossingLongBalls?.longBallsAttempted)}
-          />
-          <TriStatRow
-            label="Accurate long balls"
-            left={fmt(H.crossingLongBalls?.accurateLongBalls)}
-            right={fmt(A.crossingLongBalls?.accurateLongBalls)}
-          />
-          <TriStatRow
-            label="Long ball accuracy"
-            left={fmt(H.crossingLongBalls?.longBallAccuracyPct, "%")}
-            right={fmt(A.crossingLongBalls?.longBallAccuracyPct, "%")}
-          />
-        </section>
+          {/* Crossing & Long Balls */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Crossing &amp; Long Balls</h2>
+            <TriStatRow
+              label="Crosses attempted"
+              left={fmt(H.crossingLongBalls?.crossesAttempted)}
+              right={fmt(A.crossingLongBalls?.crossesAttempted)}
+            />
+            <TriStatRow
+              label="Accurate crosses"
+              left={fmt(H.crossingLongBalls?.accurateCrosses)}
+              right={fmt(A.crossingLongBalls?.accurateCrosses)}
+            />
+            <TriStatRow
+              label="Long balls attempted"
+              left={fmt(H.crossingLongBalls?.longBallsAttempted)}
+              right={fmt(A.crossingLongBalls?.longBallsAttempted)}
+            />
+            <TriStatRow
+              label="Accurate long balls"
+              left={fmt(H.crossingLongBalls?.accurateLongBalls)}
+              right={fmt(A.crossingLongBalls?.accurateLongBalls)}
+            />
+            <TriStatRow
+              label="Long ball accuracy"
+              left={fmt(H.crossingLongBalls?.longBallAccuracyPct, "%")}
+              right={fmt(A.crossingLongBalls?.longBallAccuracyPct, "%")}
+            />
+          </section>
 
-        {/* Player Stats */}
-        <PlayerStatsCard />
-      </div>
-    </ComicCard>
+          {/* Player Stats */}
+          <PlayerStatsCard />
+        </div>
+      </ComicCard>
+    </>
   );
 }

@@ -63,7 +63,6 @@ function SubIndicator({ row }: { row: PlayerRow }) {
     </div>
   );
 }
-
 function AvatarNameCell({
   row,
   eager = false,
@@ -71,14 +70,11 @@ function AvatarNameCell({
   row: PlayerRow;
   eager?: boolean;
 }) {
-  const SIZE = 80;
+  const SIZE = 64;
 
   return (
     <div className={styles.avatarNameCell}>
-      <div
-        className={styles.avatarWrapper}
-        style={{ width: SIZE, height: SIZE }}
-      >
+      <div className={styles.avatarWrapper}>
         <img
           src={row.teamLogoUrl || ""}
           alt={`${row.side} team logo`}
@@ -87,21 +83,16 @@ function AvatarNameCell({
           loading={eager ? "eager" : "lazy"}
           decoding="async"
           fetchpriority={eager ? "high" : "auto"}
-          sizes={`${SIZE}px`}
           className={styles.avatarImg}
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
           }}
           referrerPolicy="no-referrer"
         />
-        {row.shirt != null && String(row.shirt).trim() !== "" && (
-          <span className={styles.shirtBadge} title={`#${row.shirt}`}>
-            {row.shirt}
-          </span>
-        )}
+        {row.shirt && <span className={styles.shirtBadge}>#{row.shirt}</span>}
       </div>
 
-      <div>
+      <div className={styles.infoWrapper}>
         <div className={styles.playerName}>{row.name}</div>
         {row.position && (
           <div className={styles.playerPosition}>{row.position}</div>
