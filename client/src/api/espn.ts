@@ -728,7 +728,7 @@ function extractPlayersFromSummary(summary: any): PlayerLine[] {
 
           goalsAgainst: stats["goalsconceded"],
           saves: stats["saves"] ?? stats["savesmade"],
-          shotsOnTargetFaced: stats["shotsfaced"],
+          shotsOnTargetFaced: stats["shotsfaced"] ?? stats["shots on target faced"],
 
           goals: stats["totalgoals"] ?? stats["goals"],
           assists: stats["goalassists"] ?? stats["assists"],
@@ -768,7 +768,7 @@ function extractPlayersFromSummary(summary: any): PlayerLine[] {
           foulsSuffered: stats["foulssuffered"],
           yellowCards: stats["yellowcards"],
           redCards: stats["redcards"],
-          ownGoals: stats["owngoals"],
+          ownGoals: stats["owngoals"] ?? stats["own goals"],
 
           goalsAgainst: stats["goalsconceded"],
           saves: stats["saves"] ?? stats["savesmade"],
@@ -912,14 +912,44 @@ function extractSubMinutesFromSummary(json: AnyObj): Record<string, { in?: numbe
   return out;
 }
 
-/** ----- Play-by-Play fetch (used only if Summary minutes missing) ----- */
+/** ----- Play-by-Play fetch (robust: tries multiple soccer leagues) ----- */
 async function fetchPlayByPlay(eventId: string): Promise<any | null> {
-  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/playbyplay?event=${encodeURIComponent(eventId)}`;
-  const res = await fetch(url, { headers: { accept: "application/json" } });
-  if (!res.ok) return null;
-  return res.json();
+  const leaguePaths = [
+    "soccer/eng.1",            // Premier League
+    "soccer/eng.fa",           // FA Cup
+    "soccer/eng.2",            // Championship
+    "soccer/uefa.champions",   // Champions League
+    "soccer/uefa.europa",      // Europa League
+    "soccer/uefa.europa.conf", // Conference League
+    "soccer/esp.1",            // LaLiga
+    "soccer/ita.1",            // Serie A
+    "soccer/ger.1",            // Bundesliga
+    "soccer/fra.1",            // Ligue 1
+    "soccer/ned.1",            // Eredivisie
+    "soccer/por.1",            // Primeira Liga
+  ];
+
+  const errors: string[] = [];
+  for (const path of leaguePaths) {
+    const url = `https://site.api.espn.com/apis/site/v2/sports/${path}/playbyplay?event=${encodeURIComponent(eventId)}`;
+    try {
+      const res = await fetch(url, { headers: { accept: "application/json" } });
+      if (res.ok) {
+        return res.json();
+      }
+      errors.push(`${res.status} ${res.statusText} @ ${path}`);
+    } catch (e: any) {
+      errors.push(`network error @ ${path}: ${e?.message ?? e}`);
+    }
+  }
+
+  // Helpful warning for dev; return null so UI can keep working
+  // eslint-disable-next-line no-console
+  console.warn(`PBP fetch failed for event ${eventId}. Tried: ${errors.join(" | ")}`);
+  return null;
 }
 
+/** Build index from normalized names → athleteId */
 function buildNameIndex(players: PlayerLine[]): Record<string, string> {
   const idx: Record<string, string> = {};
   for (const p of players) {
@@ -934,18 +964,17 @@ function buildNameIndex(players: PlayerLine[]): Record<string, string> {
   return idx;
 }
 
-function extractSubMinutesFromPBPByName(pbpJson: any, nameIndex: Record<string, string>):
-  Record<string, { in?: number; out?: number }> {
-
+/** Use PBP (names) to extract sub minutes when summary lacks IDs */
+function extractSubMinutesFromPBPByName(
+  pbpJson: any,
+  nameIndex: Record<string, string>
+): Record<string, { in?: number; out?: number }> {
   const out: Record<string, { in?: number; out?: number }> = {};
 
-  const plays: any[] =
-    (Array.isArray(pbpJson?.plays) ? pbpJson.plays : []) ||
-    (Array.isArray(pbpJson?.commentary?.plays) ? pbpJson.commentary.plays : []) ||
-    (Array.isArray(pbpJson?.drives?.current?.plays) ? pbpJson.drives.current.plays : []);
+  const plays: AnyObj[] = readPlaysArray(pbpJson);
 
   for (const wrap of plays) {
-    const p = wrap?.play ?? wrap;
+    const p = (wrap && typeof wrap === "object" && "play" in wrap) ? wrap.play : wrap;
     const t = String(p?.type?.text ?? p?.type ?? "");
     const isSub =
       String(p?.type?.id ?? "").toLowerCase() === "substitution" ||
@@ -957,12 +986,14 @@ function extractSubMinutesFromPBPByName(pbpJson: any, nameIndex: Record<string, 
 
     const minute =
       minuteToNumber(p?.clock?.displayValue) ??
-      minuteToNumber(wrap?.time?.displayValue) ??
+      minuteToNumber((wrap as any)?.time?.displayValue) ??
       minuteToNumber(p?.text);
 
-    const participants: any[] = Array.isArray(p?.participants) ? p.participants
-                             : Array.isArray(p?.athletesInvolved) ? p.athletesInvolved
-                             : [];
+    const participants: any[] = Array.isArray(p?.participants)
+      ? p.participants
+      : Array.isArray(p?.athletesInvolved)
+      ? p.athletesInvolved
+      : [];
 
     let inName: string | undefined;
     let outName: string | undefined;
@@ -972,7 +1003,7 @@ function extractSubMinutesFromPBPByName(pbpJson: any, nameIndex: Record<string, 
       outName = participants[1]?.athlete?.displayName ?? participants[1]?.displayName;
     } else {
       const parsed = parseReplacesNames(p?.text);
-      inName = inName ?? parsed.inName;
+      inName  = inName  ?? parsed.inName;
       outName = outName ?? parsed.outName;
     }
 
@@ -1109,4 +1140,438 @@ export async function fetchSummaryNormalized(eventId: string): Promise<SummaryNo
     scorers,
     compDate,
   };
+}
+
+/* ========================= PLAY-BY-PLAY (Commentary) ========================= */
+
+export type CommentaryTeamSide = "home" | "away" | "neutral";
+export type CommentaryKind =
+  | "goal"
+  | "penGoal"
+  | "ownGoal"
+  | "card"
+  | "foul"
+  | "handball"
+  | "corner"
+  | "subst"
+  | "offside"
+  | "save"
+  | "chance"
+  | "var"
+  | "kickoff"
+  | "ht"
+  | "ft"
+  | "period"
+  | "other";
+
+export type CommentaryEvent = {
+  /** numeric minute e.g. 93 for "90'+3'" */
+  minute?: number;
+  /** display minute e.g. "90'+3'" */
+  minuteText?: string;
+  kind: CommentaryKind;
+  side: CommentaryTeamSide;
+  /** main text line to show */
+  text: string;
+  /** optional subtext / details */
+  detail?: string;
+  /** team display name from ESPN (for debugging/tooltip) */
+  teamName?: string;
+  /** participants (display names) if present */
+  participants?: string[];
+  /** stable ordering from feed, if present */
+  sequence?: number;
+  /** raw type id for advanced use (optional) */
+  typeId?: string;
+};
+
+/** Map ESPN play.type -> our CommentaryKind */
+function mapPlayTypeToKind(typeText?: string, typeId?: string): CommentaryKind {
+  const t = String(typeText ?? "").toLowerCase();
+  const id = String(typeId ?? "").toLowerCase();
+
+  if (t.includes("goal")) return "goal";              // upgrade later if pen/OG
+  if (t.includes("own")) return "ownGoal";
+  if (t.includes("pen")) return "penGoal";
+  if (t.includes("yellow") || t.includes("red") || t.includes("card")) return "card";
+  if (t.includes("foul")) return "foul";
+  if (t.includes("hand")) return "handball";
+  if (t.includes("corner")) return "corner";
+  if (t.includes("sub")) return "subst";
+  if (t.includes("offside")) return "offside";
+  if (t.includes("save")) return "save";
+  if (t.includes("var")) return "var";
+  if (t.includes("kick") && t.includes("off")) return "kickoff";
+  if (t.includes("half") && t.includes("end")) return "ht";
+  if (t.includes("end") && t.includes("regular")) return "ft";
+  if (t.includes("period")) return "period";
+
+  // id fallbacks seen in ESPN feeds
+  if (id === "94") return "card";
+  if (id === "95") return "corner";
+  if (id === "66") return "foul";
+
+  return "other";
+}
+
+/** Given header/competitions block, build a teamName->side resolver */
+function buildSideResolverFromHeader(headerJson: AnyObj): (teamName?: string) => CommentaryTeamSide {
+  const comp = headerJson?.competitions?.[0];
+  const competitors = comp?.competitors ?? [];
+  const home = competitors.find((c: any) => c.homeAway === "home");
+  const away = competitors.find((c: any) => c.homeAway === "away");
+
+  const homeName = String(
+    home?.team?.displayName ?? home?.team?.shortDisplayName ?? ""
+  ).toLowerCase();
+  const awayName = String(
+    away?.team?.displayName ?? away?.team?.shortDisplayName ?? ""
+  ).toLowerCase();
+
+  return (teamName?: string) => {
+    const n = String(teamName ?? "").toLowerCase();
+    if (homeName && n.includes(homeName)) return "home";
+    if (awayName && n.includes(awayName)) return "away";
+    return "neutral";
+  };
+}
+
+/** Safely pull a list of 'plays' objects from *any* ESPN PBP JSON */
+function readPlaysArray(pbp: AnyObj): AnyObj[] {
+  /** Heuristic: does this object look like a play wrapper or play? */
+  function looksLikePlay(obj: AnyObj): boolean {
+    if (!obj || typeof obj !== "object") return false;
+    if ((obj as any).play && typeof (obj as any).play === "object") return true;
+    if ((obj as any).type || (obj as any).shortText || (obj as any).clock || (obj as any).period) return true;
+    if (typeof (obj as any).text === "string" && (obj as any).text.length) return true;
+    if ((obj as any).time && ((obj as any).time.displayValue || typeof (obj as any).time.value === "number")) return true;
+    if (typeof (obj as any).sequence === "number") return true;
+    return false;
+  }
+
+  /** Recursively collect all arrays that look like play lists */
+  function collectPlayArrays(node: any, out: AnyObj[][]) {
+    if (!node) return;
+
+    if (Array.isArray(node)) {
+      const items = node.filter((x) => x && typeof x === "object");
+      if (items.length) {
+        const likeCnt = items.reduce((acc, it) => acc + (looksLikePlay(it) ? 1 : 0), 0);
+        if (likeCnt / items.length >= 0.4) {
+          out.push(items as AnyObj[]);
+          for (const it of items) collectPlayArrays((it as any).play, out);
+          return;
+        }
+      }
+      for (const it of node) collectPlayArrays(it, out);
+      return;
+    }
+
+    if (typeof node === "object") {
+      for (const v of Object.values(node)) collectPlayArrays(v, out);
+    }
+  }
+
+  // Common shapes
+  if (Array.isArray((pbp as any)?.plays)) return (pbp as any).plays;
+  if (Array.isArray((pbp as any)?.commentary?.plays)) return (pbp as any).commentary.plays;
+
+  const gp = (pbp as any)?.gamepackageJSON ?? {};
+  if (Array.isArray(gp?.plays)) return gp.plays;
+  if (Array.isArray(gp?.commentary?.plays)) return gp.commentary.plays;
+
+  if (Array.isArray((pbp as any)?.drives?.current?.plays)) return (pbp as any).drives.current.plays;
+
+  // Shallow unwrap { play: {...}, time: {...} }
+  const shallow: AnyObj[] = [];
+  for (const maybe of [
+    ...(Array.isArray((pbp as any)?.plays) ? (pbp as any).plays : []),
+    ...(Array.isArray((pbp as any)?.commentary?.plays) ? (pbp as any).commentary.plays : []),
+    ...(Array.isArray(gp?.plays) ? gp.plays : []),
+    ...(Array.isArray(gp?.commentary?.plays) ? gp.commentary.plays : []),
+    ...(Array.isArray((pbp as any)?.drives?.current?.plays) ? (pbp as any).drives.current.plays : []),
+  ]) {
+    if ((maybe as any)?.play) shallow.push((maybe as any).play);
+  }
+  if (shallow.length) return shallow;
+
+  // Last resort: recursively search for the biggest array of play-like objects
+  const candidates: AnyObj[][] = [];
+  collectPlayArrays(pbp, candidates);
+  if (candidates.length) {
+    candidates.sort((a, b) => b.length - a.length);
+    return candidates[0]!;
+  }
+
+  return [];
+}
+
+/** Gentle dedupe: discard strict duplicates by (text, displayMinute) */
+function dedupeEvents<T extends { text?: string; minuteText?: string }>(arr: T[]): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const it of arr) {
+    const sig = `${it.text ?? ""}@@${it.minuteText ?? ""}`;
+    if (seen.has(sig)) continue;
+    seen.add(sig);
+    out.push(it);
+  }
+  return out;
+}
+
+/** Upgrade goal kinds via text markers */
+function annotateGoalKind(k: CommentaryKind, text: string): CommentaryKind {
+  if (k !== "goal") return k;
+  const s = text.toLowerCase();
+  if (/\bpen(?:alty|alties)?\b|\(p\)|\(pen\)|\bfrom the spot\b/.test(s)) return "penGoal";
+  if (/\bown[- ]goal\b|\(og\)/.test(s)) return "ownGoal";
+  return "goal";
+}
+
+/** Public: fetch normalized commentary list for an event */
+// espn.ts — replace the whole function body with this version
+export async function fetchCommentaryNormalized(eventId: string): Promise<CommentaryEvent[]> {
+  // ---------- helpers local to this function ----------
+  const normalizeMinuteText = (v?: any): string | undefined => {
+    const s =
+      (v?.time?.displayValue ?? v?.clock?.displayValue ?? v?.displayValue ?? v) ??
+      undefined;
+    return typeof s === "string" && s.trim() ? s.trim() : undefined;
+  };
+
+  const minuteToNumberFromText = (text?: string): number | undefined => {
+    if (!text) return undefined;
+    const m = text.match(/(\d+)(?:\+'?(\d+)')?/);
+    if (!m) return undefined;
+    const base = parseInt(m[1]!, 10);
+    const extra = m[2] ? parseInt(m[2]!, 10) : 0;
+    const n = base + extra;
+    return Number.isFinite(n) ? n : undefined;
+  };
+
+  const minuteToNumberFromSeconds = (sec?: number): number | undefined => {
+    if (typeof sec === "number" && Number.isFinite(sec)) {
+      return Math.round(sec / 60);
+    }
+    return undefined;
+  };
+
+  function detectKind(node: any): CommentaryKind {
+  const p = node?.play ?? node;
+  const typeId = String(p?.type?.id ?? node?.typeId ?? node?.play?.type?.id ?? "");
+  const typeTx = String(p?.type?.text ?? node?.type?.text ?? node?.type ?? "").toLowerCase();
+  const main   = String(node?.text ?? p?.text ?? "").toLowerCase();
+
+  // Common flags / phrases
+  const isNoGoal    = /\b(no goal|disallowed|overturned)\b/.test(main);
+
+  // GK-related words
+  const hasKeeperWord =
+    /\b(goal ?keeper|goalie|keeper|gk|shot-stopper)\b/.test(main) ||
+    /\bgoalkeeper\b/.test(typeTx);
+
+  // Save/Block phrase buckets
+  const hasSaveWord =
+    /\b(save|saved|parried|parries|tipped|palmed|stops?|denied)\b/.test(main) ||
+    /save/.test(typeTx);
+
+  // Treat “blocked” carefully: don’t call it blocked if text also screams “save”
+  const hasBlockedWord =
+    /\b(block(?:ed|s)?|charge down|gets in the way|throws? (himself|herself) in)\b/.test(main) ||
+    /blocked/.test(typeTx) || /block/.test(typeTx);
+
+  const mentionsDefender =
+    /\b(defender|centre[- ]back|full[- ]back|left[- ]back|right[- ]back)\b/.test(main);
+
+  const isCornerText = /corner/.test(typeTx) || /\bcorner\b/.test(main);
+  const isFoulText   = typeId === "66" || /foul/.test(typeTx) || /\bfree kick\b/.test(main);
+  const isCardText   = /yellow|red/.test(typeTx) || /card/.test(typeTx) || /\b(yellow|red)\b/.test(main);
+
+  // 0) Explicit non-goals
+  if (isNoGoal) return "var";
+
+  // 1) SAVES vs BLOCKS (before goals)
+  //    - If ESPN flags scoringPlay, we'll classify as goal later.
+  //    - Otherwise, prefer GK saves when keeper is referenced or "save" verbs are used.
+  if (p?.scoringPlay !== true) {
+    // Blocked by outfield player (typical “blocked” phrasing, defender mention, and NOT keeper)
+    if (hasBlockedWord && !hasKeeperWord && !hasSaveWord) return "blocked";
+
+    // Saved by goalkeeper (save verbs or explicit keeper mention)
+    if (hasSaveWord || hasKeeperWord) return "save";
+  }
+
+  // 2) Goals (strong signals)
+  const hasGoalWord = /\b(goal|scores?|nets)\b/.test(main) && !/\bgoalkeeper\b/.test(main);
+  const isGoalType  = /\bgoal\b/.test(typeTx);
+  if (p?.scoringPlay === true || isGoalType || hasGoalWord) return "goal";
+
+  // 3) Discipline/infractions/other
+  if (typeId === "122" || /hand ?ball/.test(typeTx) || /hand ?ball/.test(main)) return "handball";
+  if (isCardText) return "card";
+  if (/sub/.test(typeTx) || /substitution/.test(main)) return "subst";
+  if (isFoulText) return "foul";
+  if (/\boffside\b/.test(typeTx) || /\boffside\b/.test(main)) return "offside";
+  if (/\bvar\b/.test(typeTx) || /\bvar\b/.test(main)) return "var";
+  if (/chance|attempt/.test(main)) return "chance";
+  if (isCornerText) return "corner";
+
+  // 4) Period / status text
+  if (/end regular time/.test(typeTx) || /match ends/.test(main)) return "ft";
+  if (/half/.test(typeTx) && /end/.test(typeTx)) return "ht";
+  if (/kick.?off/.test(typeTx) || /kick-off/.test(main)) return "kickoff";
+
+  return "other";
+}
+
+
+
+  // annotate penalties/OG for more precise tag (keeps your existing naming)
+  const annotate = (k: CommentaryKind, text: string): CommentaryKind => {
+    if (k === "goal") {
+      const s = text.toLowerCase();
+      if (/\bpen(?:alty|alties)?\b|\(p\)|\(pen\)/i.test(s)) return "penGoal";
+      if (/\bown[- ]goal\b|\(og\)/i.test(s))                 return "ownGoal";
+    }
+    return k;
+  };
+
+  const dedupe = (arr: CommentaryEvent[]) => {
+    const seen = new Set<string>();
+    return arr.filter((e) => {
+      const key = `${e.sequence ?? ""}::${e.minute ?? ""}::${e.text}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
+  // build side resolver from header competitors
+  const buildSideFromHeader = (header: any) => {
+    const comp = header?.competitions?.[0] ?? header?.gamepackageJSON?.header?.competitions?.[0];
+    const comps = Array.isArray(comp?.competitors) ? comp.competitors : [];
+    const homeName = comps.find((c: any) => c.homeAway === "home")?.team?.displayName;
+    const awayName = comps.find((c: any) => c.homeAway === "away")?.team?.displayName;
+
+    return (teamName?: string): TeamSide | undefined => {
+      if (!teamName) return undefined;
+      const tn = String(teamName).toLowerCase();
+      if (homeName && tn === String(homeName).toLowerCase()) return "home";
+      if (awayName && tn === String(awayName).toLowerCase()) return "away";
+      return "neutral";
+    };
+  };
+
+  // ---------- 1) Try your existing PBP path ----------
+  let events: CommentaryEvent[] = [];
+  try {
+    const pbp = await fetchPlayByPlay(eventId);
+    if (pbp) {
+      const sideOf = buildSideFromHeader((pbp as any)?.header ?? (pbp as any)?.gamepackageJSON?.header ?? {});
+      const plays = readPlaysArray(pbp) as AnyObj[];
+      if (Array.isArray(plays) && plays.length) {
+        events = plays.map((wrap: AnyObj) => {
+          const p = (wrap && typeof wrap === "object" && "play" in wrap) ? (wrap as any).play : wrap;
+
+          const minuteText =
+            normalizeMinuteText(p?.clock) ??
+            normalizeMinuteText((wrap as any)?.time) ??
+            undefined;
+
+          const minute =
+            minuteToNumberFromText(minuteText) ??
+            minuteToNumberFromText(String(p?.text ?? "")) ??
+            minuteToNumberFromSeconds(p?.clock?.value ?? (wrap as any)?.time?.value);
+
+          const teamName =
+            p?.team?.displayName ??
+            p?.team?.name ??
+            (wrap as any)?.team?.displayName ??
+            (wrap as any)?.team?.name ??
+            undefined;
+
+          const text = String((wrap as any)?.text ?? p?.text ?? p?.shortText ?? "").trim();
+          const short = String(p?.shortText ?? "").trim();
+          const detail = short && short !== text ? short : undefined;
+
+          const sequence = (wrap as any)?.sequence ?? (p as any)?.sequence;
+
+          let kind = detectKind({ play: p, text });
+          kind = annotate(kind, text);
+
+          return {
+            sequence: typeof sequence === "number" ? sequence : undefined,
+            minute,
+            minuteText,
+            kind,
+            side: sideOf(teamName),
+            text,
+            detail,
+          } as CommentaryEvent;
+        });
+      }
+    }
+  } catch {
+    // swallow; we'll fall back to summary next
+  }
+
+  // ---------- 2) Fallback to summary?event=... commentary ----------
+  if (!events.length) {
+    const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=${encodeURIComponent(
+      eventId
+    )}`;
+    const res = await fetch(url, { headers: { accept: "application/json" } });
+    if (res.ok) {
+      const json = await res.json();
+      const sideOf = buildSideFromHeader(json?.header ?? json);
+
+      const items: any[] = Array.isArray(json?.commentary)
+        ? json.commentary
+        : Array.isArray(json?.commentary?.comments)
+        ? json.commentary.comments
+        : [];
+
+      events = items.map((it: any) => {
+        const minuteText =
+          normalizeMinuteText(it?.time) ??
+          normalizeMinuteText(it?.clock) ??
+          undefined;
+
+        const minute =
+          minuteToNumberFromText(minuteText) ??
+          minuteToNumberFromSeconds(it?.time?.value ?? it?.clock?.value);
+
+        const text = String(it?.text ?? it?.play?.text ?? "").trim();
+        const short = String(it?.play?.shortText ?? "").trim();
+        const detail = short && short !== text ? short : undefined;
+
+        const teamName = it?.play?.team?.displayName;
+
+        let kind = detectKind(it);
+        kind = annotate(kind, text);
+
+        return {
+          sequence: typeof it?.sequence === "number" ? it.sequence : undefined,
+          minute,
+          minuteText,
+          kind,
+          side: sideOf(teamName),
+          text,
+          detail,
+        } as CommentaryEvent;
+      });
+    }
+  }
+
+  // ---------- 3) Sort (ASC by sequence/minute) and de-dupe ----------
+  const sorted = [...events].sort((a, b) => {
+    // Primary: sequence if present
+    if (typeof a.sequence === "number" && typeof b.sequence === "number") {
+      return a.sequence - b.sequence;
+    }
+    // Fallback: minute
+    return (a.minute ?? 0) - (b.minute ?? 0);
+  });
+
+  return dedupe(sorted);
 }

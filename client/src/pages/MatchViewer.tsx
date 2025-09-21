@@ -68,7 +68,7 @@ function buildDisplayScorers(
   const competitors = comp?.competitors ?? [];
   const idToSide: Record<string, "home" | "away"> = {};
   (competitors ?? []).forEach((c: any) => {
-    const id = String(c?.team?.id ?? c?.id ?? "");
+    const id = String(c?.team?.id ?? c?.id ?? c?.id ?? "");
     const side = c?.homeAway as "home" | "away";
     if (id && side) idToSide[id] = side;
   });
@@ -177,8 +177,7 @@ export default function MatchViewer() {
           Array.isArray(d.scorers) &&
           d.scorers.length > 0 &&
           d.scorers.some(
-            (s: any) =>
-              typeof s?.player === "string" && !/^Goal\b/i.test(s.player)
+            (s: any) => typeof s?.player === "string" && !/^Goal\b/i.test(s.player)
           );
 
         setSbScorers(hasGoodSummaryScorers ? null : details.scorers ?? []);
@@ -275,7 +274,15 @@ export default function MatchViewer() {
         >
           Player Stats
         </Link>
+        {/* 👇 NEW: Commentary button next to Player Stats */}
+        <Link
+          to={`/commentary?id=${encodeURIComponent(eventId ?? "")}`}
+          className={styles.playerButton}
+        >
+          Commentary
+        </Link>
       </div>
+
       <div className={`${styles.container} `}>
         {/* 🎉 Confetti */}
         {goalAnim && (
@@ -317,6 +324,7 @@ export default function MatchViewer() {
           awayScorers={awayScorers}
           className={goalAnim ? "animate-goal" : ""}
         />
+
         {/* Possession & Passing */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Possession &amp; Passing</h2>
@@ -439,31 +447,6 @@ export default function MatchViewer() {
             label="Long ball accuracy"
             left={fmt(H.crossingLongBalls?.longBallAccuracyPct, "%")}
             right={fmt(A.crossingLongBalls?.longBallAccuracyPct, "%")}
-          />
-        </section>
-
-        {/* Defensive Actions */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Defensive Actions</h2>
-          <TriStatRow
-            label="Total tackles"
-            left={fmt(H.defensiveActions?.tacklesTotal)}
-            right={fmt(A.defensiveActions?.tacklesTotal)}
-          />
-          <TriStatRow
-            label="Effective tackles"
-            left={fmt(H.defensiveActions?.tacklesWon)}
-            right={fmt(A.defensiveActions?.tacklesWon)}
-          />
-          <TriStatRow
-            label="Tackle success rate"
-            left={fmt(H.defensiveActions?.tackleSuccessPct, "%")}
-            right={fmt(A.defensiveActions?.tackleSuccessPct, "%")}
-          />
-          <TriStatRow
-            label="Interceptions"
-            left={fmt(H.defensiveActions?.interceptions)}
-            right={fmt(A.defensiveActions?.interceptions)}
           />
         </section>
 

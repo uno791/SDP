@@ -15,6 +15,7 @@ import LandingPage from "./pages/LandingPage";
 import ProfilePage from "./pages/ProfilePage";
 import MatchViewer from "./pages/MatchViewer";
 import PlayerStats from "./pages/PlayerStats";
+import Commentary from "./pages/Commentary";
 
 function App() {
   return (
@@ -37,6 +38,8 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/matchviewer" element={<MatchViewer />} />
               <Route path="/playerstats" element={<PlayerStats />} />
+              <Route path="/commentary" element={<Commentary />} />
+
             </Route>
             <Route path="/" element={<LandingPage />} />
           </Routes>
