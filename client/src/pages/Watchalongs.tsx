@@ -122,11 +122,15 @@ function extractMatchOption(ev: ScoreboardEvent): MatchOption | null {
 }
 
 function orderByKickoffAsc(a: MatchOption, b: MatchOption) {
-  return new Date(a.startTimeIso).getTime() - new Date(b.startTimeIso).getTime();
+  return (
+    new Date(a.startTimeIso).getTime() - new Date(b.startTimeIso).getTime()
+  );
 }
 
 function orderByKickoffDesc(a: MatchOption, b: MatchOption) {
-  return new Date(b.startTimeIso).getTime() - new Date(a.startTimeIso).getTime();
+  return (
+    new Date(b.startTimeIso).getTime() - new Date(a.startTimeIso).getTime()
+  );
 }
 
 async function fetchMatchesWindow(): Promise<{
@@ -182,13 +186,13 @@ async function fetchMatchesWindow(): Promise<{
   const liveUpcoming = Array.from(liveMap.values()).sort(orderByKickoffAsc);
 
   const completedBuckets = Array.from(completedByDay.values()).sort(
-    (a, b) => b.date.getTime() - a.date.getTime(),
+    (a, b) => b.date.getTime() - a.date.getTime()
   );
 
   const completed = completedBuckets
     .slice(0, 2)
     .flatMap((bucket) =>
-      Array.from(bucket.matches.values()).sort(orderByKickoffDesc),
+      Array.from(bucket.matches.values()).sort(orderByKickoffDesc)
     );
 
   return { liveUpcoming, completed };
@@ -216,12 +220,10 @@ export default function Watchalongs() {
 
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
 
-  const [watchalongsState, setWatchalongsState] = useState<ContentState>(
-    initialContentState,
-  );
-  const [reactionsState, setReactionsState] = useState<ContentState>(
-    initialContentState,
-  );
+  const [watchalongsState, setWatchalongsState] =
+    useState<ContentState>(initialContentState);
+  const [reactionsState, setReactionsState] =
+    useState<ContentState>(initialContentState);
 
   useEffect(() => {
     let cancelled = false;
@@ -235,8 +237,10 @@ export default function Watchalongs() {
         setRecentMatches(completed);
 
         setSelectedMatchId((prev) => {
-          const combined = [...liveUpcoming, ...completed].sort((a, b) =>
-            new Date(b.startTimeIso).getTime() - new Date(a.startTimeIso).getTime(),
+          const combined = [...liveUpcoming, ...completed].sort(
+            (a, b) =>
+              new Date(b.startTimeIso).getTime() -
+              new Date(a.startTimeIso).getTime()
           );
           if (prev && combined.some((m) => m.id === prev)) {
             return prev;
@@ -253,7 +257,9 @@ export default function Watchalongs() {
         if (cancelled) return;
         console.error("Failed to load matches", error);
         setMatchesError(
-          error instanceof Error ? error.message : "Failed to load Premier League fixtures.",
+          error instanceof Error
+            ? error.message
+            : "Failed to load Premier League fixtures."
         );
       })
       .finally(() => {
@@ -275,24 +281,25 @@ export default function Watchalongs() {
 
   const matchList = useMemo(() => {
     const combined = [...liveMatches, ...recentMatches];
-    return combined.sort((a, b) =>
-      new Date(b.startTimeIso).getTime() - new Date(a.startTimeIso).getTime(),
+    return combined.sort(
+      (a, b) =>
+        new Date(b.startTimeIso).getTime() - new Date(a.startTimeIso).getTime()
     );
   }, [liveMatches, recentMatches]);
 
   const liveNowCount = useMemo(
     () => liveMatches.filter((match) => match.status === "in").length,
-    [liveMatches],
+    [liveMatches]
   );
   const upcomingCount = useMemo(
     () => liveMatches.filter((match) => match.status === "pre").length,
-    [liveMatches],
+    [liveMatches]
   );
   const recentCount = useMemo(() => recentMatches.length, [recentMatches]);
 
   const kickoffDate = useMemo(
     () => (selectedMatch ? new Date(selectedMatch.startTimeIso) : null),
-    [selectedMatch],
+    [selectedMatch]
   );
   const kickoffDay = kickoffDate ? dayFormatter.format(kickoffDate) : null;
   const kickoffTime = kickoffDate ? timeFormatter.format(kickoffDate) : null;
@@ -427,8 +434,9 @@ export default function Watchalongs() {
               <div className={styles.cardMeta}>
                 <span>{item.channelTitle}</span>
                 {item.publishedAt ? (
-                <span>
-                    Published {publishedFormatter.format(new Date(item.publishedAt))}
+                  <span>
+                    Published{" "}
+                    {publishedFormatter.format(new Date(item.publishedAt))}
                   </span>
                 ) : null}
                 {item.isLive && item.liveViewers ? (
@@ -468,11 +476,12 @@ export default function Watchalongs() {
       <div className={styles.inner}>
         <section className={styles.hero}>
           <div className={styles.heroContent}>
-            <span className={styles.heroBadge}>Premier League Companion</span>
-            <h1 className={styles.heroTitle}>Watchalong Hub</h1>
+            {/* <span className={styles.heroBadge}>Premier League Companion</span> */}
+            <h1 className={styles.heroTitle}>Watchalong</h1>
             <p className={styles.heroSubtitle}>
-              Pick a Premier League fixture, jump into trusted creator watchalongs, and catch
-              the latest fan reaction clips while the action unfolds.
+              Pick a Premier League fixture, jump into trusted creator
+              watchalongs, and catch the latest fan reaction clips while the
+              action unfolds.
             </p>
             <div className={styles.heroStats}>
               <div className={styles.statCard}>
@@ -502,7 +511,8 @@ export default function Watchalongs() {
             <div>
               <h2 className={styles.sectionTitle}>Choose your match</h2>
               <p className={styles.sectionSubtitle}>
-                Live and upcoming fixtures pull through automatically, with reaction support for the latest two matchdays played.
+                Live and upcoming fixtures pull through automatically, with
+                reaction support for the latest two matchdays played.
               </p>
             </div>
             {selectedMatch ? (
@@ -513,7 +523,9 @@ export default function Watchalongs() {
           <div className={styles.matchLayout}>
             <div className={styles.matchColumn}>
               {matchesLoading ? (
-                <div className={styles.loading}>Fetching today&apos;s fixtures…</div>
+                <div className={styles.loading}>
+                  Fetching today&apos;s fixtures…
+                </div>
               ) : matchesError ? (
                 <div className={styles.error}>{matchesError}</div>
               ) : matchList.length ? (
@@ -524,13 +536,17 @@ export default function Watchalongs() {
                       type="button"
                       onClick={() => setSelectedMatchId(match.id)}
                       className={`${styles.matchButton} ${
-                        selectedMatchId === match.id ? styles.matchButtonActive : ""
+                        selectedMatchId === match.id
+                          ? styles.matchButtonActive
+                          : ""
                       }`}
                     >
                       <div className={styles.matchInfo}>
                         <div className={styles.matchMetaRow}>
                           {renderBadge(match)}
-                          <span className={styles.matchDetail}>{match.detail}</span>
+                          <span className={styles.matchDetail}>
+                            {match.detail}
+                          </span>
                         </div>
                         <div className={styles.matchTitle}>{match.label}</div>
                       </div>
@@ -539,19 +555,27 @@ export default function Watchalongs() {
                   ))}
                 </div>
               ) : (
-                <div className={styles.emptyState}>No fixtures found for this window.</div>
+                <div className={styles.emptyState}>
+                  No fixtures found for this window.
+                </div>
               )}
             </div>
 
             <aside className={styles.spotlightColumn}>
               {selectedMatch ? (
                 <div className={styles.spotlightCard}>
-                  <div className={styles.spotlightHeader}>
+                  {/* <div className={styles.spotlightHeader}>
                     {renderBadge(selectedMatch)}
-                    <span className={styles.spotlightLabel}>Premier League</span>
-                  </div>
-                  <h3 className={styles.spotlightTitle}>{selectedMatch.label}</h3>
-                  <p className={styles.spotlightDetail}>{selectedMatch.detail}</p>
+                    <span className={styles.spotlightLabel}>
+                      Premier League
+                    </span>
+                  </div> */}
+                  <h3 className={styles.spotlightTitle}>
+                    {selectedMatch.label}
+                  </h3>
+                  <p className={styles.spotlightDetail}>
+                    {selectedMatch.detail}
+                  </p>
                   <div className={styles.spotlightMetaGrid}>
                     {kickoffDay ? (
                       <div>
@@ -562,7 +586,9 @@ export default function Watchalongs() {
                     {kickoffTime ? (
                       <div>
                         <span className={styles.metaLabel}>Kick-off</span>
-                        <span className={styles.metaValue}>{kickoffTime} SAST</span>
+                        <span className={styles.metaValue}>
+                          {kickoffTime} SAST
+                        </span>
                       </div>
                     ) : null}
                     <div>
@@ -579,13 +605,17 @@ export default function Watchalongs() {
                     </div>
                   </div>
                   <p className={styles.spotlightNote}>
-                    Switch fixtures to refresh curated coverage from trusted creators and the most electric fan reactions.
+                    Switch fixtures to refresh curated coverage from trusted
+                    creators and the most electric fan reactions.
                   </p>
                 </div>
               ) : (
                 <div className={styles.spotlightPlaceholder}>
                   <h3>Select a fixture</h3>
-                  <p>Pick a match to unlock curated watch parties and fan reactions.</p>
+                  <p>
+                    Pick a match to unlock curated watch parties and fan
+                    reactions.
+                  </p>
                 </div>
               )}
             </aside>
@@ -597,7 +627,8 @@ export default function Watchalongs() {
             <div>
               <h2 className={styles.sectionTitle}>Watchalong streams</h2>
               <p className={styles.sectionSubtitle}>
-                Curated live creator streams and watch parties for the selected match.
+                Curated live creator streams and watch parties for the selected
+                match.
               </p>
             </div>
             {selectedMatch ? (
@@ -606,12 +637,13 @@ export default function Watchalongs() {
           </div>
           {renderContent(
             watchalongsState,
-            "No live watchalong streams surfaced. Try another match or come back closer to kick-off.",
+            "No live watchalong streams surfaced. Try another match or come back closer to kick-off."
           )}
           {watchalongsState.isFallback ? (
             <div className={styles.fallbackNotice}>
-              Showing curated sample streams. Add a valid <code>YOUTUBE_API_KEY</code> to back-end
-              environment for live YouTube search results.
+              Showing curated sample streams. Add a valid{" "}
+              <code>YOUTUBE_API_KEY</code> to back-end environment for live
+              YouTube search results.
             </div>
           ) : null}
         </section>
@@ -621,7 +653,8 @@ export default function Watchalongs() {
             <div>
               <h2 className={styles.sectionTitle}>Fan reaction clips</h2>
               <p className={styles.sectionSubtitle}>
-                Relive the biggest moments from recent fixtures with supporter reactions and highlights from the selected match.
+                Relive the biggest moments from recent fixtures with supporter
+                reactions and highlights from the selected match.
               </p>
             </div>
             {selectedMatch ? (
@@ -631,11 +664,12 @@ export default function Watchalongs() {
 
           {renderContent(
             reactionsState,
-            "No reaction clips yet. They usually drop shortly after the final whistle.",
+            "No reaction clips yet. They usually drop shortly after the final whistle."
           )}
           {reactionsState.isFallback ? (
             <div className={styles.fallbackNotice}>
-              Showing curated sample clips. Configure <code>YOUTUBE_API_KEY</code> for up-to-date creator content.
+              Showing curated sample clips. Configure{" "}
+              <code>YOUTUBE_API_KEY</code> for up-to-date creator content.
             </div>
           ) : null}
         </section>
