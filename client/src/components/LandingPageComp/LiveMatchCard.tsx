@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./LiveMatchCard.module.css";
 
 /* Adjust the import path if your API file lives elsewhere */
@@ -8,8 +8,6 @@ import {
   extractStatsFromScoreboardEvent,
 } from "../../api/espn";
 
-import { Link } from "react-router-dom"; // ✅ for SPA navigation
-
 type Event = ScoreboardResponse["events"][number];
 
 type GridProps = {
@@ -18,6 +16,19 @@ type GridProps = {
 };
 
 /* ---------------- utils ---------------- */
+const SA_TZ = "Africa/Johannesburg";
+
+/** 24h time in South African time, no TZ label (e.g., "19:30") */
+function timeZA(iso: string | number | Date) {
+  const d = new Date(iso);
+  return new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: SA_TZ,
+  }).format(d);
+}
+
 function ymd(d: Date) {
   return d.toISOString().slice(0, 10);
 }
@@ -25,6 +36,9 @@ function addDays(d: Date, delta: number) {
   const t = new Date(d);
   t.setDate(t.getDate() + delta);
   return t;
+}
+function sameYMD(a: Date, b: Date) {
+  return ymd(a) === ymd(b);
 }
 
 /** Deduplicate events by ESPN event id */
@@ -113,12 +127,6 @@ function LiveMatchCardSingle({
     scoreNum: awayScore,
   } = teamBits(ev, "away");
 
-  const statusText =
-    ev?.status?.type?.detail ??
-    (ev?.status?.type?.state === "post"
-      ? "FT"
-      : ev?.status?.type?.state?.toUpperCase());
-
   const details = useMemo(() => extractStatsFromScoreboardEvent(ev), [ev]);
   const scorers = (details.scorers ?? []).map(tidyScorer);
 
@@ -126,6 +134,16 @@ function LiveMatchCardSingle({
   const shotsRow =
     details.metrics.find((m) => /shotsontarget|sot|st/i.test(m.key)) ||
     details.metrics.find((m) => /shots|total/i.test(m.key));
+
+  // Show just the SA kickoff time for scheduled games; otherwise keep live/post status.
+  const state = ev?.status?.type?.state;
+  const statusDetail = ev?.status?.type?.detail || "";
+  const statusText =
+    state === "pre"
+      ? timeZA(ev?.date) // e.g. "19:30"
+      : state === "post"
+      ? "FT"
+      : statusDetail; // e.g. "1st Half", "HT", "90' +3"
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -219,15 +237,18 @@ function LiveMatchCardSingle({
             )}
           </div>
 
-          {/* ✅ Button looks the same, but goes to /matchviewer */}
           <div className={styles.ctaWrap}>
-            <Link
-              to={`/matchviewer?id=${encodeURIComponent(ev.id)}`}
+            <a
               className={styles.cta}
+              href={`https://www.espn.com/soccer/match/_/gameId/${encodeURIComponent(
+                ev.id
+              )}`}
+              target="_blank"
+              rel="noreferrer"
               onClick={(e) => e.stopPropagation()}
             >
               Open Match Viewer
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -235,7 +256,9 @@ function LiveMatchCardSingle({
   );
 }
 
-/* ---------------- Grid with fallback, de-dupe, accordion ---------------- */
+/* ---------------- Grid with fallback, de-dupe, accordion + 15s polling ---------------- */
+const POLL_MS = 15_000;
+
 export default function LiveMatchCard({ showLabel = true }: GridProps) {
   const [data, setData] = useState<ScoreboardResponse | null>(null);
   const [usedDate, setUsedDate] = useState<Date | null>(null);
@@ -244,6 +267,9 @@ export default function LiveMatchCard({ showLabel = true }: GridProps) {
 
   /** The id of the single open card; null means all collapsed */
   const [openId, setOpenId] = useState<string | null>(null);
+
+  /** prevent overlapping requests during polling */
+  const inFlightRef = useRef(false);
 
   // Load once: today, or most recent day with games (up to 7 days back).
   useEffect(() => {
@@ -304,9 +330,72 @@ export default function LiveMatchCard({ showLabel = true }: GridProps) {
     setOpenId((prev) => (prev === id ? null : id));
   };
 
+  // ---- 15s polling while tab is visible ----
+  useEffect(() => {
+    let cancelled = false;
+    let timer: number | null = null;
+
+    const pollOnce = async () => {
+      if (cancelled || inFlightRef.current) return;
+      inFlightRef.current = true;
+
+      const targetDate = usedDate ?? new Date();
+      try {
+        const res = await fetchScoreboard(targetDate);
+        const evs = uniqueEvents(res?.events ?? []);
+
+        // Keep currently open card open if it still exists after refresh
+        setData({ ...res, events: evs });
+
+        // If the currently open match vanished (finished/day rolled), close it
+        if (openId && !evs.some((e) => e.id === openId)) {
+          setOpenId(null);
+        }
+      } catch {
+        /* swallow polling errors */
+      } finally {
+        inFlightRef.current = false;
+      }
+    };
+
+    const start = () => {
+      if (timer !== null) return;
+      void pollOnce();
+      timer = window.setInterval(pollOnce, POLL_MS);
+    };
+
+    const stop = () => {
+      if (timer !== null) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+
+    const shouldPoll =
+      hasLive || (usedDate ? sameYMD(usedDate, new Date()) : true);
+
+    if (shouldPoll) {
+      start();
+      document.addEventListener("visibilitychange", handleVisibility);
+    }
+
+    return () => {
+      cancelled = true;
+      stop();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [usedDate, hasLive, openId]);
+
   if (loading) return <div className={styles.state}>Loading matches…</div>;
-  if (err) return <div className={`${styles.state} ${styles.error}`}>{err}</div>;
-  if (!events.length) return <div className={styles.state}>No matches found.</div>;
+  if (err)
+    return <div className={`${styles.state} ${styles.error}`}>{err}</div>;
+  if (!events.length)
+    return <div className={styles.state}>No matches found.</div>;
 
   return (
     <>
