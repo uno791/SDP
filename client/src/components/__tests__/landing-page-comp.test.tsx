@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import MarqueeWide from "../LandingPageComp/MarqueeWide";
 import LeagueTable from "../LandingPageComp/LeagueTable";
 import PremierLeagueTable from "../LandingPageComp/PremierLeagueTable";
@@ -187,7 +188,11 @@ describe("Landing page components", () => {
 
   test("PastMatchCard lists past results and supports navigation", async () => {
     const user = userEvent.setup();
-    render(<PastMatchCard />);
+    render(
+      <MemoryRouter>
+        <PastMatchCard />
+      </MemoryRouter>
+    );
 
     await waitFor(() => screen.getByText(/Matches/));
     await waitFor(() =>
@@ -196,5 +201,88 @@ describe("Landing page components", () => {
 
     await user.click(screen.getByRole("button", { name: "Previous day" }));
     expect(mockFetchScoreboard).toHaveBeenCalled();
+  });
+
+  test("PastMatchCard expands completed matches but blocks upcoming fixtures", async () => {
+    const now = new Date();
+    const upcoming = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+    const past = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
+
+    const board: ScoreboardResponse = {
+      events: [
+        {
+          id: "completed",
+          date: past,
+          shortName: "Done vs Finished",
+          status: { type: { state: "post", detail: "FT", completed: true } },
+          competitions: [
+            {
+              competitors: [
+                {
+                  homeAway: "home",
+                  score: "1",
+                  team: { shortDisplayName: "Done", logo: "done.png", abbreviation: "DON" },
+                  statistics: [{ name: "possession", value: 60 }],
+                },
+                {
+                  homeAway: "away",
+                  score: "0",
+                  team: { shortDisplayName: "Finished", logo: "fin.png", abbreviation: "FIN" },
+                  statistics: [{ name: "possession", value: 40 }],
+                },
+              ],
+              details: [],
+            },
+          ],
+        },
+        {
+          id: "upcoming",
+          date: upcoming,
+          shortName: "Soon vs Later",
+          status: { type: { state: "pre", detail: "20:00", completed: false } },
+          competitions: [
+            {
+              competitors: [
+                {
+                  homeAway: "home",
+                  score: "",
+                  team: { shortDisplayName: "Soon", logo: "soon.png", abbreviation: "SOO" },
+                },
+                {
+                  homeAway: "away",
+                  score: "",
+                  team: { shortDisplayName: "Later", logo: "latr.png", abbreviation: "LAT" },
+                },
+              ],
+              details: [],
+            },
+          ],
+        },
+      ],
+    };
+
+    mockFetchScoreboard.mockResolvedValue(board);
+
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <PastMatchCard />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(screen.getByText(/Done/)).toBeInTheDocument());
+
+    const cardButtons = screen
+      .getAllByRole("button")
+      .filter((btn) => btn.textContent?.includes("Done") || btn.textContent?.includes("Soon"));
+
+    const completedCard = cardButtons.find((btn) => btn.textContent?.includes("Done"))!;
+    const upcomingCard = cardButtons.find((btn) => btn.textContent?.includes("Soon"))!;
+
+    await user.click(completedCard);
+    expect(await screen.findByText(/Scorers/)).toBeInTheDocument();
+
+    await user.click(upcomingCard);
+    expect(screen.queryByLabelText(/Open Match Viewer for match upcoming/i)).not.toBeInTheDocument();
   });
 });

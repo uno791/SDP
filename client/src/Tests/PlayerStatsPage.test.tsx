@@ -45,6 +45,7 @@ describe("PlayerStats page", () => {
   beforeEach(() => {
     mockFetchSummaryNormalized.mockReset();
     teamSectionMock.mockClear();
+    // @ts-ignore
   });
 
   test("shows helper message when id is missing", () => {
@@ -125,5 +126,89 @@ describe("PlayerStats page", () => {
     await waitFor(() =>
       expect(screen.getByText(/Failed to load: network down/i)).toBeInTheDocument()
     );
+  });
+
+  test("falls back to fetching summary players when primary payload is empty", async () => {
+    mockFetchSummaryNormalized.mockResolvedValueOnce({
+      home: { teamId: "10", teamName: "Home FC" },
+      away: { teamId: "20", teamName: "Away FC" },
+      players: [],
+    });
+
+    const fallbackPlayers = {
+      players: [
+        {
+          athleteId: "h1",
+          athleteName: "Starter One",
+          teamId: "10",
+          jersey: "1",
+          positionAbbr: "GK",
+          subInMinute: "70+2",
+        },
+        {
+          athleteId: "a1",
+          athleteName: "Starter Two",
+          teamId: "20",
+          jersey: "9",
+          positionAbbr: "FW",
+          subOutMinute: "65",
+        },
+      ],
+    };
+
+    const fetchSpy = jest
+      .spyOn(globalThis as any, "fetch")
+      .mockResolvedValue({
+        ok: true,
+        json: async () => fallbackPlayers,
+      } as Response);
+
+    render(
+      <MemoryRouter initialEntries={["/playerstats?id=abc"]}>
+        <Routes>
+          <Route path="/playerstats" element={<PlayerStats />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(teamSectionMock).toHaveBeenCalledTimes(2));
+    const [homeCall, awayCall] = teamSectionMock.mock.calls;
+    const homeSubs = homeCall[0].subs;
+    expect(homeSubs[0]?.subInMinute).toBe(72);
+    const awayStarters = awayCall[0].starters;
+    expect(awayStarters[0]?.subOutMinute).toBe(65);
+    expect(fetchSpy).toHaveBeenCalled();
+    fetchSpy.mockRestore();
+  });
+
+  test("shows no-stats message when both teams lack detailed data", async () => {
+    mockFetchSummaryNormalized.mockResolvedValueOnce({
+      home: { teamId: "10", teamName: "Home" },
+      away: { teamId: "20", teamName: "Away" },
+      players: [],
+    });
+
+    const fetchSpy = jest
+      .spyOn(globalThis as any, "fetch")
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({ players: [] }),
+      } as Response);
+
+    render(
+      <MemoryRouter initialEntries={["/playerstats?id=nostats"]}>
+        <Routes>
+          <Route path="/playerstats" element={<PlayerStats />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Detailed player-level stats were not provided/i)
+      ).toBeInTheDocument()
+    );
+    expect(teamSectionMock).toHaveBeenCalledTimes(2);
+    fetchSpy.mockRestore();
   });
 });
