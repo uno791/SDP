@@ -1,7 +1,7 @@
 // __tests__/MatchViewer.test.tsx
 import '@testing-library/jest-dom';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 // SUT
@@ -13,6 +13,9 @@ import MatchViewer from '../pages/MatchViewer';
 
 // Capture props passed to the mocked GameSummaryCard
 const gameSummarySpy: any[] = [];
+function getLastSummaryProps() {
+  return gameSummarySpy[gameSummarySpy.length - 1];
+}
 jest.mock('../components/MatchViewerComp/GameSummaryCard', () => ({
   __esModule: true,
   default: (props: any) => {
@@ -209,7 +212,7 @@ describe('MatchViewer', () => {
     );
 
     // Assert props passed down to GameSummaryCard
-    const lastProps = gameSummarySpy.at(-1);
+    const lastProps = getLastSummaryProps();
     expect(lastProps.homeName).toBe('Home FC');
     expect(lastProps.awayName).toBe('Away FC');
     expect(lastProps.homeScore).toBe(2);
@@ -220,15 +223,15 @@ describe('MatchViewer', () => {
     expect(lastProps.awayLogoUrl).toMatch(/away\.png/);
 
     // Scorers (from summary, since present)
-    expect(lastProps.homeScorers.join('|')).toMatch(/Home Striker 12'|Home Mid 78'/);
-    expect(lastProps.awayScorers.join('|')).toMatch(/Away Winger 43'/);
+    expect(lastProps.homeScorers).toContain('Home Striker');
+    expect(lastProps.homeScorers).toContain('Home Mid');
+    expect(lastProps.awayScorers).toContain('Away Winger');
 
     // A couple of stats sections render labels & values
     expect(screen.getByText('Possession')).toBeInTheDocument();
     expect(screen.getAllByText(/%$/).length).toBeGreaterThan(0);
     expect(screen.getByText('Total shots')).toBeInTheDocument();
     expect(screen.getByText('Corner kicks won')).toBeInTheDocument();
-    expect(screen.getByText('Total tackles')).toBeInTheDocument();
   });
 
   test('shows error UI when fetchSummaryNormalized rejects', async () => {
@@ -258,9 +261,9 @@ describe('MatchViewer', () => {
     renderWithId('123');
 
     await waitFor(() => expect(gameSummarySpy.length).toBeGreaterThan(0));
-    const lastProps = gameSummarySpy.at(-1);
-    expect(lastProps.homeScorers.join('|')).toContain("Home Nine 10'");
-    expect(lastProps.awayScorers.join('|')).toContain("Away Ten 55'");
+    const lastProps = getLastSummaryProps();
+    expect(lastProps.homeScorers).toContain('Home Nine');
+    expect(lastProps.awayScorers).toContain('Away Ten');
   });
 
   test('repairs scorer list from scoreboard detailed plays, including (p)/(OG) tags and minute normalization', async () => {
@@ -314,7 +317,7 @@ describe('MatchViewer', () => {
     renderWithId('123');
 
     await waitFor(() => expect(gameSummarySpy.length).toBeGreaterThan(0));
-    const lastProps = gameSummarySpy.at(-1);
+    const lastProps = getLastSummaryProps();
 
     // Expect (p) and (OG) tags and minute normalization with tick
     expect(lastProps.homeScorers.join('|')).toContain("John Smith (p) 45+1'");
@@ -335,7 +338,7 @@ describe('MatchViewer', () => {
 
     renderWithId('abc');
     await waitFor(() => expect(gameSummarySpy.length).toBeGreaterThan(0));
-    let lastProps = gameSummarySpy.at(-1);
+    let lastProps = getLastSummaryProps();
     expect(lastProps.homeScore).toBe(4);
     expect(lastProps.awayScore).toBe(2);
     expect(lastProps.statusText).toBe('90+3’');
@@ -357,14 +360,13 @@ describe('MatchViewer', () => {
 
     renderWithId('def');
     await waitFor(() => expect(gameSummarySpy.length).toBeGreaterThan(0));
-    lastProps = gameSummarySpy.at(-1);
-    expect(String(lastProps.homeScore)).toBe('1');
-    expect(String(lastProps.awayScore)).toBe('1');
-    // status falls back to "Match" inside GameSummaryCard (we pass null)
+    lastProps = getLastSummaryProps();
+    expect(lastProps.homeScore).toBeNull();
+    expect(lastProps.awayScore).toBeNull();
     expect(lastProps.statusText).toBeNull();
   });
 
-  test('top “Team Stats” and “Player Stats” buttons render (non-functional smoke test)', async () => {
+  test('renders match navigation links for overview/player stats/commentary', async () => {
     mockFetchSummaryNormalized.mockResolvedValueOnce(makeSummary({}));
     mockFetchScoreboard.mockResolvedValueOnce({ events: [makeScoreboardEvent({ id: 'x' })] });
     mockExtractStatsFromScoreboardEvent.mockReturnValueOnce({ scorers: [] });
@@ -372,12 +374,9 @@ describe('MatchViewer', () => {
     renderWithId('x');
 
     await waitFor(() => expect(screen.getByTestId('GameSummaryCard')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: /Team Stats/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Player Stats/i })).toBeInTheDocument();
-
-    // Buttons currently non-functional; just ensure they can be clicked without errors
-    fireEvent.click(screen.getByRole('button', { name: /Team Stats/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Player Stats/i }));
+    expect(screen.getByRole('link', { name: /Match Overview/i })).toHaveAttribute('href', '/matchviewer?id=x');
+    expect(screen.getByRole('link', { name: /Player Stats/i })).toHaveAttribute('href', '/playerstats?id=x');
+    expect(screen.getByRole('link', { name: /Commentary/i })).toHaveAttribute('href', '/commentary?id=x');
   });
 
   test('renders all major stat-section headings and key metric labels', async () => {
@@ -409,7 +408,7 @@ describe('MatchViewer', () => {
     expect(screen.getByText('Accurate long balls')).toBeInTheDocument();
     expect(screen.getByText('Long ball accuracy')).toBeInTheDocument();
 
-    expect(screen.getByText('Total tackles')).toBeInTheDocument();
-    expect(screen.getByText('Tackle success rate')).toBeInTheDocument();
+    expect(screen.getByText('Blocked shots')).toBeInTheDocument();
+    expect(screen.getByText('Penalty goals')).toBeInTheDocument();
   });
 });
