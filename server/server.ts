@@ -885,7 +885,9 @@ router.get("/matches/:id/details", async (req, res) => {
   try {
     const { data: match, error: matchErr } = await supabase
       .from("matches")
-      .select("*, home_team:home_team_id(*), away_team:away_team_id(*), venue:venue_id(*)")
+      .select(
+        "*, home_team:home_team_id(*), away_team:away_team_id(*), venue:venue_id(*)"
+      )
       .eq("id", matchId)
       .single();
 
@@ -919,8 +921,6 @@ router.get("/matches/:id/details", async (req, res) => {
     res.status(500).json({ error: "Unexpected server error" });
   }
 });
-
-
 
 /**
  * DELETE /matches/:id/events/:eventId
@@ -1114,6 +1114,72 @@ router.delete("/matches/:id/events/:eventId", async (req, res) => {
   }
 });*/
 
+/* ---------------- USER REPORTS ---------------- */
+
+// Create a new report for a match
+app.post("/matches/:id/reports", async (req, res) => {
+  const { id } = req.params;
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ error: "Message is required" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("match_reports")
+      .insert([{ match_id: Number(id), message }])
+      .select();
+
+    if (error) throw error;
+
+    res.json({ report: data[0] });
+  } catch (err: any) {
+    console.error("[Backend] Failed to create report:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all reports for a match
+app.get("/matches/:id/reports", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { data, error } = await supabase
+      .from("match_reports")
+      .select("*")
+      .eq("match_id", Number(id))
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    res.json({ reports: data });
+  } catch (err: any) {
+    console.error("[Backend] Failed to fetch reports:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// (Optional) Delete a specific report
+app.delete("/matches/:id/reports/:reportId", async (req, res) => {
+  const { id, reportId } = req.params;
+
+  try {
+    const { error } = await supabase
+      .from("match_reports")
+      .delete()
+      .eq("id", Number(reportId))
+      .eq("match_id", Number(id));
+
+    if (error) throw error;
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[Backend] Failed to delete report:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get("/matches", async (req, res) => {
   try {
     const { league_code, status, from, to, created_by, type } = req.query as {
@@ -1210,7 +1276,6 @@ router.get("/matches", async (req, res) => {
     return res.status(500).json({ error: e.message });
   }
 });
-
 
 /* --------------- Start server --------------- */
 app.listen(PORT, () => {

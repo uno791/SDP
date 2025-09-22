@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { baseURL } from "../../config";
 import LiveMatchTimeline from "./LiveMatchTimeline";
-import MatchViewerModal from "./MatchViewerModal"; // ✅ new modal
+import MatchViewerModal from "./MatchViewerModal"; // ✅ existing modal
+import ReportModal from "./ReportModal"; // ✅ new modal
 import styles from "./LiveUserMatches.module.css";
 
 type Match = {
@@ -21,16 +22,19 @@ export default function LiveUserMatches() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [now, setNow] = useState(new Date());
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [modalMatchId, setModalMatchId] = useState<number | null>(null); // ✅ NEW STATE
+  const [modalMatchId, setModalMatchId] = useState<number | null>(null);
+  const [reportMatchId, setReportMatchId] = useState<number | null>(null); // ✅ NEW STATE
 
   useEffect(() => {
     axios
       .get(`${baseURL}/matches`)
       .then((res) => {
-        console.log("[Frontend] /matches response:", res.data); // ✅ log response
+        console.log("[Frontend] /matches response:", res.data);
         setMatches(res.data.matches || []);
       })
-      .catch((err) => console.error("[Frontend] Failed to fetch matches:", err));
+      .catch((err) =>
+        console.error("[Frontend] Failed to fetch matches:", err)
+      );
   }, []);
 
   useEffect(() => {
@@ -88,32 +92,48 @@ export default function LiveUserMatches() {
             {expandedId === m.id && (
               <div className={styles.timelineBox}>
                 <LiveMatchTimeline matchId={m.id} />
-                {/* ✅ Button to open full modal */}
-                <button
-                  className={styles.viewerBtn}
-                  onClick={() => setModalMatchId(m.id)}
-                >
-                  Open Match Viewer
-                </button>
+
+                <div className={styles.actionsRow}>
+                  {/* ✅ Button to open full modal */}
+                  <button
+                    className={styles.viewerBtn}
+                    onClick={() => setModalMatchId(m.id)}
+                  >
+                    Open Match Viewer
+                  </button>
+
+                  {/* ✅ New Report button */}
+                  <button
+                    className={styles.reportBtn}
+                    onClick={() => setReportMatchId(m.id)}
+                  >
+                    Report
+                  </button>
+                </div>
               </div>
             )}
           </div>
         );
       })}
 
-      {/* ✅ Global modal render */}
+      {/* ✅ Global modals */}
       {modalMatchId && (
         <MatchViewerModal
           matchId={modalMatchId}
           onClose={() => setModalMatchId(null)}
         />
       )}
+
+      {reportMatchId && (
+        <ReportModal
+          matchId={reportMatchId}
+          isOpen={true}
+          onClose={() => setReportMatchId(null)}
+        />
+      )}
     </div>
   );
 }
-
-
-
 
 /*import { useEffect, useState } from "react";
 import axios from "axios";

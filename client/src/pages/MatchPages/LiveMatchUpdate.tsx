@@ -25,6 +25,12 @@ type Match = {
   events: Event[];
 };
 
+type Report = {
+  id: number;
+  message: string;
+  created_at: string;
+};
+
 // Helper to make event_type prettier
 const formatEventType = (raw: string) => {
   return raw.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -55,6 +61,9 @@ const LiveMatchUpdate = () => {
   // Extend match duration
   const [extraMinutes, setExtraMinutes] = useState<number>(1);
 
+  // ✅ Reports state
+  const [reports, setReports] = useState<Report[]>([]);
+
   // Fetch match data
   const fetchMatch = async () => {
     try {
@@ -77,6 +86,16 @@ const LiveMatchUpdate = () => {
     }
   };
 
+  // ✅ Fetch reports
+  const fetchReports = async () => {
+    try {
+      const res = await axios.get(`${baseURL}/matches/${id}/reports`);
+      setReports(res.data.reports || []);
+    } catch (err) {
+      console.error("❌ Failed to fetch reports:", err);
+    }
+  };
+
   // Initial fetch + polling
   useEffect(() => {
     if (!id) return;
@@ -85,6 +104,14 @@ const LiveMatchUpdate = () => {
     const interval = setInterval(fetchMatch, 10000);
     return () => clearInterval(interval);
   }, [id, isPaused]); // depends on pause state
+
+  // ✅ Reports polling
+  useEffect(() => {
+    if (!id) return;
+    fetchReports();
+    const interval = setInterval(fetchReports, 15000);
+    return () => clearInterval(interval);
+  }, [id]);
 
   // Live ticking clock (pause-aware)
   useEffect(() => {
@@ -330,6 +357,21 @@ const LiveMatchUpdate = () => {
           </li>
         ))}
       </ul>
+
+      {/* ✅ Reports section */}
+      <h3 className={styles.subHeader}>USER REPORTS:</h3>
+      {reports.length === 0 ? (
+        <p>No reports yet</p>
+      ) : (
+        <ul className={styles.reports}>
+          {reports.map((r) => (
+            <li key={r.id}>
+              <span>{new Date(r.created_at).toLocaleTimeString()}: </span>
+              {r.message}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
