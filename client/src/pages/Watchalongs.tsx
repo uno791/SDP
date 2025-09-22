@@ -70,6 +70,10 @@ function describeDay(date: Date) {
   return dayFormatter.format(date);
 }
 
+function matchDayKey(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
 function extractMatchOption(ev: ScoreboardEvent): MatchOption | null {
   const comp = ev?.competitions?.[0] as Competition | undefined;
   if (!comp) return null;
@@ -123,31 +127,62 @@ async function fetchMatchesWindow(): Promise<{
   completed: MatchOption[];
 }> {
   const now = new Date();
-  const [today, yesterday] = await Promise.all([
-    fetchScoreboard(now),
-    fetchScoreboard(addDays(now, -1)),
-  ]);
+  const offsets = [0, -1, -2, -3, -4, -5, -6];
+  const liveMap = new Map<string, MatchOption>();
+  const completedByDay = new Map<
+    string,
+    { date: Date; matches: Map<string, MatchOption> }
+  >();
 
-  const mergedEvents = [
-    ...((today.events ?? []) as ScoreboardResponse["events"]),
-    ...((yesterday.events ?? []) as ScoreboardResponse["events"]),
-  ];
+  for (const offset of offsets) {
+    if (offset < 0 && completedByDay.size >= 2) break;
 
-  const map = new Map<string, MatchOption>();
-  for (const ev of mergedEvents) {
-    const opt = extractMatchOption(ev);
-    if (!opt) continue;
-    if (!map.has(opt.id)) map.set(opt.id, opt);
+    let response: ScoreboardResponse;
+    try {
+      response = await fetchScoreboard(addDays(now, offset));
+    } catch (error) {
+      console.warn("Failed to fetch scoreboard", error);
+      continue;
+    }
+
+    const events = (response.events ?? []) as ScoreboardResponse["events"];
+    if (!events.length) continue;
+
+    for (const ev of events) {
+      const option = extractMatchOption(ev);
+      if (!option) continue;
+
+      if (option.status === "post") {
+        const eventDate = new Date(ev.date);
+        const dayKey = matchDayKey(eventDate);
+        let bucket = completedByDay.get(dayKey);
+        if (!bucket) {
+          bucket = {
+            date: startOfDay(eventDate),
+            matches: new Map<string, MatchOption>(),
+          };
+          completedByDay.set(dayKey, bucket);
+        }
+        if (!bucket.matches.has(option.id)) {
+          bucket.matches.set(option.id, option);
+        }
+      } else if (!liveMap.has(option.id)) {
+        liveMap.set(option.id, option);
+      }
+    }
   }
 
-  const options = Array.from(map.values());
-  const liveUpcoming = options
-    .filter((m) => m.status !== "post")
-    .sort(orderByKickoffAsc);
-  const completed = options
-    .filter((m) => m.status === "post")
-    .sort(orderByKickoffDesc)
-    .slice(0, 12);
+  const liveUpcoming = Array.from(liveMap.values()).sort(orderByKickoffAsc);
+
+  const completedBuckets = Array.from(completedByDay.values()).sort(
+    (a, b) => b.date.getTime() - a.date.getTime(),
+  );
+
+  const completed = completedBuckets
+    .slice(0, 2)
+    .flatMap((bucket) =>
+      Array.from(bucket.matches.values()).sort(orderByKickoffDesc),
+    );
 
   return { liveUpcoming, completed };
 }
@@ -173,7 +208,6 @@ export default function Watchalongs() {
   const [matchesError, setMatchesError] = useState<string | null>(null);
 
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
-  const [selectedReactionId, setSelectedReactionId] = useState<string | null>(null);
 
   const [watchalongsState, setWatchalongsState] = useState<ContentState>(
     initialContentState,
@@ -194,23 +228,14 @@ export default function Watchalongs() {
         setRecentMatches(completed);
 
         setSelectedMatchId((prev) => {
-          if (prev && (liveUpcoming.some((m) => m.id === prev) || completed.some((m) => m.id === prev))) {
+          const combined = [...liveUpcoming, ...completed];
+          if (prev && combined.some((m) => m.id === prev)) {
             return prev;
           }
           return (
             liveUpcoming.find((m) => m.status === "in")?.id ||
             liveUpcoming[0]?.id ||
             completed[0]?.id ||
-            null
-          );
-        });
-
-        setSelectedReactionId((prev) => {
-          if (prev && completed.some((m) => m.id === prev)) return prev;
-          return (
-            completed[0]?.id ||
-            liveUpcoming.find((m) => m.status === "in")?.id ||
-            liveUpcoming[0]?.id ||
             null
           );
         });
@@ -238,14 +263,6 @@ export default function Watchalongs() {
       null
     );
   }, [liveMatches, recentMatches, selectedMatchId]);
-
-  const selectedReactionMatch = useMemo(() => {
-    return (
-      recentMatches.find((m) => m.id === selectedReactionId) ||
-      liveMatches.find((m) => m.id === selectedReactionId) ||
-      null
-    );
-  }, [recentMatches, liveMatches, selectedReactionId]);
 
   useEffect(() => {
     if (!selectedMatch) {
@@ -288,7 +305,7 @@ export default function Watchalongs() {
   }, [selectedMatch]);
 
   useEffect(() => {
-    if (!selectedReactionMatch) {
+    if (!selectedMatch) {
       setReactionsState(initialContentState);
       return;
     }
@@ -296,7 +313,7 @@ export default function Watchalongs() {
     let cancelled = false;
     setReactionsState((prev) => ({ ...prev, loading: true, error: null }));
 
-    fetchWatchalongContent(selectedReactionMatch.reactionQuery, {
+    fetchWatchalongContent(selectedMatch.reactionQuery, {
       mode: "clips",
       limit: 6,
     })
@@ -325,7 +342,7 @@ export default function Watchalongs() {
     return () => {
       cancelled = true;
     };
-  }, [selectedReactionMatch]);
+  }, [selectedMatch]);
 
   function renderBadge(match: MatchOption) {
     const text =
@@ -425,7 +442,7 @@ export default function Watchalongs() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Choose your match</h2>
           <p className={styles.sectionSubtitle}>
-            Live and upcoming fixtures pull through automatically from the Premier League scoreboard.
+            Live and upcoming fixtures pull through automatically, with reaction support for the latest two matchdays played.
           </p>
 
           {matchesLoading ? (
@@ -485,23 +502,12 @@ export default function Watchalongs() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Fan reaction clips</h2>
           <p className={styles.sectionSubtitle}>
-            Relive the biggest moments from recent fixtures with supporter reactions and highlights.
+            Relive the biggest moments from recent fixtures with supporter reactions and highlights from the selected match.
           </p>
 
-          {recentMatches.length ? (
-            <div className={styles.pillRow}>
-              {recentMatches.map((match) => (
-                <button
-                  key={match.id}
-                  type="button"
-                  onClick={() => setSelectedReactionId(match.id)}
-                  className={`${styles.pill} ${
-                    selectedReactionId === match.id ? styles.pillActive : ""
-                  }`}
-                >
-                  {match.label}
-                </button>
-              ))}
+          {selectedMatch ? (
+            <div className={styles.matchDetail}>
+              <strong>{selectedMatch.label}</strong>
             </div>
           ) : null}
 
