@@ -82,7 +82,7 @@ function AvatarNameCell({
           height={SIZE}
           loading={eager ? "eager" : "lazy"}
           decoding="async"
-          fetchpriority={eager ? "high" : "auto"}
+          fetchPriority={eager ? "high" : "auto"}
           className={styles.avatarImg}
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.visibility = "hidden";

@@ -102,6 +102,8 @@ export type ScoreboardResponse = {
           logos?: Array<{ href?: string }>;
           abbreviation?: string;
           id?: string;
+          displayName?: string;
+          name?: string;
         };
         statistics?: Array<{
           name?: string;
@@ -1156,6 +1158,7 @@ export type CommentaryKind =
   | "subst"
   | "offside"
   | "save"
+  | "blocked"
   | "chance"
   | "var"
   | "kickoff"
@@ -1200,6 +1203,7 @@ function mapPlayTypeToKind(typeText?: string, typeId?: string): CommentaryKind {
   if (t.includes("sub")) return "subst";
   if (t.includes("offside")) return "offside";
   if (t.includes("save")) return "save";
+  if (t.includes("block")) return "blocked";
   if (t.includes("var")) return "var";
   if (t.includes("kick") && t.includes("off")) return "kickoff";
   if (t.includes("half") && t.includes("end")) return "ht";

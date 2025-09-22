@@ -16,6 +16,7 @@ import ProfilePage from "./pages/ProfilePage";
 import MatchViewer from "./pages/MatchViewer";
 import PlayerStats from "./pages/PlayerStats";
 import Commentary from "./pages/Commentary";
+import Watchalongs from "./pages/Watchalongs";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
 
               {/* New Profile route */}
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/watchalongs" element={<Watchalongs />} />
             </Route>
             <Route path="/" element={<LandingPage />} />
             <Route path="/matchviewer" element={<MatchViewer />} />

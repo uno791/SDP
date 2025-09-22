@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./BurgerMenu.module.css";
 import { X } from "lucide-react";
 
@@ -10,6 +9,7 @@ const SECTIONS: Section[] = [
   { id: "favourite", label: "Favourite Teams" },
   { id: "profile", label: "Profile" },
   { id: "mymatches", label: "User Matches" },
+  { id: "watchalongs", label: "Watchalong Hub" },
 ];
 
 type BurgerMenuProps = {
