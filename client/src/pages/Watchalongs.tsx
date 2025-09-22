@@ -42,6 +42,13 @@ const publishedFormatter = new Intl.DateTimeFormat("en-GB", {
   timeStyle: "short",
 });
 
+const FontImports = () => (
+  <style>
+    {`@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&display=swap');`}
+  </style>
+);
+
 type ScoreboardEvent = ScoreboardResponse["events"][number];
 type Competition = ScoreboardEvent["competitions"][number];
 type Competitor = Competition["competitors"][number];
@@ -427,6 +434,7 @@ export default function Watchalongs() {
 
   return (
     <div className={styles.page}>
+      <FontImports />
       <div className={styles.inner}>
         <section className={styles.hero}>
           <div className={styles.heroBadge}>
