@@ -8,6 +8,8 @@ import {
   extractStatsFromScoreboardEvent,
 } from "../../api/espn";
 
+import { Link } from "react-router-dom"; // ✅ for SPA navigation
+
 type Event = ScoreboardResponse["events"][number];
 
 type GridProps = {
@@ -217,20 +219,15 @@ function LiveMatchCardSingle({
             )}
           </div>
 
+          {/* ✅ Button looks the same, but goes to /matchviewer */}
           <div className={styles.ctaWrap}>
-            <a
+            <Link
+              to={`/matchviewer?id=${encodeURIComponent(ev.id)}`}
               className={styles.cta}
-              href={`https://www.espn.com/soccer/match/_/gameId/${encodeURIComponent(
-                ev.id
-              )}`}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) =>
-                e.stopPropagation()
-              } /* don't re-toggle when clicking link */
+              onClick={(e) => e.stopPropagation()}
             >
               Open Match Viewer
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -308,10 +305,8 @@ export default function LiveMatchCard({ showLabel = true }: GridProps) {
   };
 
   if (loading) return <div className={styles.state}>Loading matches…</div>;
-  if (err)
-    return <div className={`${styles.state} ${styles.error}`}>{err}</div>;
-  if (!events.length)
-    return <div className={styles.state}>No matches found.</div>;
+  if (err) return <div className={`${styles.state} ${styles.error}`}>{err}</div>;
+  if (!events.length) return <div className={styles.state}>No matches found.</div>;
 
   return (
     <>

@@ -124,6 +124,7 @@ function RotatingFootball({ url }: { url: string }) {
 
 /* Main exported football canvas */
 export default function ThreeFootball() {
+  // const modelUrl = "/hot_girls_04.glb";
   const modelUrl = "/jabulani.glb";
   useGLTF.preload?.(modelUrl);
 

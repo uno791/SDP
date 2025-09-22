@@ -14,6 +14,8 @@ import LandingPage from "./pages/LandingPage";
 // import the new profile page
 import ProfilePage from "./pages/ProfilePage";
 import MatchViewer from "./pages/MatchViewer";
+import PlayerStats from "./pages/PlayerStats";
+import Commentary from "./pages/Commentary";
 
 function App() {
   return (
@@ -23,7 +25,6 @@ function App() {
           <Routes>
             {/* Routes inside Layout will have the NavBar */}
             <Route element={<Layout />}>
-              <Route path="/" element={<LandingPage />} />
               <Route path="/home" element={<Home />} />
 
               <Route path="/doodlehome" element={<DoodleHome />} />
@@ -35,8 +36,11 @@ function App() {
 
               {/* New Profile route */}
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/matchviewer" element={<MatchViewer />} />
             </Route>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/matchviewer" element={<MatchViewer />} />
+            <Route path="/playerstats" element={<PlayerStats />} />
+            <Route path="/commentary" element={<Commentary />} />
           </Routes>
         </Router>
       </UserProvider>

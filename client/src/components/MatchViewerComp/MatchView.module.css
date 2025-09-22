@@ -1,0 +1,73 @@
+.container {
+  padding: 1.5rem;
+}
+
+.buttonRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.teamButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: #6f8a80;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+.teamButton:hover {
+  background-color: #047857;
+}
+
+.playerButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: white;
+  border: 1px solid #065f46;
+  color: #065f46;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+}
+.playerButton:hover {
+  background-color: #f0fdf4;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: #064e3b;
+  text-align: center; /* ⬅ Center text */
+  display: flex; /* ⬅ Enable flex */
+  justify-content: center; /* ⬅ Center horizontally */
+  align-items: center; /* ⬅ Center vertically */
+}
+
+.subheading {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-bottom: 1rem;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.section {
+  margin-bottom: 1.5rem;
+  background-color: #f9fafb; /* gray-50 */
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+}
+
+.sectionTitle {
+  font-weight: 600;
+  color: #047857; /* emerald-700 */
+  margin-bottom: 0.75rem;
+}

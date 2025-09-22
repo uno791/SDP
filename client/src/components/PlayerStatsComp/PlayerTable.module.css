@@ -1,0 +1,162 @@
+.tableContainer {
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.tableTitle {
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 1rem;
+  color: #065f46;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
+  background: #6f8a80;
+  color: #ffffff;
+}
+
+.tr {
+  border-top: 1px solid #f0f0f0;
+  transition: background 0.15s ease;
+}
+
+.tr:hover {
+  background: #f9fafb;
+}
+
+.td {
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  color: #111827;
+}
+
+.noPlayers {
+  padding: 1rem;
+  text-align: center;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* --- Avatar + Info --- */
+.avatarNameCell {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 220px;
+}
+
+.avatarWrapper {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.avatarImg {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+  background: #f3f4f6;
+}
+
+.shirtBadge {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  background: #111;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.infoWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.playerName {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.playerPosition {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.subIndicatorContainer {
+  margin-top: 4px;
+}
+
+/* --- Sub Indicators --- */
+.subIndicatorWrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.subOut {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.subOutCircle {
+  background: #dc2626;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+}
+
+.subIn {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.subInCircle {
+  background: #047857;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+}

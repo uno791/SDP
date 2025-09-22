@@ -144,6 +144,7 @@ export default function LandingPage() {
       <AnimatePresence>{loading && <Loader3D />}</AnimatePresence>
 
       {/* Header & Menu */}
+
       <Header onOpenMenu={() => setMenuOpen(true)} />
       <BurgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 
@@ -196,7 +197,7 @@ export default function LandingPage() {
         {/* PAST MATCHES (your static examples) */}
         <section id="past" className={styles.sectionGray}>
           <div className={styles.stack}>
-            <PastMatchCard />
+            <PastMatchCard /> 
           </div>
         </section>
 
