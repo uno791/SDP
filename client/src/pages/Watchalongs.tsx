@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { PlayCircle, Sparkles } from "lucide-react";
+import { PlayCircle } from "lucide-react";
 
 import styles from "../components/LandingPageComp/WatchalongHub.module.css";
 import type { ScoreboardResponse } from "../api/espn";
@@ -235,7 +235,9 @@ export default function Watchalongs() {
         setRecentMatches(completed);
 
         setSelectedMatchId((prev) => {
-          const combined = [...liveUpcoming, ...completed];
+          const combined = [...liveUpcoming, ...completed].sort((a, b) =>
+            new Date(b.startTimeIso).getTime() - new Date(a.startTimeIso).getTime(),
+          );
           if (prev && combined.some((m) => m.id === prev)) {
             return prev;
           }
@@ -270,6 +272,13 @@ export default function Watchalongs() {
       null
     );
   }, [liveMatches, recentMatches, selectedMatchId]);
+
+  const matchList = useMemo(() => {
+    const combined = [...liveMatches, ...recentMatches];
+    return combined.sort((a, b) =>
+      new Date(b.startTimeIso).getTime() - new Date(a.startTimeIso).getTime(),
+    );
+  }, [liveMatches, recentMatches]);
 
   useEffect(() => {
     if (!selectedMatch) {
@@ -437,9 +446,6 @@ export default function Watchalongs() {
       <FontImports />
       <div className={styles.inner}>
         <section className={styles.hero}>
-          <div className={styles.heroBadge}>
-            <Sparkles size={16} /> Live Match Companion
-          </div>
           <h1 className={styles.heroTitle}>Watchalong Hub</h1>
           <p className={styles.heroSubtitle}>
             Pick a Premier League fixture, jump into trusted creator watchalongs, and catch
@@ -457,9 +463,9 @@ export default function Watchalongs() {
             <div className={styles.loading}>Fetching today&apos;s fixtures…</div>
           ) : matchesError ? (
             <div className={styles.error}>{matchesError}</div>
-          ) : liveMatches.length || recentMatches.length ? (
-            <div className={styles.matchGrid}>
-              {[...liveMatches, ...recentMatches].map((match) => (
+          ) : matchList.length ? (
+            <div className={styles.matchList}>
+              {matchList.map((match) => (
                 <button
                   key={match.id}
                   type="button"
@@ -468,11 +474,14 @@ export default function Watchalongs() {
                     selectedMatchId === match.id ? styles.matchButtonActive : ""
                   }`}
                 >
-                  <div className={styles.matchMetaRow}>
-                    {renderBadge(match)}
-                    <span className={styles.matchDetail}>{match.detail}</span>
+                  <div className={styles.matchInfo}>
+                    <div className={styles.matchMetaRow}>
+                      {renderBadge(match)}
+                      <span className={styles.matchDetail}>{match.detail}</span>
+                    </div>
+                    <div className={styles.matchTitle}>{match.label}</div>
                   </div>
-                  <div className={styles.matchTitle}>{match.label}</div>
+                  <span className={styles.matchChevron}>▸</span>
                 </button>
               ))}
             </div>
