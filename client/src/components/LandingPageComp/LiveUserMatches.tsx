@@ -16,6 +16,8 @@ type Match = {
   utc_kickoff: string;
   minute?: number | null;
   notes_json?: { duration?: string | number };
+  home_possession?: number | null; // ✅ new
+  away_possession?: number | null; // ✅ new
 };
 
 export default function LiveUserMatches() {
@@ -91,6 +93,26 @@ export default function LiveUserMatches() {
             {/* Expanded inline timeline */}
             {expandedId === m.id && (
               <div className={styles.timelineBox}>
+                {/* ✅ Possession display with slider */}
+                <div className={styles.possessionDisplay}>
+                  <strong>Possession:</strong>
+                  <div className={styles.possessionBar}>
+                    <span>
+                      {m.home_team?.name ?? "Home"}: {m.home_possession ?? 50}%
+                    </span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={m.home_possession ?? 50}
+                      readOnly
+                    />
+                    <span>
+                      {m.away_team?.name ?? "Away"}: {m.away_possession ?? 50}%
+                    </span>
+                  </div>
+                </div>
+
                 <LiveMatchTimeline matchId={m.id} />
 
                 <div className={styles.actionsRow}>

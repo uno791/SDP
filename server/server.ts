@@ -472,6 +472,36 @@ router.post("/matches/:id/unfinalize", async (req, res) => {
   }
 });
 
+// ✅ Update possession for a match
+app.patch("/matches/:id/possession", async (req, res) => {
+  const { id } = req.params;
+  const { home_possession, away_possession } = req.body;
+
+  // Ensure both sides add up to 100
+  if (home_possession + away_possession !== 100) {
+    return res.status(400).json({ error: "Possession must add up to 100" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("matches")
+      .update({ home_possession, away_possession })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("❌ Failed to update possession:", error);
+      return res.status(500).json({ error: "Failed to update possession" });
+    }
+
+    res.json({ match: data });
+  } catch (err) {
+    console.error("❌ Server error updating possession:", err);
+    res.status(500).json({ error: "Unexpected server error" });
+  }
+});
+
 /**
  * GET /matches/:id
  * Returns match with team/venue names and events.

@@ -23,6 +23,8 @@ type Match = {
   status: string;
   minute: number | null;
   events: Event[];
+  home_possession?: number | null; // ✅ new
+  away_possession?: number | null; // ✅ new
 };
 
 type Report = {
@@ -64,11 +66,18 @@ const LiveMatchUpdate = () => {
   // ✅ Reports state
   const [reports, setReports] = useState<Report[]>([]);
 
+  // ✅ Possession state
+  const [possession, setPossession] = useState<number>(50);
+  const [savingPossession, setSavingPossession] = useState(false); // NEW
+
   // Fetch match data
   const fetchMatch = async () => {
     try {
       const res = await axios.get(`${baseURL}/matches/${id}`);
       setMatch(res.data.match);
+
+      // ✅ update possession from backend
+      setPossession(res.data.match.home_possession ?? 50);
 
       // ✅ Only update liveMinute if not paused
       if (!isPaused) {
@@ -207,6 +216,24 @@ const LiveMatchUpdate = () => {
     }
   };
 
+  // ✅ Save possession
+  const handleSavePossession = async () => {
+    if (!match) return;
+
+    try {
+      setSavingPossession(true); // show "Saving..."
+      await axios.patch(`${baseURL}/matches/${match.id}/possession`, {
+        home_possession: possession,
+        away_possession: 100 - possession,
+      });
+      await fetchMatch();
+    } catch (err) {
+      console.error("❌ Failed to save possession:", err);
+    } finally {
+      setSavingPossession(false); // back to "SAVE"
+    }
+  };
+
   if (loading) return <p>Loading match...</p>;
   if (!match) return <p>Match not found</p>;
 
@@ -267,6 +294,31 @@ const LiveMatchUpdate = () => {
 
         <button className={styles.end} onClick={handleEndMatch}>
           END MATCH
+        </button>
+      </div>
+
+      {/* ✅ Possession slider */}
+      <h3 className={styles.subHeader}>POSSESSION</h3>
+      <div className={styles.possessionBox}>
+        <span>
+          {match.home_team?.name ?? "Home"}: {possession}%
+        </span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={possession}
+          onChange={(e) => setPossession(Number(e.target.value))}
+        />
+        <span>
+          {match.away_team?.name ?? "Away"}: {100 - possession}%
+        </span>
+        <button
+          className={styles.savePossession}
+          onClick={handleSavePossession}
+          disabled={savingPossession}
+        >
+          {savingPossession ? "Saving..." : "SAVE"}
         </button>
       </div>
 
