@@ -18,3 +18,11 @@
   margin-bottom: 20px;
   cursor: pointer;
 }
+
+.csvTemplate {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
