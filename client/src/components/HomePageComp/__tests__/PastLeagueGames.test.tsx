@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import PastLeagueGames from "../PastLeagueGames/PastLeagueGames";
@@ -25,6 +25,10 @@ describe("PastLeagueGames", () => {
     jest.clearAllMocks();
     matchCardSpy.mockClear();
     mockExtract.mockReturnValue({ metrics: [], scorers: [] } as any);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   const makeEvent = (state: "pre" | "in" | "post") => ({
@@ -117,5 +121,64 @@ describe("PastLeagueGames", () => {
     await waitFor(() =>
       expect(screen.getByText(/scoreboard unavailable/i)).toBeInTheDocument()
     );
+  });
+
+  test("polls aggressively when live matches are in progress", async () => {
+    jest.useFakeTimers();
+    const timeoutSpy = jest.spyOn(window, "setTimeout");
+    mockFetch.mockImplementation(() =>
+      Promise.resolve({ events: [makeEvent("in")] } as any)
+    );
+
+    render(<PastLeagueGames />);
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(timeoutSpy.mock.calls.some(([, delay]) => delay === 10_000)).toBe(true)
+    );
+
+    const liveCall = timeoutSpy.mock.calls.find(([, delay]) => delay === 10_000);
+    const liveTick = liveCall?.[0] as (() => Promise<void>) | undefined;
+    expect(liveTick).toBeDefined();
+
+    await act(async () => {
+      await liveTick?.();
+    });
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    timeoutSpy.mockRestore();
+  });
+
+  test("falls back to short retry cadence after polling failure", async () => {
+    jest.useFakeTimers();
+    const timeoutSpy = jest.spyOn(window, "setTimeout");
+    mockFetch
+      .mockResolvedValueOnce({ events: [makeEvent("in")] } as any)
+      .mockRejectedValueOnce(new Error("poll failed"));
+
+    render(<PastLeagueGames />);
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(timeoutSpy.mock.calls.some(([, delay]) => delay === 10_000)).toBe(true)
+    );
+
+    const liveCall = timeoutSpy.mock.calls.find(([, delay]) => delay === 10_000);
+    const liveTick = liveCall?.[0] as (() => Promise<void>) | undefined;
+    expect(liveTick).toBeDefined();
+
+    await act(async () => {
+      try {
+        await liveTick?.();
+      } catch (err) {
+        // expected for this branch
+      }
+    });
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByText(/poll failed/i)).toBeInTheDocument());
+    expect(timeoutSpy.mock.calls.length).toBeGreaterThan(1);
+
+    timeoutSpy.mockRestore();
   });
 });

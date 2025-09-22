@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import Loader3D from "../LandingPageComp/Layout/Loader3D";
 import ThreeFootball from "../LandingPageComp/ThreeFootball";
 
@@ -46,6 +46,7 @@ describe("3D landing components", () => {
 
   beforeEach(() => {
     useFrameMock.mockClear();
+    useFrameMock.mockImplementation(() => undefined);
     mockUseGLTF.mockReset();
     mockUseGLTF.mockReturnValue({ scene: { traverse: jest.fn() } });
     mockUseGLTF.preload?.mockReset?.();
@@ -83,5 +84,60 @@ describe("3D landing components", () => {
       fireEvent.pointerUp(group);
       fireEvent.pointerOut(group);
     }
+  });
+
+  test("ThreeFootball rotates the football on each frame", async () => {
+    const callbacks: Array<(state: any, delta: number) => void> = [];
+    useFrameMock.mockImplementation((cb: any) => {
+      callbacks.push(cb);
+    });
+
+    const previousRotationDescriptor = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      "rotation"
+    );
+    Object.defineProperty(HTMLElement.prototype, "rotation", {
+      configurable: true,
+      writable: true,
+      value: { x: 0, y: 0, z: 0 },
+    });
+
+    const { container } = render(<ThreeFootball />);
+    const group = container.querySelector("group") as any;
+    expect(group).toBeTruthy();
+
+    if (!group) return;
+
+    expect(callbacks.length).toBeGreaterThan(0);
+    const lastCallback = callbacks[callbacks.length - 1];
+    expect(typeof lastCallback).toBe("function");
+
+    act(() => {
+      lastCallback?.({ clock: { getElapsedTime: () => 2 } }, 0.5);
+    });
+
+    expect(group.rotation.y).not.toBe(0);
+
+    if (previousRotationDescriptor) {
+      Object.defineProperty(HTMLElement.prototype, "rotation", previousRotationDescriptor);
+    } else {
+      delete (HTMLElement.prototype as any).rotation;
+    }
+
+    useFrameMock.mockImplementation(() => undefined);
+  });
+
+  test("ThreeFootball marks mesh parts to cast and receive shadows", () => {
+    const mesh: any = { isMesh: true };
+    mockUseGLTF.mockReturnValueOnce({
+      scene: {
+        traverse: (fn: (obj: any) => void) => fn(mesh),
+      },
+    });
+
+    render(<ThreeFootball />);
+
+    expect(mesh.castShadow).toBe(true);
+    expect(mesh.receiveShadow).toBe(true);
   });
 });

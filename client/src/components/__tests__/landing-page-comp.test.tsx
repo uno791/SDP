@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import MarqueeWide from "../LandingPageComp/MarqueeWide";
@@ -284,5 +284,94 @@ describe("Landing page components", () => {
 
     await user.click(upcomingCard);
     expect(screen.queryByLabelText(/Open Match Viewer for match upcoming/i)).not.toBeInTheDocument();
+  });
+
+  test("PastMatchCard shows kickoff info when no match stats are returned", async () => {
+    const now = new Date();
+    const board: ScoreboardResponse = {
+      events: [
+        {
+          id: "nostats",
+          date: now.toISOString(),
+          shortName: "Alpha vs Beta",
+          status: { type: { state: "post", detail: "FT", completed: true } },
+          competitions: [
+            {
+              competitors: [
+                {
+                  homeAway: "home",
+                  score: "2",
+                  team: { shortDisplayName: "Alpha", logo: "" },
+                },
+                {
+                  homeAway: "away",
+                  score: "1",
+                  team: { shortDisplayName: "Beta", logo: "" },
+                },
+              ],
+              details: [],
+            },
+          ],
+        },
+      ],
+    };
+
+    mockFetchScoreboard.mockReset();
+    mockFetchScoreboard.mockResolvedValue(board);
+    mockExtractStats.mockReturnValue({ metrics: [], saves: {}, scorers: [] });
+
+    const { container } = render(
+      <MemoryRouter>
+        <PastMatchCard />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(screen.getByText(/Alpha/)).toBeInTheDocument());
+
+    const matchCard = Array.from(container.querySelectorAll('[role="button"]')).find((btn) =>
+      btn.textContent?.includes("Alpha")
+    );
+    expect(matchCard).toBeTruthy();
+
+    if (!matchCard) return;
+
+    fireEvent.keyDown(matchCard, { key: "Enter", code: "Enter" });
+
+    await waitFor(() =>
+      expect(screen.getByText(/Kickoff/i)).toBeInTheDocument()
+    );
+    expect(screen.getByText(/Open Match Viewer/)).toBeInTheDocument();
+  });
+
+  test("PastMatchCard triggers the native picker fallback and handles manual date entry", async () => {
+    const { container } = render(
+      <MemoryRouter>
+        <PastMatchCard />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(screen.getByText(/Matches/)).toBeInTheDocument());
+
+    const dateLabel = container.querySelector('.dateLabel') as HTMLElement;
+    const dateInput = container.querySelector('input[type="date"]') as HTMLInputElement;
+    expect(dateLabel).toBeTruthy();
+    expect(dateInput).toBeTruthy();
+
+    if (!dateLabel || !dateInput) return;
+
+    const clickSpy = jest.spyOn(dateInput, "click");
+
+    fireEvent.keyDown(dateLabel, { key: "Enter", code: "Enter" });
+    expect(clickSpy).toHaveBeenCalled();
+
+    const beforeCalls = mockFetchScoreboard.mock.calls.length;
+
+    fireEvent.change(dateInput, { target: { value: "2024-01-02" } });
+
+    await waitFor(() =>
+      expect(mockFetchScoreboard.mock.calls.length).toBeGreaterThan(beforeCalls)
+    );
+
+    clickSpy.mockRestore();
   });
 });
