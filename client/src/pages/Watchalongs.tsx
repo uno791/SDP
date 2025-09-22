@@ -280,6 +280,26 @@ export default function Watchalongs() {
     );
   }, [liveMatches, recentMatches]);
 
+  const liveNowCount = useMemo(
+    () => liveMatches.filter((match) => match.status === "in").length,
+    [liveMatches],
+  );
+  const upcomingCount = useMemo(
+    () => liveMatches.filter((match) => match.status === "pre").length,
+    [liveMatches],
+  );
+  const recentCount = useMemo(() => recentMatches.length, [recentMatches]);
+
+  const kickoffDate = useMemo(
+    () => (selectedMatch ? new Date(selectedMatch.startTimeIso) : null),
+    [selectedMatch],
+  );
+  const kickoffDay = kickoffDate ? dayFormatter.format(kickoffDate) : null;
+  const kickoffTime = kickoffDate ? timeFormatter.format(kickoffDate) : null;
+
+  const watchalongCount = watchalongsState.items.length;
+  const reactionCount = reactionsState.items.length;
+
   useEffect(() => {
     if (!selectedMatch) {
       setWatchalongsState(initialContentState);
@@ -444,54 +464,136 @@ export default function Watchalongs() {
   return (
     <div className={styles.page}>
       <FontImports />
+      <div className={styles.pageGlow} aria-hidden="true" />
       <div className={styles.inner}>
         <section className={styles.hero}>
-          <h1 className={styles.heroTitle}>Watchalong Hub</h1>
-          <p className={styles.heroSubtitle}>
-            Pick a Premier League fixture, jump into trusted creator watchalongs, and catch
-            the latest fan reaction clips while the action unfolds.
-          </p>
-        </section>
-
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Choose your match</h2>
-          <p className={styles.sectionSubtitle}>
-            Live and upcoming fixtures pull through automatically, with reaction support for the latest two matchdays played.
-          </p>
-
-          {matchesLoading ? (
-            <div className={styles.loading}>Fetching today&apos;s fixtures…</div>
-          ) : matchesError ? (
-            <div className={styles.error}>{matchesError}</div>
-          ) : matchList.length ? (
-            <div className={styles.matchList}>
-              {matchList.map((match) => (
-                <button
-                  key={match.id}
-                  type="button"
-                  onClick={() => setSelectedMatchId(match.id)}
-                  className={`${styles.matchButton} ${
-                    selectedMatchId === match.id ? styles.matchButtonActive : ""
-                  }`}
-                >
-                  <div className={styles.matchInfo}>
-                    <div className={styles.matchMetaRow}>
-                      {renderBadge(match)}
-                      <span className={styles.matchDetail}>{match.detail}</span>
-                    </div>
-                    <div className={styles.matchTitle}>{match.label}</div>
-                  </div>
-                  <span className={styles.matchChevron}>▸</span>
-                </button>
-              ))}
+          <div className={styles.heroContent}>
+            <span className={styles.heroBadge}>Premier League Companion</span>
+            <h1 className={styles.heroTitle}>Watchalong Hub</h1>
+            <p className={styles.heroSubtitle}>
+              Pick a Premier League fixture, jump into trusted creator watchalongs, and catch
+              the latest fan reaction clips while the action unfolds.
+            </p>
+            <div className={styles.heroStats}>
+              <div className={styles.statCard}>
+                <span className={styles.statLabel}>Live now</span>
+                <span className={styles.statValue}>
+                  {matchesLoading ? "..." : liveNowCount}
+                </span>
+              </div>
+              <div className={styles.statCard}>
+                <span className={styles.statLabel}>Upcoming</span>
+                <span className={styles.statValue}>
+                  {matchesLoading ? "..." : upcomingCount}
+                </span>
+              </div>
+              <div className={styles.statCard}>
+                <span className={styles.statLabel}>Reactions ready</span>
+                <span className={styles.statValue}>
+                  {matchesLoading ? "..." : recentCount}
+                </span>
+              </div>
             </div>
-          ) : (
-            <div className={styles.emptyState}>No fixtures found for this window.</div>
-          )}
+          </div>
         </section>
 
-        <section className={styles.section}>
+        <section className={styles.matchSection}>
           <div className={styles.sectionHeaderRow}>
+            <div>
+              <h2 className={styles.sectionTitle}>Choose your match</h2>
+              <p className={styles.sectionSubtitle}>
+                Live and upcoming fixtures pull through automatically, with reaction support for the latest two matchdays played.
+              </p>
+            </div>
+            {selectedMatch ? (
+              <span className={styles.sectionChip}>{selectedMatch.label}</span>
+            ) : null}
+          </div>
+
+          <div className={styles.matchLayout}>
+            <div className={styles.matchColumn}>
+              {matchesLoading ? (
+                <div className={styles.loading}>Fetching today&apos;s fixtures…</div>
+              ) : matchesError ? (
+                <div className={styles.error}>{matchesError}</div>
+              ) : matchList.length ? (
+                <div className={styles.matchList}>
+                  {matchList.map((match) => (
+                    <button
+                      key={match.id}
+                      type="button"
+                      onClick={() => setSelectedMatchId(match.id)}
+                      className={`${styles.matchButton} ${
+                        selectedMatchId === match.id ? styles.matchButtonActive : ""
+                      }`}
+                    >
+                      <div className={styles.matchInfo}>
+                        <div className={styles.matchMetaRow}>
+                          {renderBadge(match)}
+                          <span className={styles.matchDetail}>{match.detail}</span>
+                        </div>
+                        <div className={styles.matchTitle}>{match.label}</div>
+                      </div>
+                      <span className={styles.matchChevron}>▸</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.emptyState}>No fixtures found for this window.</div>
+              )}
+            </div>
+
+            <aside className={styles.spotlightColumn}>
+              {selectedMatch ? (
+                <div className={styles.spotlightCard}>
+                  <div className={styles.spotlightHeader}>
+                    {renderBadge(selectedMatch)}
+                    <span className={styles.spotlightLabel}>Premier League</span>
+                  </div>
+                  <h3 className={styles.spotlightTitle}>{selectedMatch.label}</h3>
+                  <p className={styles.spotlightDetail}>{selectedMatch.detail}</p>
+                  <div className={styles.spotlightMetaGrid}>
+                    {kickoffDay ? (
+                      <div>
+                        <span className={styles.metaLabel}>Matchday</span>
+                        <span className={styles.metaValue}>{kickoffDay}</span>
+                      </div>
+                    ) : null}
+                    {kickoffTime ? (
+                      <div>
+                        <span className={styles.metaLabel}>Kick-off</span>
+                        <span className={styles.metaValue}>{kickoffTime} SAST</span>
+                      </div>
+                    ) : null}
+                    <div>
+                      <span className={styles.metaLabel}>Watch parties</span>
+                      <span className={styles.metaValue}>
+                        {watchalongsState.loading ? "…" : watchalongCount}
+                      </span>
+                    </div>
+                    <div>
+                      <span className={styles.metaLabel}>Reaction clips</span>
+                      <span className={styles.metaValue}>
+                        {reactionsState.loading ? "…" : reactionCount}
+                      </span>
+                    </div>
+                  </div>
+                  <p className={styles.spotlightNote}>
+                    Switch fixtures to refresh curated coverage from trusted creators and the most electric fan reactions.
+                  </p>
+                </div>
+              ) : (
+                <div className={styles.spotlightPlaceholder}>
+                  <h3>Select a fixture</h3>
+                  <p>Pick a match to unlock curated watch parties and fan reactions.</p>
+                </div>
+              )}
+            </aside>
+          </div>
+        </section>
+
+        <section className={styles.contentSection}>
+          <div className={styles.contentHeader}>
             <div>
               <h2 className={styles.sectionTitle}>Watchalong streams</h2>
               <p className={styles.sectionSubtitle}>
@@ -499,9 +601,7 @@ export default function Watchalongs() {
               </p>
             </div>
             {selectedMatch ? (
-              <div className={styles.matchDetail}>
-                <strong>{selectedMatch.label}</strong>
-              </div>
+              <span className={styles.sectionChip}>{selectedMatch.label}</span>
             ) : null}
           </div>
           {renderContent(
@@ -516,17 +616,18 @@ export default function Watchalongs() {
           ) : null}
         </section>
 
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Fan reaction clips</h2>
-          <p className={styles.sectionSubtitle}>
-            Relive the biggest moments from recent fixtures with supporter reactions and highlights from the selected match.
-          </p>
-
-          {selectedMatch ? (
-            <div className={styles.matchDetail}>
-              <strong>{selectedMatch.label}</strong>
+        <section className={styles.contentSection}>
+          <div className={styles.contentHeader}>
+            <div>
+              <h2 className={styles.sectionTitle}>Fan reaction clips</h2>
+              <p className={styles.sectionSubtitle}>
+                Relive the biggest moments from recent fixtures with supporter reactions and highlights from the selected match.
+              </p>
             </div>
-          ) : null}
+            {selectedMatch ? (
+              <span className={styles.sectionChip}>{selectedMatch.label}</span>
+            ) : null}
+          </div>
 
           {renderContent(
             reactionsState,
