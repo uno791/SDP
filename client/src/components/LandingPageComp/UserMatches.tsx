@@ -21,7 +21,7 @@ export default function UserMatches() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [date, setDate] = useState(() => {
     const today = new Date();
-    return today.toISOString().split("T")[0]; // YYYY-MM-DD
+    return today.toISOString().split("T")[0];
   });
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [modalMatchId, setModalMatchId] = useState<number | null>(null);
@@ -42,6 +42,10 @@ export default function UserMatches() {
       );
   }, [date]);
 
+  const toggleCard = (id: number) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.headingRow}>
@@ -55,14 +59,18 @@ export default function UserMatches() {
       </div>
 
       {matches.length === 0 ? (
-        <p>No matches for this date.</p>
+        <div className={styles.state}>No matches for this date.</div>
       ) : (
-        <div className={styles.grid}>
+        <div className={styles.list}>
           {matches.map((m) => {
             const kickoff = new Date(m.utc_kickoff);
             const now = new Date();
             const duration = Number(m.notes_json?.duration ?? 90);
             const end = new Date(kickoff.getTime() + duration * 60000);
+            const kickoffTime = kickoff.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
 
             let statusLabel = "Scheduled";
             if (m.status === "final" || now > end) {
@@ -74,41 +82,43 @@ export default function UserMatches() {
               );
               statusLabel = `${minute}'`;
             } else if (now < kickoff) {
-              statusLabel = `KO: ${kickoff.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}`;
+              statusLabel = `KO: ${kickoffTime}`;
             }
 
-            return (
-              <div key={m.id} className={styles.card}>
-                <div
-                  className={styles.header}
-                  onClick={() =>
-                    setExpandedId((prev) => (prev === m.id ? null : m.id))
-                  }
-                >
-                  <div className={styles.team}>
-                    {m.home_team?.name ?? "TBD"}
-                  </div>
+            const isOpen = expandedId === m.id;
 
-                  <div className={styles.center}>
+            return (
+              <div key={m.id} className={`${styles.card} ${isOpen ? styles.open : ""}`}>
+                <div
+                  className={styles.row}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => toggleCard(m.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleCard(m.id);
+                    }
+                  }}
+                >
+                  <div className={styles.left}>
+                    <div className={styles.matchup}>
+                      <span className={styles.teamName}>{m.home_team?.name ?? "TBD"}</span>
+                      <span className={styles.vs}>vs</span>
+                      <span className={styles.teamName}>{m.away_team?.name ?? "TBD"}</span>
+                    </div>
                     <div className={styles.score}>
                       {m.home_score ?? 0} - {m.away_score ?? 0}
                     </div>
-                    <div className={styles.status}>{statusLabel}</div>
-                    <span className={styles.arrow}>
-                      {expandedId === m.id ? "▲" : "▼"}
-                    </span>
+                    <div className={styles.subline}>{statusLabel}</div>
                   </div>
-
-                  <div className={styles.team}>
-                    {m.away_team?.name ?? "TBD"}
+                  <div className={styles.chevron} aria-hidden="true">
+                    {isOpen ? "▲" : "▼"}
                   </div>
                 </div>
 
-                {expandedId === m.id && (
-                  <div className={styles.timelineBox}>
+                {isOpen && (
+                  <div className={styles.body}>
                     <LiveMatchTimeline matchId={m.id} />
                     <button
                       className={styles.viewerBtn}
@@ -133,6 +143,7 @@ export default function UserMatches() {
     </div>
   );
 }
+
 
 
 /*import { useEffect, useState } from "react";

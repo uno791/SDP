@@ -8,6 +8,7 @@ const SECTIONS: Section[] = [
   { id: "home", label: "Old Home" },
   { id: "", label: "Home" },
   { id: "favourite", label: "Favourite Teams" },
+  { id: "user-games", label: "User Games" },
   { id: "profile", label: "Profile" },
   { id: "mymatches", label: "User Matches" },
 ];

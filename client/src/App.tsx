@@ -11,6 +11,7 @@ import MyMatches from "./pages/MatchPages/MyMatches";
 import CreateMatch from "./pages/MatchPages/CreateMatch";
 import LiveMatchUpdate from "./pages/MatchPages/LiveMatchUpdate";
 import LandingPage from "./pages/LandingPage";
+import UserGamesPage from "./pages/UserGamesPage";
 // import the new profile page
 import ProfilePage from "./pages/ProfilePage";
 import MatchViewer from "./pages/MatchViewer";
@@ -35,6 +36,7 @@ function App() {
               <Route path="create-match" element={<CreateMatch />} />
               <Route path="/live/:id" element={<LiveMatchUpdate />} />
               <Route path="/favourite" element={<FavouritesPage />} />
+              <Route path="/user-games" element={<UserGamesPage />} />
 
 
               {/* New Profile route */}
