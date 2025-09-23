@@ -397,6 +397,8 @@ const MatchForm = ({ onCancel, csvData }: Props) => {
                     type="button"
                     className={styles.chipRemove}
                     onClick={() => handleRemoveUser(name)}
+                    aria-label={`Remove ${name}`}
+                    title={`Remove ${name}`}
                   >
                     ×
                   </button>

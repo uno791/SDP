@@ -2,6 +2,7 @@ import React from "react";
 import { screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import "@testing-library/jest-dom";
+import axios from "axios";
 
 // SUT
 import MyMatches from "../pages/MatchPages/MyMatches";
@@ -16,6 +17,9 @@ jest.mock("react-router-dom", () => {
     useNavigate: () => mockNavigate,
   };
 });
+
+jest.mock("axios");
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 function renderMyMatches(initialRoute = "/") {
   return renderWithUser(
@@ -35,31 +39,52 @@ function renderMyMatches(initialRoute = "/") {
 describe("MyMatches Page", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedAxios.get.mockResolvedValue({ data: { matches: [] } });
   });
 
   test("renders the create button", () => {
     renderMyMatches();
-    expect(screen.getByText("CREATE NEW MATCH")).toBeInTheDocument();
+    expect(screen.getByText("Create New Match")).toBeInTheDocument();
   });
 
   test("navigates to create match when button clicked", () => {
     renderMyMatches();
-    fireEvent.click(screen.getByText("CREATE NEW MATCH"));
+    fireEvent.click(screen.getByText("Create New Match"));
     expect(mockNavigate).toHaveBeenCalledWith("/create-match");
   });
 
   test("renders all three sections", () => {
     renderMyMatches();
-    expect(screen.getByText("CURRENT GAMES")).toBeInTheDocument();
-    expect(screen.getByText("UPCOMING GAMES")).toBeInTheDocument();
-    expect(screen.getByText("PAST GAMES")).toBeInTheDocument();
+    expect(screen.getByText("Current Games")).toBeInTheDocument();
+    expect(screen.getByText("Upcoming Games")).toBeInTheDocument();
+    expect(screen.getByText("Past Games")).toBeInTheDocument();
   });
 
-  test("navigates to live match page when onSeeMore triggered", () => {
+  test("navigates to live match page when onSeeMore triggered", async () => {
+    const now = new Date();
+    const liveKickoff = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
+
+    mockedAxios.get.mockResolvedValue({
+      data: {
+        matches: [
+          {
+            id: 1,
+            home_team: { id: 10, name: "Liverpool" },
+            away_team: { id: 20, name: "Man United" },
+            status: "in_progress",
+            utc_kickoff: liveKickoff,
+            notes_json: { duration: 90 },
+          },
+        ],
+      },
+    });
+
     renderMyMatches();
 
     // one of the live matches will have a "See more" button (from MatchCard)
-    const seeMoreButtons = screen.getAllByRole("button", { name: /see more/i });
+    const seeMoreButtons = await screen.findAllByRole("button", {
+      name: /see more/i,
+    });
     fireEvent.click(seeMoreButtons[0]);
 
     // should navigate with the correct id

@@ -1,31 +1,47 @@
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateMatch.module.css";
 import MatchForm from "../../components/MatchPageComp/MatchForm";
-import Papa from "papaparse";
-import { useState } from "react";
+import Papa, { type ParseResult } from "papaparse";
+import { useRef, useState } from "react";
+import type { ChangeEvent } from "react";
+
+type CsvFormData = {
+  team1: string;
+  team2: string;
+  date: string;
+  time: string;
+  duration: string;
+  lineupTeam1: string;
+  lineupTeam2: string;
+};
 
 const CreateMatch = () => {
   const navigate = useNavigate();
-  const [csvData, setCsvData] = useState<any>(null);
+  const [csvData, setCsvData] = useState<CsvFormData | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const triggerFilePicker = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleCsvUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    Papa.parse(file, {
+    Papa.parse<string[]>(file, {
       header: false, // no headers expected
       skipEmptyLines: true,
-      complete: (results) => {
+      complete: (results: ParseResult<string[]>) => {
         if (results.data && results.data.length > 0) {
-          const row = results.data[0]; // take the first row
-          const mapped = {
-            team1: row[0] || "",
-            team2: row[1] || "",
-            date: row[2] || "",
-            time: row[3] || "",
-            duration: row[4] || "",
-            lineupTeam1: row[5] || "",
-            lineupTeam2: row[6] || "",
+          const row = results.data[0] ?? [];
+          const mapped: CsvFormData = {
+            team1: row[0] ?? "",
+            team2: row[1] ?? "",
+            date: row[2] ?? "",
+            time: row[3] ?? "",
+            duration: row[4] ?? "",
+            lineupTeam1: row[5] ?? "",
+            lineupTeam2: row[6] ?? "",
           };
           setCsvData(mapped);
         }
@@ -50,10 +66,20 @@ const CreateMatch = () => {
       <h2 className={styles.header}>FILL IN MATCH FORM OR</h2>
 
       {/* Upload CSV */}
-      <label className={styles.uploadCsv}>
+      <button
+        type="button"
+        className={styles.uploadCsv}
+        onClick={triggerFilePicker}
+      >
         UPLOAD AS A CSV
-        <input type="file" accept=".csv" hidden onChange={handleCsvUpload} />
-      </label>
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv"
+        hidden
+        onChange={handleCsvUpload}
+      />
 
       {/* Download CSV Template */}
       <button className={styles.csvTemplate} onClick={handleDownloadTemplate}>

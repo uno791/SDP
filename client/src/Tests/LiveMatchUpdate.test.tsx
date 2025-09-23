@@ -10,6 +10,26 @@ import { renderWithUser } from "./test-utils";
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
+const normalizeTimelineText = (value: string) =>
+  value
+    .replace(/🗑️/g, "")
+    .replace(/\s*'\s*/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const timelineMatcher = (expected: string) => {
+  const normalizedExpected = normalizeTimelineText(expected);
+
+  return (_content: string, node?: Element | null) => {
+    if (!node || node.tagName !== "LI") {
+      return false;
+    }
+
+    const text = normalizeTimelineText(node.textContent ?? "");
+    return text === normalizedExpected;
+  };
+};
+
 type MatchData = ReturnType<typeof createBaseMatch>;
 
 function createBaseMatch() {
@@ -95,7 +115,7 @@ describe("LiveMatchUpdate Page", () => {
     await screen.findByRole("heading", { name: /liverpool vs man united/i });
 
     expect(
-      screen.getByText("55' Goal – Cunha (Man United)")
+      screen.getByText(timelineMatcher("55' Goal – Cunha (Man United)"))
     ).toBeInTheDocument();
   });
 
@@ -132,11 +152,11 @@ describe("LiveMatchUpdate Page", () => {
 
     await user.click(screen.getByText("ADD EVENT"));
 
-    await waitFor(() =>
+    await waitFor(() => {
       expect(
-        screen.getByText("67' Yellow Card – Salah (Liverpool)")
-      ).toBeInTheDocument()
-    );
+        screen.getByText(timelineMatcher("67' Yellow Card – Salah (Liverpool)"))
+      ).toBeInTheDocument();
+    });
   });
 
   test("does not add event if form is incomplete", async () => {
