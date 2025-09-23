@@ -23,6 +23,14 @@ type Match = {
   status: string;
   minute: number | null;
   events: Event[];
+  home_possession?: number | null; // ✅ new
+  away_possession?: number | null; // ✅ new
+};
+
+type Report = {
+  id: number;
+  message: string;
+  created_at: string;
 };
 
 // Helper to make event_type prettier
@@ -55,11 +63,21 @@ const LiveMatchUpdate = () => {
   // Extend match duration
   const [extraMinutes, setExtraMinutes] = useState<number>(1);
 
+  // ✅ Reports state
+  const [reports, setReports] = useState<Report[]>([]);
+
+  // ✅ Possession state
+  const [possession, setPossession] = useState<number>(50);
+  const [savingPossession, setSavingPossession] = useState(false); // NEW
+
   // Fetch match data
   const fetchMatch = async () => {
     try {
       const res = await axios.get(`${baseURL}/matches/${id}`);
       setMatch(res.data.match);
+
+      // ✅ update possession from backend
+      setPossession(res.data.match.home_possession ?? 50);
 
       // ✅ Only update liveMinute if not paused
       if (!isPaused) {
@@ -77,6 +95,16 @@ const LiveMatchUpdate = () => {
     }
   };
 
+  // ✅ Fetch reports
+  const fetchReports = async () => {
+    try {
+      const res = await axios.get(`${baseURL}/matches/${id}/reports`);
+      setReports(res.data.reports || []);
+    } catch (err) {
+      console.error("❌ Failed to fetch reports:", err);
+    }
+  };
+
   // Initial fetch + polling
   useEffect(() => {
     if (!id) return;
@@ -85,6 +113,14 @@ const LiveMatchUpdate = () => {
     const interval = setInterval(fetchMatch, 10000);
     return () => clearInterval(interval);
   }, [id, isPaused]); // depends on pause state
+
+  // ✅ Reports polling
+  useEffect(() => {
+    if (!id) return;
+    fetchReports();
+    const interval = setInterval(fetchReports, 15000);
+    return () => clearInterval(interval);
+  }, [id]);
 
   // Live ticking clock (pause-aware)
   useEffect(() => {
@@ -180,6 +216,24 @@ const LiveMatchUpdate = () => {
     }
   };
 
+  // ✅ Save possession
+  const handleSavePossession = async () => {
+    if (!match) return;
+
+    try {
+      setSavingPossession(true); // show "Saving..."
+      await axios.patch(`${baseURL}/matches/${match.id}/possession`, {
+        home_possession: possession,
+        away_possession: 100 - possession,
+      });
+      await fetchMatch();
+    } catch (err) {
+      console.error("❌ Failed to save possession:", err);
+    } finally {
+      setSavingPossession(false); // back to "SAVE"
+    }
+  };
+
   if (loading) return <p>Loading match...</p>;
   if (!match) return <p>Match not found</p>;
 
@@ -240,6 +294,31 @@ const LiveMatchUpdate = () => {
 
         <button className={styles.end} onClick={handleEndMatch}>
           END MATCH
+        </button>
+      </div>
+
+      {/* ✅ Possession slider */}
+      <h3 className={styles.subHeader}>POSSESSION</h3>
+      <div className={styles.possessionBox}>
+        <span>
+          {match.home_team?.name ?? "Home"}: {possession}%
+        </span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={possession}
+          onChange={(e) => setPossession(Number(e.target.value))}
+        />
+        <span>
+          {match.away_team?.name ?? "Away"}: {100 - possession}%
+        </span>
+        <button
+          className={styles.savePossession}
+          onClick={handleSavePossession}
+          disabled={savingPossession}
+        >
+          {savingPossession ? "Saving..." : "SAVE"}
         </button>
       </div>
 
@@ -330,6 +409,21 @@ const LiveMatchUpdate = () => {
           </li>
         ))}
       </ul>
+
+      {/* ✅ Reports section */}
+      <h3 className={styles.subHeader}>USER REPORTS:</h3>
+      {reports.length === 0 ? (
+        <p>No reports yet</p>
+      ) : (
+        <ul className={styles.reports}>
+          {reports.map((r) => (
+            <li key={r.id}>
+              <span>{new Date(r.created_at).toLocaleTimeString()}: </span>
+              {r.message}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

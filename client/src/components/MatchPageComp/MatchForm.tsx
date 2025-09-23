@@ -6,6 +6,7 @@ import { useUser } from "../../Users/UserContext"; // ✅ bring in logged-in use
 
 interface Props {
   onCancel: () => void;
+  csvData?: any; // ✅ optional prop for prefilling from CSV
 }
 
 type Privacy = "private" | "public";
@@ -141,7 +142,7 @@ function TeamLineupEditor({
   );
 }
 
-const MatchForm = ({ onCancel }: Props) => {
+const MatchForm = ({ onCancel, csvData }: Props) => {
   const { user } = useUser();
   const navigate = useNavigate();
 
@@ -150,7 +151,7 @@ const MatchForm = ({ onCancel }: Props) => {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("");
-  const [privacy, setPrivacy] = useState<Privacy>("private");
+  const [privacy, setPrivacy] = useState<Privacy>("public");
 
   const [lineupTeam1, setLineupTeam1] = useState<string[]>([]);
   const [lineupTeam2, setLineupTeam2] = useState<string[]>([]);
@@ -158,6 +159,27 @@ const MatchForm = ({ onCancel }: Props) => {
   const [allUsernames, setAllUsernames] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [userToAdd, setUserToAdd] = useState<string>("");
+
+  // ✅ Prefill form when csvData changes
+  useEffect(() => {
+    if (!csvData) return;
+
+    setTeam1(csvData.team1 || "");
+    setTeam2(csvData.team2 || "");
+    setDate(csvData.date || "");
+    setTime(csvData.time || "");
+    setDuration(csvData.duration || "");
+    setLineupTeam1(
+      csvData.lineupTeam1
+        ? csvData.lineupTeam1.split(";").map((s: string) => s.trim())
+        : []
+    );
+    setLineupTeam2(
+      csvData.lineupTeam2
+        ? csvData.lineupTeam2.split(";").map((s: string) => s.trim())
+        : []
+    );
+  }, [csvData]);
 
   useEffect(() => {
     if (privacy !== "private") return;
@@ -211,7 +233,7 @@ const MatchForm = ({ onCancel }: Props) => {
     try {
       const base = API_BASE || "http://localhost:3000";
 
-      // ✅ FIX: don’t append "Z"
+      // ✅ don’t append "Z"
       const kickoffLocal = new Date(`${date}T${time}:00`);
       const utc_kickoff = kickoffLocal.toISOString();
 
