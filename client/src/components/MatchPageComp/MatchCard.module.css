@@ -1,68 +1,157 @@
 .card {
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 28px rgba(15, 41, 70, 0.1);
+  padding: 1.75rem;
   display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  align-items: center; /* center everything */
+  text-align: center;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 40px rgba(15, 41, 70, 0.16);
+}
+
+.header {
+  display: flex;
+  flex-direction: column; /* stack matchup + score */
   align-items: center;
-  justify-content: space-between;
-  border: 1px solid black;
-  padding: 10px;
-  margin-bottom: 10px;
-  background-color: white;
+  gap: 0.75rem;
 }
 
-.team {
-  flex: 1;
-  text-align: center;
-  font-weight: bold;
+.matchup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-weight: 700;
+  color: #0f172a;
+  flex-wrap: wrap;
 }
 
-.center {
-  flex: 1;
-  text-align: center;
+.teamName {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vs {
+  color: #94a3b8;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.scoreBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .score {
-  flex: 1;
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
 }
 
-.minute {
-  margin-left: 5px;
-  color: red;
-  font-size: 14px;
+.scoreMeta {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #16a34a;
+  letter-spacing: 0.05em;
 }
 
-.live {
-  background-color: red;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
+.meta {
+  display: flex;
+  flex-direction: column; /* stack badge + timeline + button */
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
 }
 
-.upcoming {
-  background-color: #27ae60;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.finished {
-  background-color: #00c0e0;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
+.badgeLive {
+  background: rgba(34, 197, 94, 0.16);
+  color: #166534;
+  border: 1px solid rgba(34, 197, 94, 0.45);
+}
+
+.badgeUpcoming {
+  background: rgba(59, 130, 246, 0.16);
+  color: #1d4ed8;
+  border: 1px solid rgba(59, 130, 246, 0.38);
+}
+
+.badgeFinished {
+  background: rgba(15, 23, 42, 0.14);
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.28);
+}
+
+.timeline {
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .moreButton {
-  background-color: orange;
-  border: none;
-  padding: 5px 10px;
-  font-weight: bold;
+  border: 1px solid #0f2946;
+  border-radius: 999px;
+  padding: 0.6rem 1.4rem;
+  background: #0f2946;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.moreButton:hover {
+  background: #153659;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(15, 41, 70, 0.22);
+}
+
+.moreButton:focus-visible {
+  outline: 3px solid rgba(15, 41, 70, 0.35);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 1.5rem;
+  }
+
+  .teamName {
+    max-width: 160px;
+  }
+
+  .meta {
+    gap: 0.5rem;
+  }
+
+  .moreButton {
+    width: 100%;
+    text-align: center;
+  }
 }
