@@ -1,18 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./MatchForm.module.css";
 import { API_BASE } from "../../config";
+import { useUser } from "../../Users/UserContext"; // ✅ bring in logged-in user
 
 interface Props {
   onCancel: () => void;
+  csvData?: any; // ✅ optional prop for prefilling from CSV
 }
 
 type Privacy = "private" | "public";
 type UsernameRow = { username: string };
 
-/**
- * Inline editor used by both teams.
- * Lets a user type a number of players, generates inputs, and saves lineup.
- */
 function TeamLineupEditor({
   teamLabel,
   savedLineup,
@@ -41,7 +40,6 @@ function TeamLineupEditor({
   };
 
   const handleSave = () => {
-    // Filter out blanks but preserve order
     const cleaned = draft.map((s) => s.trim()).filter(Boolean);
     setSavedLineup(cleaned);
     setOpen(false);
@@ -144,25 +142,45 @@ function TeamLineupEditor({
   );
 }
 
-const MatchForm = ({ onCancel }: Props) => {
-  // Basic match fields
+const MatchForm = ({ onCancel, csvData }: Props) => {
+  const { user } = useUser();
+  const navigate = useNavigate();
+
   const [team1, setTeam1] = useState("");
   const [team2, setTeam2] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("");
-  const [privacy, setPrivacy] = useState<Privacy>("private");
+  const [privacy, setPrivacy] = useState<Privacy>("public");
 
-  // Lineups
   const [lineupTeam1, setLineupTeam1] = useState<string[]>([]);
   const [lineupTeam2, setLineupTeam2] = useState<string[]>([]);
 
-  // Private visibility helpers
   const [allUsernames, setAllUsernames] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [userToAdd, setUserToAdd] = useState<string>("");
 
-  // Fetch usernames when privacy becomes private (and we don't have them yet)
+  // ✅ Prefill form when csvData changes
+  useEffect(() => {
+    if (!csvData) return;
+
+    setTeam1(csvData.team1 || "");
+    setTeam2(csvData.team2 || "");
+    setDate(csvData.date || "");
+    setTime(csvData.time || "");
+    setDuration(csvData.duration || "");
+    setLineupTeam1(
+      csvData.lineupTeam1
+        ? csvData.lineupTeam1.split(";").map((s: string) => s.trim())
+        : []
+    );
+    setLineupTeam2(
+      csvData.lineupTeam2
+        ? csvData.lineupTeam2.split(";").map((s: string) => s.trim())
+        : []
+    );
+  }, [csvData]);
+
   useEffect(() => {
     if (privacy !== "private") return;
     if (allUsernames.length > 0) return;
@@ -204,25 +222,59 @@ const MatchForm = ({ onCancel }: Props) => {
     setSelectedUsers((prev) => prev.filter((u) => u !== name));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({
-      team1,
-      team2,
-      date,
-      time,
-      duration,
-      privacy,
-      invitedUsers: privacy === "private" ? selectedUsers : [],
-      lineupTeam1,
-      lineupTeam2,
-    });
+
+    if (!user?.id) {
+      alert("You must be logged in to create a match");
+      return;
+    }
+
+    try {
+      const base = API_BASE || "http://localhost:3000";
+
+      // ✅ don’t append "Z"
+      const kickoffLocal = new Date(`${date}T${time}:00`);
+      const utc_kickoff = kickoffLocal.toISOString();
+
+      const payload = {
+        league_code: "custom.user",
+        utc_kickoff,
+        status: "scheduled",
+        home_team_name: team1,
+        away_team_name: team2,
+        created_by: user.id,
+        notes_json: {
+          duration,
+          privacy,
+          invitedUsers: privacy === "private" ? selectedUsers : [],
+          lineupTeam1,
+          lineupTeam2,
+        },
+      };
+
+      const res = await fetch(`${base}/matches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to create match");
+      }
+
+      navigate("/mymatches");
+    } catch (err) {
+      console.error("❌ Failed to create match", err);
+      alert("Failed to create match, see console for details.");
+    }
   };
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      {/* Teams */}
       <h3 className={styles.subHeader}>FILL IN TEAM</h3>
-
       <div className={styles.teams}>
         <div className={styles.teamColumn}>
           <label className={styles.teamLabel}>TEAM 1</label>
@@ -232,11 +284,6 @@ const MatchForm = ({ onCancel }: Props) => {
             value={team1}
             onChange={(e) => setTeam1(e.target.value)}
           />
-          <button type="button" className={styles.upload}>
-            UPLOAD BADGE
-          </button>
-
-          {/* Lineup editor for Team 1 */}
           <TeamLineupEditor
             teamLabel="team1"
             savedLineup={lineupTeam1}
@@ -252,11 +299,6 @@ const MatchForm = ({ onCancel }: Props) => {
             value={team2}
             onChange={(e) => setTeam2(e.target.value)}
           />
-          <button type="button" className={styles.upload}>
-            UPLOAD BADGE
-          </button>
-
-          {/* Lineup editor for Team 2 */}
           <TeamLineupEditor
             teamLabel="team2"
             savedLineup={lineupTeam2}
@@ -265,6 +307,7 @@ const MatchForm = ({ onCancel }: Props) => {
         </div>
       </div>
 
+      {/* Match settings */}
       <h3 className={styles.subHeader}>MATCH SETTINGS</h3>
       <div className={styles.settings}>
         <div className={styles.fieldGroup}>
@@ -289,13 +332,14 @@ const MatchForm = ({ onCancel }: Props) => {
           <label className={styles.label}>DURATION:</label>
           <input
             className={styles.durationInput}
-            placeholder=""
+            placeholder="Minutes"
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
           />
         </div>
       </div>
 
+      {/* Privacy */}
       <div className={styles.privacyRow}>
         <label className={styles.privacyOption}>
           <input
@@ -322,11 +366,6 @@ const MatchForm = ({ onCancel }: Props) => {
             className={styles.addUsersBtn}
             onClick={handleAddUser}
             disabled={availableOptions.length === 0}
-            title={
-              availableOptions.length === 0
-                ? "No more users to add"
-                : "Add selected user"
-            }
           >
             ADD USERS
           </button>
@@ -358,7 +397,6 @@ const MatchForm = ({ onCancel }: Props) => {
                     type="button"
                     className={styles.chipRemove}
                     onClick={() => handleRemoveUser(name)}
-                    aria-label={`Remove ${name}`}
                   >
                     ×
                   </button>
@@ -369,6 +407,7 @@ const MatchForm = ({ onCancel }: Props) => {
         </div>
       )}
 
+      {/* Actions */}
       <div className={styles.buttons}>
         <button type="button" className={styles.cancel} onClick={onCancel}>
           CANCEL

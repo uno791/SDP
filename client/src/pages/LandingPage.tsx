@@ -201,6 +201,7 @@ export default function LandingPage() {
           </div>
         </section>
 
+
         {/* LEAGUE TABLE */}
         <section id="table" className={styles.sectionWhite}>
           <h3 className={styles.sectionHeading}>League Table</h3>
@@ -228,3 +229,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

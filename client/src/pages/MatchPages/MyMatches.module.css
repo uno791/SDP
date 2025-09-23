@@ -1,13 +1,117 @@
-.container {
-  padding: 20px;
+.page {
+  min-height: 100vh;
+  background: #f1f5f9;
+  color: #0f172a;
+  font-family: "Inter", sans-serif;
+}
+
+.hero {
+  background: linear-gradient(135deg, #8ecf87, #5aa65a);
+  padding: 5rem 2rem 2.5rem; /* reduced bottom padding for breathing space */
+  color: #0f172a;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.heroInner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.heroTitle {
+  font-family: "Alfa Slab One", serif;
+  font-size: clamp(2.75rem, 6vw, 4rem);
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-transform: uppercase;
+  color: #0f172a;
+}
+
+.heroSubtitle {
+  font-family: "Inter", sans-serif;
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  line-height: 1.5;
+  margin: 0;
+  font-weight: 400;
+  color: #374151; /* softer gray for contrast */
+}
+
+.heroActions {
+  align-self: flex-end;
 }
 
 .createButton {
-  background-color: #e74c3c;
-  color: white;
   border: none;
-  padding: 10px 20px;
-  margin-bottom: 20px;
-  font-weight: bold;
+  border-radius: 999px;
+  padding: 0.85rem 1.9rem;
+  background: #0f172a;
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.createButton:hover {
+  background: #12243d;
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.28);
+}
+
+.createButton:focus-visible {
+  outline: 3px solid rgba(15, 23, 42, 0.4);
+  outline-offset: 2px;
+}
+
+.main {
+  background: #f1f5f9;
+  padding: 2rem 0 6rem; /* added top padding so sections don’t touch header */
+}
+
+.mainInner {
+  width: 100%;
+  max-width: none; /* allow full stretch */
+  margin: 0; /* no auto centering */
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  padding: 0 2rem;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 4rem 1.5rem 2rem;
+  }
+
+  .heroActions {
+    align-self: flex-start;
+  }
+
+  .mainInner {
+    padding: 0 1.25rem;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroTitle {
+    font-size: clamp(2.25rem, 9vw, 3.25rem);
+  }
+
+  .heroSubtitle {
+    font-size: 1rem;
+  }
+
+  .createButton {
+    width: 100%;
+    justify-content: center;
+  }
 }

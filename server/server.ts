@@ -1,8 +1,8 @@
 import supabase from "./supabaseClient";
 import express from "express";
-import type { Request, Response } from 'express';
+import type { Request, Response } from "express";
 import cors from "cors";
-import 'dotenv/config';
+import "dotenv/config";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,24 +22,22 @@ app.get("/status", (req: Request, res: Response) => {
 
 // getting names to display
 router.get("/names", async (req, res) => {
-  const { data, error } = await supabase
-    .from("users")
-    .select("username"); 
+  const { data, error } = await supabase.from("users").select("username");
 
   if (error) {
     console.error("❌ Supabase error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 
-  return res.status(200).json(data); 
+  return res.status(200).json(data);
 });
 //checking if ID exists alreayd
 router.get("/checkID", async (req, res) => {
-  const {user_id}=req.query;
+  const { user_id } = req.query;
   const { data, error } = await supabase
     .from("users")
     .select("user_id")
-    .eq("user_id",user_id);
+    .eq("user_id", user_id);
 
   if (error) {
     console.error("❌ Supabase error:", error.message);
@@ -72,7 +70,8 @@ router.get("/favourite-teams/:userId", async (req, res) => {
 
   const { data, error } = await supabase
     .from("favourite_teams")
-    .select(`
+    .select(
+      `
       team_id,
       teams (
         id,
@@ -80,10 +79,14 @@ router.get("/favourite-teams/:userId", async (req, res) => {
         display_name,
         logo_url
       )
-    `)
+    `
+    )
     .eq("user_id", userId);
 
-    console.log("🟡 Raw Supabase favourites response:", JSON.stringify(data, null, 2));
+  console.log(
+    "🟡 Raw Supabase favourites response:",
+    JSON.stringify(data, null, 2)
+  );
 
   if (error) {
     console.error("❌ Supabase error:", error.message);
@@ -96,11 +99,13 @@ router.get("/favourite-teams/:userId", async (req, res) => {
     logo: f.teams.logo_url,
   }));
 
-  console.log("🟢 Formatted favourites returned:", JSON.stringify(formatted, null, 2));
+  console.log(
+    "🟢 Formatted favourites returned:",
+    JSON.stringify(formatted, null, 2)
+  );
 
   return res.status(200).json(formatted);
 });
-
 
 // Add a favourite team
 router.post("/favourite-teams", async (req, res) => {
@@ -122,7 +127,6 @@ router.post("/favourite-teams", async (req, res) => {
   return res.status(201).json({ success: true });
 });
 
-
 // Remove a favourite team
 router.delete("/favourite-teams/:userId/:teamId", async (req, res) => {
   const { userId, teamId } = req.params;
@@ -141,27 +145,23 @@ router.delete("/favourite-teams/:userId/:teamId", async (req, res) => {
   return res.status(200).json({ success: true });
 });
 
-
-
 //adding user to the DB
 router.post("/addUser", async (req, res) => {
   console.log("BODY /addUser:", req.body); // should log { user_id, username }
-  const {user_id,username}=req.body;
+  const { user_id, username } = req.body;
   if (!user_id || !username) {
     return res.status(400).json({ error: "user_id and username are required" });
   }
   const { data, error } = await supabase
     .from("users")
-    .insert({user_id,username})
-    .select('*')
+    .insert({ user_id, username })
+    .select("*")
     .single();
 
   if (error) {
     console.error("❌ Supabase error:", error.message);
     return res.status(500).json({ error: error.message });
   }
-
-  
 
   return res.status(200).json({ data });
 });
@@ -173,14 +173,19 @@ function parseMinute(displayClock?: string | null): number | null {
 }
 
 // Creates or returns an existing team by name
-async function getOrCreateTeamByName(name?: string | null, info?: {
-  short_name?: string | null, abbreviation?: string | null,
-  display_name?: string | null, logo_url?: string | null
-}) {
+async function getOrCreateTeamByName(
+  name?: string | null,
+  info?: {
+    short_name?: string | null;
+    abbreviation?: string | null;
+    display_name?: string | null;
+    logo_url?: string | null;
+  }
+) {
   if (!name) return null;
   // upsert on unique name
   const { data, error } = await supabase
-    .from('teams')
+    .from("teams")
     .upsert(
       {
         name,
@@ -189,30 +194,48 @@ async function getOrCreateTeamByName(name?: string | null, info?: {
         display_name: info?.display_name ?? null,
         logo_url: info?.logo_url ?? null,
       },
-      { onConflict: 'name' }
+      { onConflict: "name" }
     )
-    .select('id')
+    .select("id")
     .single();
   if (error) throw error;
   return data.id as number;
 }
 
 // Creates or returns an existing venue (unique by name+city)
-async function getOrCreateVenue(name?: string | null, city?: string | null, country?: string | null) {
+async function getOrCreateVenue(
+  name?: string | null,
+  city?: string | null,
+  country?: string | null
+) {
   if (!name) return null;
   const { data, error } = await supabase
-    .from('venues')
-    .upsert({ name, city: city ?? null, country: country ?? null }, { onConflict: 'name,city' })
-    .select('id')
+    .from("venues")
+    .upsert(
+      { name, city: city ?? null, country: country ?? null },
+      { onConflict: "name,city" }
+    )
+    .select("id")
     .single();
   if (error) throw error;
   return data.id as number;
 }
 
 // Validate event type
+
 const allowedEventTypes = new Set([
-  'goal', 'own_goal', 'penalty_goal', 'penalty_miss',
-  'yellow', 'red', 'substitution', 'var'
+  "goal",
+  "own_goal",
+  "yellow_card",
+  "red_card",
+  "foul",
+  "substitution",
+  "save",
+  "shot_on_target",
+  "shot_off_target",
+  "assist",
+  "offside",
+  "injury",
 ]);
 
 /* =========================================
@@ -244,7 +267,7 @@ const allowedEventTypes = new Set([
  *   "home_score": 2, "away_score": 1
  * }
  */
-router.post('/matches', async (req, res) => {
+router.post("/matches", async (req, res) => {
   try {
     const {
       league_code,
@@ -255,49 +278,63 @@ router.post('/matches', async (req, res) => {
       status_detail,
       minute,
       attendance,
-      home_team_id, away_team_id,
-      home_team_name, away_team_name,
-      home_score, away_score,
+      home_team_id,
+      away_team_id,
+      home_team_name,
+      away_team_name,
+      home_score,
+      away_score,
       venue_id,
-      venue_name, venue_city, venue_country
+      venue_name,
+      venue_city,
+      venue_country,
+      created_by, // <-- NEW
+      notes_json,
     } = req.body || {};
 
     if (!league_code || !utc_kickoff) {
-      return res.status(400).json({ error: 'league_code and utc_kickoff are required' });
+      return res
+        .status(400)
+        .json({ error: "league_code and utc_kickoff are required" });
     }
 
     let homeId = home_team_id ?? null;
     let awayId = away_team_id ?? null;
     let venId = venue_id ?? null;
 
-    if (!homeId && home_team_name) homeId = await getOrCreateTeamByName(home_team_name);
-    if (!awayId && away_team_name) awayId = await getOrCreateTeamByName(away_team_name);
-    if (!venId && venue_name) venId = await getOrCreateVenue(venue_name, venue_city, venue_country);
+    if (!homeId && home_team_name)
+      homeId = await getOrCreateTeamByName(home_team_name);
+    if (!awayId && away_team_name)
+      awayId = await getOrCreateTeamByName(away_team_name);
+    if (!venId && venue_name)
+      venId = await getOrCreateVenue(venue_name, venue_city, venue_country);
 
     const { data, error } = await supabase
-      .from('matches')
+      .from("matches")
       .insert({
         league_code,
         season_year: season_year ?? null,
         week_number: week_number ?? null,
         utc_kickoff,
-        status: status ?? 'scheduled',
+        status: status ?? "scheduled",
         status_detail: status_detail ?? null,
         minute: minute ?? null,
         attendance: attendance ?? null,
         home_team_id: homeId,
         away_team_id: awayId,
-        home_score: home_score ?? null,
-        away_score: away_score ?? null,
-        venue_id: venId
+        home_score: home_score ?? 0,
+        away_score: away_score ?? 0,
+        venue_id: venId,
+        created_by: created_by ?? null, // <-- store user who created it
+        notes_json: notes_json ?? null,
       })
-      .select('*')
+      .select("*")
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
     return res.status(201).json({ match: data });
   } catch (e: any) {
-    console.error('POST /matches error', e);
+    console.error("POST /matches error", e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -307,36 +344,53 @@ router.post('/matches', async (req, res) => {
  * Partial update of a match: scores, status, minute, attendance, venue, etc.
  * Body can include any of the match fields you want to change.
  */
-router.patch('/matches/:id', async (req, res) => {
+router.patch("/matches/:id", async (req, res) => {
   try {
     const matchId = Number(req.params.id);
-    if (!matchId) return res.status(400).json({ error: 'Invalid match id' });
+    if (!matchId) return res.status(400).json({ error: "Invalid match id" });
 
     const patch: Record<string, any> = {};
     const allowed = [
-      'league_code', 'season_year', 'week_number', 'utc_kickoff',
-      'status', 'status_detail', 'minute', 'attendance',
-      'home_team_id', 'away_team_id', 'home_score', 'away_score', 'venue_id'
+      "league_code",
+      "season_year",
+      "week_number",
+      "utc_kickoff",
+      "status",
+      "status_detail",
+      "minute",
+      "attendance",
+      "home_team_id",
+      "away_team_id",
+      "home_score",
+      "away_score",
+      "venue_id",
     ];
     for (const k of allowed) if (k in req.body) patch[k] = req.body[k];
 
     // (Optional) venue by name if not id is given
-    if (!patch.venue_id && (req.body.venue_name || req.body.venue_city || req.body.venue_country)) {
-      const venId = await getOrCreateVenue(req.body.venue_name ?? null, req.body.venue_city ?? null, req.body.venue_country ?? null);
+    if (
+      !patch.venue_id &&
+      (req.body.venue_name || req.body.venue_city || req.body.venue_country)
+    ) {
+      const venId = await getOrCreateVenue(
+        req.body.venue_name ?? null,
+        req.body.venue_city ?? null,
+        req.body.venue_country ?? null
+      );
       patch.venue_id = venId;
     }
 
     const { data, error } = await supabase
-      .from('matches')
+      .from("matches")
       .update(patch)
-      .eq('id', matchId)
-      .select('*')
+      .eq("id", matchId)
+      .select("*")
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
     return res.json({ match: data });
   } catch (e: any) {
-    console.error('PATCH /matches/:id error', e);
+    console.error("PATCH /matches/:id error", e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -346,23 +400,25 @@ router.patch('/matches/:id', async (req, res) => {
  * Body: { home_score: number, away_score: number }
  * (Nice convenience endpoint for “user changes the score”)
  */
-router.post('/matches/:id/score', async (req, res) => {
+router.post("/matches/:id/score", async (req, res) => {
   try {
     const matchId = Number(req.params.id);
     const { home_score, away_score } = req.body || {};
     if (home_score == null || away_score == null) {
-      return res.status(400).json({ error: 'home_score and away_score are required' });
+      return res
+        .status(400)
+        .json({ error: "home_score and away_score are required" });
     }
     const { data, error } = await supabase
-      .from('matches')
+      .from("matches")
       .update({ home_score, away_score })
-      .eq('id', matchId)
-      .select('*')
+      .eq("id", matchId)
+      .select("*")
       .single();
     if (error) return res.status(500).json({ error: error.message });
     return res.json({ match: data });
   } catch (e: any) {
-    console.error('POST /matches/:id/score error', e);
+    console.error("POST /matches/:id/score error", e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -371,24 +427,24 @@ router.post('/matches/:id/score', async (req, res) => {
  * POST /matches/:id/finalize
  * Requires scores present (your DB trigger will enforce).
  */
-router.post('/matches/:id/finalize', async (req, res) => {
+router.post("/matches/:id/finalize", async (req, res) => {
   try {
     const matchId = Number(req.params.id);
     const { status_detail } = req.body || {};
-    const patch: any = { status: 'final' };
+    const patch: any = { status: "final" };
     if (status_detail) patch.status_detail = status_detail;
 
     const { data, error } = await supabase
-      .from('matches')
+      .from("matches")
       .update(patch)
-      .eq('id', matchId)
-      .select('*')
+      .eq("id", matchId)
+      .select("*")
       .single();
 
     if (error) return res.status(400).json({ error: error.message }); // trigger might raise if no scores
     return res.json({ match: data });
   } catch (e: any) {
-    console.error('POST /matches/:id/finalize error', e);
+    console.error("POST /matches/:id/finalize error", e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -397,21 +453,127 @@ router.post('/matches/:id/finalize', async (req, res) => {
  * POST /matches/:id/unfinalize
  * Allows further edits to scores after final (set status back).
  */
-router.post('/matches/:id/unfinalize', async (req, res) => {
+router.post("/matches/:id/unfinalize", async (req, res) => {
   try {
     const matchId = Number(req.params.id);
-    const next = req.body?.status ?? 'in_progress'; // or 'scheduled'
+    const next = req.body?.status ?? "in_progress"; // or 'scheduled'
     const { data, error } = await supabase
-      .from('matches')
+      .from("matches")
       .update({ status: next })
-      .eq('id', matchId)
-      .select('*')
+      .eq("id", matchId)
+      .select("*")
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
     return res.json({ match: data });
   } catch (e: any) {
-    console.error('POST /matches/:id/unfinalize error', e);
+    console.error("POST /matches/:id/unfinalize error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+// ✅ Update possession for a match
+app.patch("/matches/:id/possession", async (req, res) => {
+  const { id } = req.params;
+  const { home_possession, away_possession } = req.body;
+
+  // Ensure both sides add up to 100
+  if (home_possession + away_possession !== 100) {
+    return res.status(400).json({ error: "Possession must add up to 100" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("matches")
+      .update({ home_possession, away_possession })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("❌ Failed to update possession:", error);
+      return res.status(500).json({ error: "Failed to update possession" });
+    }
+
+    res.json({ match: data });
+  } catch (err) {
+    console.error("❌ Server error updating possession:", err);
+    res.status(500).json({ error: "Unexpected server error" });
+  }
+});
+
+/**
+ * GET /matches/:id
+ * Returns match with team/venue names and events.
+ */
+router.get("/matches/:id", async (req, res) => {
+  try {
+    const matchId = Number(req.params.id);
+    if (!matchId) return res.status(400).json({ error: "Invalid match id" });
+
+    // fetch match
+    const { data: match, error: mErr } = await supabase
+      .from("matches")
+      .select("*")
+      .eq("id", matchId)
+      .single();
+    if (mErr || !match)
+      return res.status(404).json({ error: "Match not found" });
+
+    // join names
+    const [{ data: home }, { data: away }, { data: venue }] = await Promise.all(
+      [
+        supabase
+          .from("teams")
+          .select("id,name,abbreviation")
+          .eq("id", match.home_team_id)
+          .maybeSingle(),
+        supabase
+          .from("teams")
+          .select("id,name,abbreviation")
+          .eq("id", match.away_team_id)
+          .maybeSingle(),
+        supabase
+          .from("venues")
+          .select("id,name,city,country")
+          .eq("id", match.venue_id)
+          .maybeSingle(),
+      ]
+    );
+
+    // events ordered by time
+    const { data: events, error: eErr } = await supabase
+      .from("match_events")
+      .select(
+        "id,team_id,player_name,minute,added_time,event_type,detail,outcome,created_at"
+      )
+      .eq("match_id", matchId)
+      .order("minute", { ascending: true })
+      .order("id", { ascending: true });
+
+    if (eErr) return res.status(500).json({ error: eErr.message });
+
+    // ✅ Ensure scores are never null + embed teams/venue inside match
+    const safeMatch = {
+      ...match,
+      home_score: match.home_score ?? 0,
+      away_score: match.away_score ?? 0,
+      events: events ?? [],
+      home_team: home ?? null,
+      away_team: away ?? null,
+      venue: venue ?? null,
+    };
+
+    console.log(
+      "📤 Returning match with scores:",
+      safeMatch.home_score,
+      safeMatch.away_score,
+      "| Events:",
+      safeMatch.events.length
+    );
+
+    return res.json({ match: safeMatch });
+  } catch (e: any) {
+    console.error("GET /matches/:id error", e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -420,33 +582,50 @@ router.post('/matches/:id/unfinalize', async (req, res) => {
  * GET /matches/:id
  * Returns match with team/venue names and events.
  */
-router.get('/matches/:id', async (req, res) => {
+/*router.get("/matches/:id", async (req, res) => {
   try {
     const matchId = Number(req.params.id);
-    if (!matchId) return res.status(400).json({ error: 'Invalid match id' });
+    if (!matchId) return res.status(400).json({ error: "Invalid match id" });
 
     // fetch match
     const { data: match, error: mErr } = await supabase
-      .from('matches')
-      .select('*')
-      .eq('id', matchId)
+      .from("matches")
+      .select("*")
+      .eq("id", matchId)
       .single();
-    if (mErr || !match) return res.status(404).json({ error: 'Match not found' });
+    if (mErr || !match)
+      return res.status(404).json({ error: "Match not found" });
 
     // join names
-    const [{ data: home }, { data: away }, { data: venue }] = await Promise.all([
-      supabase.from('teams').select('id,name,abbreviation').eq('id', match.home_team_id).maybeSingle(),
-      supabase.from('teams').select('id,name,abbreviation').eq('id', match.away_team_id).maybeSingle(),
-      supabase.from('venues').select('id,name,city,country').eq('id', match.venue_id).maybeSingle(),
-    ]);
+    const [{ data: home }, { data: away }, { data: venue }] = await Promise.all(
+      [
+        supabase
+          .from("teams")
+          .select("id,name,abbreviation")
+          .eq("id", match.home_team_id)
+          .maybeSingle(),
+        supabase
+          .from("teams")
+          .select("id,name,abbreviation")
+          .eq("id", match.away_team_id)
+          .maybeSingle(),
+        supabase
+          .from("venues")
+          .select("id,name,city,country")
+          .eq("id", match.venue_id)
+          .maybeSingle(),
+      ]
+    );
 
     // events ordered by time
     const { data: events, error: eErr } = await supabase
-      .from('match_events')
-      .select('id,team_id,player_name,minute,added_time,event_type,detail,outcome,created_at')
-      .eq('match_id', matchId)
-      .order('minute', { ascending: true })
-      .order('id', { ascending: true });
+      .from("match_events")
+      .select(
+        "id,team_id,player_name,minute,added_time,event_type,detail,outcome,created_at"
+      )
+      .eq("match_id", matchId)
+      .order("minute", { ascending: true })
+      .order("id", { ascending: true });
 
     if (eErr) return res.status(500).json({ error: eErr.message });
 
@@ -455,13 +634,13 @@ router.get('/matches/:id', async (req, res) => {
       home_team: home ?? null,
       away_team: away ?? null,
       venue: venue ?? null,
-      events: events ?? []
+      events: events ?? [],
     });
   } catch (e: any) {
-    console.error('GET /matches/:id error', e);
+    console.error("GET /matches/:id error", e);
     return res.status(500).json({ error: e.message });
   }
-});
+});*/
 
 /**
  * POST /matches/:id/events
@@ -477,18 +656,128 @@ router.get('/matches/:id', async (req, res) => {
  *   "outcome": "scored" | "missed" | "saved"  // for pens (optional)
  * }
  */
-router.post('/matches/:id/events', async (req, res) => {
+
+/**
+ * POST /matches/:id/events
+ * Adds a timeline event (goal, card, foul, etc.)
+ */
+router.post("/matches/:id/events", async (req, res) => {
   try {
     const match_id = Number(req.params.id);
-    if (!match_id) return res.status(400).json({ error: 'Invalid match id' });
+    if (!match_id) return res.status(400).json({ error: "Invalid match id" });
 
-    const { event_type, team_id, player_name, minute, added_time, detail, outcome } = req.body || {};
+    const {
+      event_type,
+      team_id,
+      player_name,
+      minute,
+      added_time,
+      detail,
+      outcome,
+    } = req.body || {};
+
+    // ✅ Step 1: log if event_type invalid
+    if (!event_type || !allowedEventTypes.has(event_type)) {
+      console.error("❌ Invalid event_type received:", event_type);
+      return res.status(400).json({
+        error: `event_type must be one of: ${Array.from(allowedEventTypes).join(
+          ", "
+        )}`,
+      });
+    }
+
+    // ✅ Step 3: sanitize empty strings → null
+    const insertPayload = {
+      match_id,
+      team_id: team_id === "" ? null : team_id,
+      player_name: player_name === "" ? null : player_name,
+      minute: minute === "" ? null : minute,
+      added_time: added_time === "" ? null : added_time,
+      event_type,
+      detail: detail === "" ? null : detail,
+      outcome: outcome === "" ? null : outcome,
+    };
+
+    console.log("📥 Final insert payload:", insertPayload);
+
+    // Insert event
+    const { data: event, error: insertErr } = await supabase
+      .from("match_events")
+      .insert(insertPayload)
+      .select("*")
+      .single();
+
+    if (insertErr) {
+      console.error("❌ Supabase insert error:", insertErr.message);
+      return res.status(500).json({ error: insertErr.message });
+    }
+
+    // Optional: update score if goal/own goal
+    if (event_type === "goal" || event_type === "own_goal") {
+      const { data: match, error: matchErr } = await supabase
+        .from("matches")
+        .select("home_team_id, away_team_id, home_score, away_score")
+        .eq("id", match_id)
+        .single();
+
+      if (!match || matchErr) {
+        console.error("❌ Failed to fetch match for score update:", matchErr);
+      } else {
+        let home_score = match.home_score ?? 0;
+        let away_score = match.away_score ?? 0;
+
+        if (event_type === "goal") {
+          if (team_id === match.home_team_id) home_score++;
+          if (team_id === match.away_team_id) away_score++;
+        } else if (event_type === "own_goal") {
+          if (team_id === match.home_team_id) away_score++;
+          if (team_id === match.away_team_id) home_score++;
+        }
+
+        const { error: updateErr } = await supabase
+          .from("matches")
+          .update({ home_score, away_score })
+          .eq("id", match_id);
+
+        if (updateErr) {
+          console.error("❌ Failed to update score:", updateErr.message);
+        } else {
+          console.log("✅ Score updated:", { home_score, away_score });
+        }
+      }
+    }
+
+    return res.status(201).json({ event });
+  } catch (e: any) {
+    console.error("POST /matches/:id/events error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+/*router.post("/matches/:id/events", async (req, res) => {
+  try {
+    const match_id = Number(req.params.id);
+    if (!match_id) return res.status(400).json({ error: "Invalid match id" });
+
+    const {
+      event_type,
+      team_id,
+      player_name,
+      minute,
+      added_time,
+      detail,
+      outcome,
+    } = req.body || {};
     if (!event_type || !allowedEventTypes.has(String(event_type))) {
-      return res.status(400).json({ error: `event_type required and must be one of: ${Array.from(allowedEventTypes).join(', ')}` });
+      return res.status(400).json({
+        error: `event_type required and must be one of: ${Array.from(
+          allowedEventTypes
+        ).join(", ")}`,
+      });
     }
 
     const { data, error } = await supabase
-      .from('match_events')
+      .from("match_events")
       .insert({
         match_id,
         team_id: team_id ?? null,
@@ -497,15 +786,258 @@ router.post('/matches/:id/events', async (req, res) => {
         added_time: added_time ?? null,
         event_type,
         detail: detail ?? null,
-        outcome: outcome ?? null
+        outcome: outcome ?? null,
       })
-      .select('*')
+      .select("*")
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
     return res.status(201).json({ event: data });
   } catch (e: any) {
-    console.error('POST /matches/:id/events error', e);
+    console.error("POST /matches/:id/events error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});*/
+
+// PATCH /matches/:id/extend
+router.patch("/matches/:id/extend", async (req, res) => {
+  try {
+    const matchId = Number(req.params.id);
+    const { extra_minutes } = req.body;
+
+    console.log("🔍 Incoming extend request");
+    console.log("   ➡️ matchId:", matchId);
+    console.log("   ➡️ extra_minutes:", extra_minutes);
+
+    if (!matchId || !extra_minutes) {
+      console.error("❌ Missing parameters: matchId or extra_minutes");
+      return res
+        .status(400)
+        .json({ error: "matchId and extra_minutes required" });
+    }
+
+    // Fetch the match row
+    const { data: match, error: fetchErr } = await supabase
+      .from("matches")
+      .select("id, notes_json")
+      .eq("id", matchId)
+      .maybeSingle(); // ✅ use maybeSingle so it doesn't throw if no row
+
+    console.log("📦 Supabase response:", { match, fetchErr });
+
+    if (fetchErr || !match) {
+      console.error("❌ Match not found or query failed:", fetchErr?.message);
+      return res.status(404).json({ error: "Match not found" });
+    }
+
+    // Default duration to 90 if missing
+    const currentDuration = Number(match.notes_json?.duration ?? 90);
+    const newDuration = currentDuration + Number(extra_minutes);
+
+    console.log(
+      `⏱️ Extending match ${matchId}: ${currentDuration} → ${newDuration}`
+    );
+
+    const { data: updated, error: updateErr } = await supabase
+      .from("matches")
+      .update({
+        notes_json: { ...match.notes_json, duration: newDuration },
+      })
+      .eq("id", matchId)
+      .select("*")
+      .single();
+
+    if (updateErr) {
+      console.error("❌ Failed to update duration:", updateErr.message);
+      return res.status(500).json({ error: updateErr.message });
+    }
+
+    console.log("✅ Duration updated successfully:", updated.notes_json);
+    res.json({ match: updated });
+  } catch (e: any) {
+    console.error("💥 PATCH /matches/:id/extend error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ======================
+// GET /matches/:id/details
+// ======================
+/*router.get("/matches/:id/details", async (req, res) => {
+  const matchId = Number(req.params.id);
+  console.log(`[API] Incoming request: /matches/${matchId}/details`);
+
+  try {
+    // Fetch match
+    const { data: match, error: matchErr } = await supabase
+      .from("matches")
+      .select("*, home_team:home_team_id(*), away_team:away_team_id(*), venue:venue_id(*)")
+      .eq("id", matchId)
+      .single();
+
+    if (matchErr) {
+      console.error("[API] Error fetching match:", matchErr);
+      return res.status(500).json({ error: "Failed to fetch match" });
+    }
+    if (!match) {
+      console.warn("[API] No match found for id", matchId);
+      return res.status(404).json({ error: "Match not found" });
+    }
+
+    // Fetch events
+    const { data: events, error: eventErr } = await supabase
+      .from("match_events")
+      .select("*")
+      .eq("match_id", matchId)
+      .order("minute", { ascending: true });
+
+    if (eventErr) {
+      console.error("[API] Error fetching events:", eventErr);
+      return res.status(500).json({ error: "Failed to fetch events" });
+    }
+
+    console.log(
+      `[API] Success: Match ${matchId} details fetched with ${events?.length || 0} events`
+    );
+
+    res.json({ match, events });
+  } catch (err) {
+    console.error("[API] Unexpected error:", err);
+    res.status(500).json({ error: "Unexpected server error" });
+  }
+});*/
+
+router.get("/matches/:id/details", async (req, res) => {
+  const matchId = Number(req.params.id);
+  console.log(`[API] Incoming request: /matches/${matchId}/details`);
+
+  try {
+    const { data: match, error: matchErr } = await supabase
+      .from("matches")
+      .select(
+        "*, home_team:home_team_id(*), away_team:away_team_id(*), venue:venue_id(*)"
+      )
+      .eq("id", matchId)
+      .single();
+
+    if (matchErr) {
+      console.error("[API] Error fetching match:", matchErr);
+      return res.status(500).json({ error: "Failed to fetch match" });
+    }
+
+    if (!match) {
+      return res.status(404).json({ error: "Match not found" });
+    }
+
+    const { data: events, error: eventErr } = await supabase
+      .from("match_events")
+      .select("*")
+      .eq("match_id", matchId)
+      .order("minute", { ascending: true });
+
+    if (eventErr) {
+      console.error("[API] Error fetching events:", eventErr);
+      return res.status(500).json({ error: "Failed to fetch events" });
+    }
+
+    // Extract squads from notes_json
+    const lineupTeam1 = match.notes_json?.lineupTeam1 ?? [];
+    const lineupTeam2 = match.notes_json?.lineupTeam2 ?? [];
+
+    res.json({ match, events, lineupTeam1, lineupTeam2 });
+  } catch (err) {
+    console.error("[API] Unexpected error:", err);
+    res.status(500).json({ error: "Unexpected server error" });
+  }
+});
+
+/**
+ * DELETE /matches/:id/events/:eventId
+ * Removes a specific event from the match timeline.
+ * If it's a goal/own_goal, adjust scores accordingly.
+ */
+router.delete("/matches/:id/events/:eventId", async (req, res) => {
+  try {
+    const matchId = Number(req.params.id);
+    const eventId = Number(req.params.eventId);
+    if (!matchId || !eventId)
+      return res.status(400).json({ error: "Invalid ids" });
+
+    // Fetch the event before deleting
+    const { data: event, error: fetchErr } = await supabase
+      .from("match_events")
+      .select("*")
+      .eq("id", eventId)
+      .eq("match_id", matchId)
+      .single();
+
+    if (fetchErr || !event) {
+      console.error("❌ Event not found:", fetchErr?.message);
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    console.log("🗑️ Deleting event:", event);
+
+    // Delete the event
+    const { error: delErr } = await supabase
+      .from("match_events")
+      .delete()
+      .eq("id", eventId)
+      .eq("match_id", matchId);
+
+    if (delErr) {
+      console.error("❌ Failed to delete event:", delErr.message);
+      return res.status(500).json({ error: delErr.message });
+    }
+
+    // Adjust score if it was a goal / own goal
+    if (event.event_type === "goal" || event.event_type === "own_goal") {
+      const { data: match, error: matchErr } = await supabase
+        .from("matches")
+        .select("home_team_id, away_team_id, home_score, away_score")
+        .eq("id", matchId)
+        .single();
+
+      if (!match || matchErr) {
+        console.error("❌ Failed to fetch match for score adjust:", matchErr);
+      } else {
+        let home_score = match.home_score ?? 0;
+        let away_score = match.away_score ?? 0;
+
+        if (event.event_type === "goal") {
+          if (event.team_id === match.home_team_id) home_score--;
+          if (event.team_id === match.away_team_id) away_score--;
+        } else if (event.event_type === "own_goal") {
+          if (event.team_id === match.home_team_id) away_score--;
+          if (event.team_id === match.away_team_id) home_score--;
+        }
+
+        // prevent negative scores
+        home_score = Math.max(home_score, 0);
+        away_score = Math.max(away_score, 0);
+
+        const { error: updateErr } = await supabase
+          .from("matches")
+          .update({ home_score, away_score })
+          .eq("id", matchId);
+
+        if (updateErr) {
+          console.error(
+            "❌ Failed to update score after delete:",
+            updateErr.message
+          );
+        } else {
+          console.log("✅ Score adjusted after delete:", {
+            home_score,
+            away_score,
+          });
+        }
+      }
+    }
+
+    return res.json({ ok: true });
+  } catch (e: any) {
+    console.error("DELETE /matches/:id/events/:eventId error", e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -514,72 +1046,262 @@ router.post('/matches/:id/events', async (req, res) => {
  * DELETE /matches/:id/events/:eventId
  * Removes a specific event from the match timeline.
  */
-router.delete('/matches/:id/events/:eventId', async (req, res) => {
+/*router.delete("/matches/:id/events/:eventId", async (req, res) => {
   try {
     const matchId = Number(req.params.id);
     const eventId = Number(req.params.eventId);
-    if (!matchId || !eventId) return res.status(400).json({ error: 'Invalid ids' });
+    if (!matchId || !eventId)
+      return res.status(400).json({ error: "Invalid ids" });
 
     const { error } = await supabase
-      .from('match_events')
+      .from("match_events")
       .delete()
-      .eq('id', eventId)
-      .eq('match_id', matchId);
+      .eq("id", eventId)
+      .eq("match_id", matchId);
 
     if (error) return res.status(500).json({ error: error.message });
     return res.json({ ok: true });
   } catch (e: any) {
-    console.error('DELETE /matches/:id/events/:eventId error', e);
+    console.error("DELETE /matches/:id/events/:eventId error", e);
     return res.status(500).json({ error: e.message });
   }
-});
+});*/
 
 /**
  * GET /matches (optional convenience)
  * Query params: league_code? status? from? to?
  * Returns recent matches with names joined.
  */
-router.get('/matches', async (req, res) => {
+/*router.get("/matches", async (req, res) => {
   try {
-    const { league_code, status, from, to } = req.query as {
-      league_code?: string; status?: string; from?: string; to?: string;
+    const { league_code, status, from, to, created_by } = req.query as {
+      league_code?: string;
+      status?: string;
+      from?: string;
+      to?: string;
+      created_by?: string; // <-- NEW
     };
 
-    let q = supabase.from('matches').select('*');
+    let q = supabase.from("matches").select("*");
 
-    if (league_code) q = q.eq('league_code', league_code);
-    if (status) q = q.eq('status', status);
-    if (from) q = q.gte('utc_kickoff', from);
-    if (to) q = q.lte('utc_kickoff', to);
-    q = q.order('utc_kickoff', { ascending: false }).limit(100);
+    if (league_code) q = q.eq("league_code", league_code);
+    if (status) q = q.eq("status", status);
+    if (from) q = q.gte("utc_kickoff", from);
+    if (to) q = q.lte("utc_kickoff", to);
+    if (created_by) q = q.eq("created_by", created_by); // <-- filter by user
+
+    q = q.order("utc_kickoff", { ascending: false }).limit(100);
 
     const { data: matches, error } = await q;
     if (error) return res.status(500).json({ error: error.message });
 
     // join names (batched lookups)
-    const teamIds = Array.from(new Set(
-      (matches ?? []).flatMap(m => [m.home_team_id, m.away_team_id]).filter(Boolean)
-    )) as number[];
-    const venueIds = Array.from(new Set((matches ?? []).map(m => m.venue_id).filter(Boolean))) as number[];
+    const teamIds = Array.from(
+      new Set(
+        (matches ?? [])
+          .flatMap((m) => [m.home_team_id, m.away_team_id])
+          .filter(Boolean)
+      )
+    ) as number[];
+    const venueIds = Array.from(
+      new Set((matches ?? []).map((m) => m.venue_id).filter(Boolean))
+    ) as number[];
 
     const [teamsRes, venuesRes] = await Promise.all([
-      teamIds.length ? supabase.from('teams').select('id,name,abbreviation').in('id', teamIds) : Promise.resolve({ data: [] as any[] }),
-      venueIds.length ? supabase.from('venues').select('id,name,city,country').in('id', venueIds) : Promise.resolve({ data: [] as any[] }),
+      teamIds.length
+        ? supabase
+            .from("teams")
+            .select("id,name,abbreviation")
+            .in("id", teamIds)
+        : Promise.resolve({ data: [] as any[] }),
+      venueIds.length
+        ? supabase
+            .from("venues")
+            .select("id,name,city,country")
+            .in("id", venueIds)
+        : Promise.resolve({ data: [] as any[] }),
     ]);
 
-    const teamMap = new Map<number, any>((teamsRes.data ?? []).map(t => [t.id, t]));
-    const venueMap = new Map<number, any>((venuesRes.data ?? []).map(v => [v.id, v]));
+    const teamMap = new Map<number, any>(
+      (teamsRes.data ?? []).map((t) => [t.id, t])
+    );
+    const venueMap = new Map<number, any>(
+      (venuesRes.data ?? []).map((v) => [v.id, v])
+    );
 
-    const enriched = (matches ?? []).map(m => ({
+    const enriched = (matches ?? []).map((m) => ({
       ...m,
       home_team: m.home_team_id ? teamMap.get(m.home_team_id) : null,
       away_team: m.away_team_id ? teamMap.get(m.away_team_id) : null,
-      venue: m.venue_id ? venueMap.get(m.venue_id) : null
+      venue: m.venue_id ? venueMap.get(m.venue_id) : null,
     }));
 
     return res.json({ matches: enriched });
   } catch (e: any) {
-    console.error('GET /matches error', e);
+    console.error("GET /matches error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});*/
+
+/* ---------------- USER REPORTS ---------------- */
+
+// Create a new report for a match
+app.post("/matches/:id/reports", async (req, res) => {
+  const { id } = req.params;
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ error: "Message is required" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("match_reports")
+      .insert([{ match_id: Number(id), message }])
+      .select();
+
+    if (error) throw error;
+
+    res.json({ report: data[0] });
+  } catch (err: any) {
+    console.error("[Backend] Failed to create report:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all reports for a match
+app.get("/matches/:id/reports", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { data, error } = await supabase
+      .from("match_reports")
+      .select("*")
+      .eq("match_id", Number(id))
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    res.json({ reports: data });
+  } catch (err: any) {
+    console.error("[Backend] Failed to fetch reports:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// (Optional) Delete a specific report
+app.delete("/matches/:id/reports/:reportId", async (req, res) => {
+  const { id, reportId } = req.params;
+
+  try {
+    const { error } = await supabase
+      .from("match_reports")
+      .delete()
+      .eq("id", Number(reportId))
+      .eq("match_id", Number(id));
+
+    if (error) throw error;
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[Backend] Failed to delete report:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/matches", async (req, res) => {
+  try {
+    const { league_code, status, from, to, created_by, type } = req.query as {
+      league_code?: string;
+      status?: string;
+      from?: string;
+      to?: string;
+      created_by?: string;
+      type?: string; // <-- NEW
+    };
+
+    let q = supabase.from("matches").select("*");
+
+    if (league_code) q = q.eq("league_code", league_code);
+    if (status) q = q.eq("status", status);
+    if (from) q = q.gte("utc_kickoff", from);
+    if (to) q = q.lte("utc_kickoff", to);
+    if (created_by) q = q.eq("created_by", created_by);
+
+    q = q.order("utc_kickoff", { ascending: false }).limit(100);
+
+    const { data: matches, error } = await q;
+    if (error) return res.status(500).json({ error: error.message });
+
+    // join names (batched lookups)
+    const teamIds = Array.from(
+      new Set(
+        (matches ?? [])
+          .flatMap((m) => [m.home_team_id, m.away_team_id])
+          .filter(Boolean)
+      )
+    ) as number[];
+    const venueIds = Array.from(
+      new Set((matches ?? []).map((m) => m.venue_id).filter(Boolean))
+    ) as number[];
+
+    const [teamsRes, venuesRes] = await Promise.all([
+      teamIds.length
+        ? supabase
+            .from("teams")
+            .select("id,name,abbreviation")
+            .in("id", teamIds)
+        : Promise.resolve({ data: [] as any[] }),
+      venueIds.length
+        ? supabase
+            .from("venues")
+            .select("id,name,city,country")
+            .in("id", venueIds)
+        : Promise.resolve({ data: [] as any[] }),
+    ]);
+
+    const teamMap = new Map<number, any>(
+      (teamsRes.data ?? []).map((t) => [t.id, t])
+    );
+    const venueMap = new Map<number, any>(
+      (venuesRes.data ?? []).map((v) => [v.id, v])
+    );
+
+    let enriched = (matches ?? []).map((m) => ({
+      ...m,
+      home_team: m.home_team_id ? teamMap.get(m.home_team_id) : null,
+      away_team: m.away_team_id ? teamMap.get(m.away_team_id) : null,
+      venue: m.venue_id ? venueMap.get(m.venue_id) : null,
+    }));
+
+    // ✅ Apply type filter if requested
+    if (type) {
+      const now = new Date();
+      enriched = enriched.filter((m) => {
+        const kickoff = new Date(m.utc_kickoff);
+        const duration = Number(m.notes_json?.duration ?? 90);
+        const end = new Date(kickoff.getTime() + duration * 60000);
+
+        switch (type) {
+          case "live":
+            return m.status !== "final" && now >= kickoff && now <= end;
+          case "past":
+            return m.status === "final" || now > end;
+          case "upcoming":
+            return now < kickoff;
+          default:
+            return true;
+        }
+      });
+    }
+
+    console.log(
+      `[Backend] /matches type=${type || "all"} → ${enriched.length} matches`
+    );
+
+    return res.json({ matches: enriched });
+  } catch (e: any) {
+    console.error("GET /matches error", e);
     return res.status(500).json({ error: e.message });
   }
 });

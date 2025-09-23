@@ -16,35 +16,49 @@ interface Props {
 }
 
 const MatchCard = ({ match, onSeeMore }: Props) => {
+  const scoreDisplay = match.score && match.score.trim() !== "" ? match.score : "–";
+
+  let badgeClass = styles.badgeUpcoming;
+  let badgeLabel = "Upcoming";
+  let timelineCopy = match.date ? `Kickoff - ${match.date}` : "Awaiting kickoff";
+
+  if (match.status === "live") {
+    badgeClass = styles.badgeLive;
+    badgeLabel = "Live";
+    timelineCopy = match.date ? `Started - ${match.date}` : "In progress";
+  } else if (match.status === "finished") {
+    badgeClass = styles.badgeFinished;
+    badgeLabel = "Final";
+    timelineCopy = match.date ? `Full time - ${match.date}` : "Full time";
+  }
+
   return (
     <div className={styles.card}>
-      <div className={styles.team}>{match.team1}</div>
+      <div className={styles.header}>
+        <div className={styles.matchup}>
+          <span className={styles.teamName}>{match.team1}</span>
+          <span className={styles.vs}>vs</span>
+          <span className={styles.teamName}>{match.team2}</span>
+        </div>
 
-      <div className={styles.center}>
-        {match.status === "live" && <span className={styles.live}>LIVE</span>}
-        {match.status === "finished" && (
-          <span className={styles.finished}>FINISHED {match.date}</span>
-        )}
-        {match.status === "upcoming" && (
-          <span className={styles.upcoming}>{match.date}</span>
-        )}
+        <div className={styles.scoreBlock}>
+          <span className={styles.score}>{scoreDisplay}</span>
+          {match.status === "live" && match.minute != null && (
+            <span className={styles.scoreMeta}>{`${match.minute}'`}</span>
+          )}
+        </div>
       </div>
 
-      <div className={styles.score}>
-        {match.score}
-        {match.status === "live" && (
-          <span className={styles.minute}>{match.minute}'</span>
-        )}
+      <div className={styles.meta}>
+        <span className={`${styles.badge} ${badgeClass}`}>{badgeLabel}</span>
+        <span className={styles.timeline}>{timelineCopy}</span>
+        <button
+          className={styles.moreButton}
+          onClick={() => onSeeMore && onSeeMore(match.id)}
+        >
+          See More
+        </button>
       </div>
-
-      <div className={styles.team}>{match.team2}</div>
-
-      <button
-        className={styles.moreButton}
-        onClick={() => onSeeMore && onSeeMore(match.id)}
-      >
-        See More
-      </button>
     </div>
   );
 };
