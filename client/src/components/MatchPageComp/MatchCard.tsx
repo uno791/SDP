@@ -13,9 +13,10 @@ type Match = {
 interface Props {
   match: Match;
   onSeeMore?: (id: number) => void;
+  actionLabel?: string;
 }
 
-const MatchCard = ({ match, onSeeMore }: Props) => {
+const MatchCard = ({ match, onSeeMore, actionLabel = "See More" }: Props) => {
   const scoreDisplay = match.score && match.score.trim() !== "" ? match.score : "–";
 
   let badgeClass = styles.badgeUpcoming;
@@ -52,12 +53,16 @@ const MatchCard = ({ match, onSeeMore }: Props) => {
       <div className={styles.meta}>
         <span className={`${styles.badge} ${badgeClass}`}>{badgeLabel}</span>
         <span className={styles.timeline}>{timelineCopy}</span>
-        <button
-          className={styles.moreButton}
-          onClick={() => onSeeMore && onSeeMore(match.id)}
-        >
-          See More
-        </button>
+        {actionLabel && (
+          <button
+            type="button"
+            className={styles.moreButton}
+            onClick={() => onSeeMore && onSeeMore(match.id)}
+            disabled={!onSeeMore}
+          >
+            {actionLabel}
+          </button>
+        )}
       </div>
     </div>
   );

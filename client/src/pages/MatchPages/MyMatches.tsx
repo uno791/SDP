@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./MyMatches.module.css";
 import MatchList from "../../components/MatchPageComp/MatchList";
+import MatchViewerModal from "../../components/LandingPageComp/MatchViewerModal";
 import { baseURL } from "../../config";
 import { useUser } from "../../Users/UserContext";
 
@@ -29,6 +30,7 @@ const MyMatches = () => {
   const { user } = useUser();
   const [matches, setMatches] = useState<Match[]>([]);
   const [now, setNow] = useState(new Date());
+  const [viewerMatchId, setViewerMatchId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -144,6 +146,8 @@ const MyMatches = () => {
             subtitle="Get everything lined up before kickoff."
             matches={upcomingMatches.map(transform)}
             accent="upcoming"
+            onSeeMore={(id) => navigate(`/create-match?matchId=${id}`)}
+            actionLabel="Edit"
           />
 
           <MatchList
@@ -151,9 +155,18 @@ const MyMatches = () => {
             subtitle="Review final results from the matches you have hosted."
             matches={pastMatches.map(transform)}
             accent="past"
+            onSeeMore={setViewerMatchId}
+            actionLabel="Open Match Viewer"
           />
         </div>
       </main>
+
+      {viewerMatchId && (
+        <MatchViewerModal
+          matchId={viewerMatchId}
+          onClose={() => setViewerMatchId(null)}
+        />
+      )}
     </div>
   );
 };
