@@ -14,6 +14,8 @@ import LandingPage from "./pages/LandingPage";
 // import the new profile page
 import ProfilePage from "./pages/ProfilePage";
 import MatchViewer from "./pages/MatchViewer";
+import FavouritesPage from "./pages/FavouritesPage";
+
 
 function App() {
   return (
@@ -32,6 +34,8 @@ function App() {
               <Route path="/mymatches" element={<MyMatches />} />
               <Route path="create-match" element={<CreateMatch />} />
               <Route path="/live/:id" element={<LiveMatchUpdate />} />
+              <Route path="/favourite" element={<FavouritesPage />} />
+
 
               {/* New Profile route */}
               <Route path="/profile" element={<ProfilePage />} />
