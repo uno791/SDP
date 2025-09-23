@@ -6,7 +6,7 @@ import { User } from "../../../Users/User";
 import { useUser } from "../../../Users/UserContext";
 import { baseURL } from "../../../config";
 import { FcGoogle } from "react-icons/fc";
-import styles from "../Auth/AuthPanel.module.css";
+import styles from "./GoogleButton.module.css";
 
 interface GoogleUserInfo {
   sub: string;
@@ -17,7 +17,15 @@ interface GoogleUserInfo {
   picture: string;
 }
 
-const GoogleSignUpButton: React.FC = () => {
+interface GoogleSignUpButtonProps {
+  buttonText?: string;
+  className?: string;
+}
+
+const GoogleSignUpButton: React.FC<GoogleSignUpButtonProps> = ({
+  buttonText = "Sign up with Google",
+  className,
+}) => {
   const { setUser } = useUser();
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -59,18 +67,18 @@ const GoogleSignUpButton: React.FC = () => {
     },
   });
 
+  const buttonClassName = className
+    ? `${styles.button} ${className}`
+    : styles.button;
+
   return (
     <>
-      <button
-        className={styles.googleBtn}
-        type="button"
-        onClick={() => login()}
-      >
-        <FcGoogle className={styles.googleIcon} />
-        SIGN UP WITH GOOGLE
+      <button className={buttonClassName} type="button" onClick={() => login()}>
+        <FcGoogle className={styles.icon} />
+        <span className={styles.label}>{buttonText}</span>
       </button>
 
-      {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
+      {errorMessage && <p className={styles.error}>{errorMessage}</p>}
     </>
   );
 };

@@ -18,8 +18,8 @@ describe("navigation components", () => {
       { name: "House", path: "/house" },
       { name: "Ball", path: "/ball" },
       { name: "Doodle Home", path: "/doodlehome" },
-      { name: "Sign up", path: "/signuppage" },
-      { name: "Log in", path: "/loginpage" },
+      { name: "Sign up", path: "/signup" },
+      { name: "Log in", path: "/login" },
     ];
 
     for (const { name, path } of buttons) {

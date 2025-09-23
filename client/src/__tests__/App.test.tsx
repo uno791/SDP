@@ -33,9 +33,8 @@ jest.mock("../pages/Watchalongs", () => () => <div>Watchalongs Page</div>);
 jest.mock("../pages/MatchPages/MyMatches", () => () => <div>My Matches</div>);
 jest.mock("../pages/MatchPages/CreateMatch", () => () => <div>Create Match</div>);
 jest.mock("../pages/MatchPages/LiveMatchUpdate", () => () => <div>Live Update</div>);
-jest.mock("../components/LoginSignupComp/ComicBook/ComicBook", () => () => (
-  <div>Auth Comic</div>
-));
+jest.mock("../pages/LoginPage", () => () => <div>Login Screen</div>);
+jest.mock("../pages/SignupPage", () => () => <div>Signup Screen</div>);
 
 beforeEach(() => {
   localStorage.clear();

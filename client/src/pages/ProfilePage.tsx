@@ -56,7 +56,7 @@ const ProfilePage: React.FC = () => {
   // Handle sign out
   const handleSignOut = () => {
     setUser(null);
-    navigate("/loginpage");
+    navigate("/login");
   };
 
   // Handle saving/updating favourites
@@ -185,7 +185,7 @@ const ProfilePage: React.FC = () => {
   // Handle sign out
   const handleSignOut = () => {
     setUser(null);
-    navigate("/loginpage");
+    navigate("/login");
   };
 
   // Handle saving/updating favourites

@@ -6,7 +6,8 @@ import DoodleHome from "./pages/liveeplscoreboard";
 import { Layout } from "./Layout";
 import { UserProvider } from "./Users/UserContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import ComicBook from "./components/LoginSignupComp/ComicBook/ComicBook";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 import MyMatches from "./pages/MatchPages/MyMatches";
 import CreateMatch from "./pages/MatchPages/CreateMatch";
 import LiveMatchUpdate from "./pages/MatchPages/LiveMatchUpdate";
@@ -32,8 +33,6 @@ function App() {
               <Route path="/home" element={<Home />} />
 
               <Route path="/doodlehome" element={<DoodleHome />} />
-              <Route path="/signuppage" element={<ComicBook />} />
-              <Route path="/loginpage" element={<ComicBook />} />
               <Route path="/mymatches" element={<MyMatches />} />
               <Route path="create-match" element={<CreateMatch />} />
               <Route path="/live/:id" element={<LiveMatchUpdate />} />
@@ -45,6 +44,10 @@ function App() {
               <Route path="/watchalongs" element={<Watchalongs />} />
             </Route>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signuppage" element={<SignupPage />} />
+            <Route path="/loginpage" element={<LoginPage />} />
             <Route path="/matchviewer" element={<MatchViewer />} />
             <Route path="/playerstats" element={<PlayerStats />} />
             <Route path="/commentary" element={<Commentary />} />

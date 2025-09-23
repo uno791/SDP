@@ -1,19 +1,22 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import AuthPanel from "../components/LoginSignupComp/Auth/AuthPanel";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter, useNavigate } from "react-router-dom";
+import "@testing-library/jest-dom";
+import axios from "axios";
+
+import AuthScreen from "../components/LoginSignupComp/Auth/AuthScreen";
 import GoogleLogInButton from "../components/LoginSignupComp/GoogleButtons/GoogleLogInButton";
 import GoogleSignUpButton from "../components/LoginSignupComp/GoogleButtons/GoogleSignupButton";
 import { useUser } from "../Users/UserContext";
 import { User } from "../Users/User";
-import { MemoryRouter, useNavigate } from "react-router-dom";
-import axios from "axios";
 
-// Mock hooks and dependencies
 jest.mock("@react-oauth/google", () => ({
   useGoogleLogin: jest.fn(),
 }));
 
 jest.mock("axios");
+
 jest.mock("../Users/UserContext", () => ({
   useUser: jest.fn(),
 }));
@@ -33,29 +36,56 @@ beforeEach(() => {
   (useUser as jest.Mock).mockReturnValue({ setUser: mockSetUser });
   (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
   jest.clearAllMocks();
+  jest.spyOn(console, "error").mockImplementation(() => {});
 });
 
-describe("AuthPanel", () => {
-  it("renders signup panel correctly", () => {
-    render(<AuthPanel type="signup" image="signup.png" side="left" />);
-    expect(screen.getByText("SIGN UP")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "signup" })).toHaveAttribute(
-      "src",
-      "signup.png"
+afterEach(() => {
+  (console.error as jest.Mock).mockRestore();
+});
+
+describe("AuthScreen", () => {
+  const renderAuth = (mode: "login" | "signup") =>
+    render(
+      <MemoryRouter>
+        <AuthScreen mode={mode} />
+      </MemoryRouter>
     );
-    expect(screen.getByText("SIGN UP WITH GOOGLE")).toBeInTheDocument();
-    expect(screen.getByText(/Already have an account/)).toBeInTheDocument();
+
+  it("renders signup view with landing-inspired copy", () => {
+    renderAuth("signup");
+
+    expect(
+      screen.getByRole("heading", { name: /Begin your Footbook journey/i })
+    ).toBeInTheDocument();
+    expect(screen.queryAllByRole("textbox")).toHaveLength(0);
+    expect(
+      screen.getByRole("button", { name: /Sign up with Google/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Google sign up is the exclusive way in/i)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Log in/i })).toHaveAttribute(
+      "href",
+      "/login"
+    );
   });
 
-  it("renders login panel correctly", () => {
-    render(<AuthPanel type="login" image="login.png" side="right" />);
-    expect(screen.getByText("LOGIN")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "login" })).toHaveAttribute(
-      "src",
-      "login.png"
-    );
-    expect(screen.getByText("LOGIN WITH GOOGLE")).toBeInTheDocument();
-    expect(screen.getByText(/Don’t have an account/)).toBeInTheDocument();
+  it("renders login view and links to signup", () => {
+    renderAuth("login");
+
+    expect(
+      screen.getByRole("heading", { name: /Sign in to matchday central/i })
+    ).toBeInTheDocument();
+    expect(screen.queryAllByRole("textbox")).toHaveLength(0);
+    expect(
+      screen.getByRole("button", { name: /Log in with Google/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Use your Google account to jump straight into the action/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Create an account/i })
+    ).toHaveAttribute("href", "/signup");
   });
 });
 
@@ -65,8 +95,12 @@ describe("GoogleLogInButton", () => {
     const { useGoogleLogin } = require("@react-oauth/google");
     (useGoogleLogin as jest.Mock).mockReturnValue(loginMock);
 
-    render(<GoogleLogInButton />);
-    fireEvent.click(screen.getByText("LOGIN WITH GOOGLE"));
+    render(
+      <MemoryRouter>
+        <GoogleLogInButton />
+      </MemoryRouter>
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Log in with Google/i }));
     expect(loginMock).toHaveBeenCalled();
   });
 
@@ -78,8 +112,12 @@ describe("GoogleLogInButton", () => {
           onError(new Error("fail"))
     );
 
-    render(<GoogleLogInButton />);
-    fireEvent.click(screen.getByText("LOGIN WITH GOOGLE"));
+    render(
+      <MemoryRouter>
+        <GoogleLogInButton />
+      </MemoryRouter>
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Log in with Google/i }));
 
     await waitFor(() =>
       expect(screen.getByText(/Google login failed/)).toBeInTheDocument()
@@ -88,8 +126,8 @@ describe("GoogleLogInButton", () => {
 
   it("sets user and navigates on success", async () => {
     (axios.get as jest.Mock)
-      .mockResolvedValueOnce({ data: { sub: "123", name: "John" } }) // Google user info
-      .mockResolvedValueOnce({ data: { exists: true, username: "johnny" } }); // DB check
+      .mockResolvedValueOnce({ data: { sub: "123", name: "John" } })
+      .mockResolvedValueOnce({ data: { exists: true, username: "johnny" } });
 
     const { useGoogleLogin } = require("@react-oauth/google");
     (useGoogleLogin as jest.Mock).mockImplementation(
@@ -103,7 +141,7 @@ describe("GoogleLogInButton", () => {
         <GoogleLogInButton />
       </MemoryRouter>
     );
-    fireEvent.click(screen.getByText("LOGIN WITH GOOGLE"));
+    fireEvent.click(screen.getByRole("button", { name: /Log in with Google/i }));
 
     await waitFor(() => {
       expect(mockSetUser).toHaveBeenCalledWith(expect.any(User));
@@ -118,8 +156,14 @@ describe("GoogleSignUpButton", () => {
     const { useGoogleLogin } = require("@react-oauth/google");
     (useGoogleLogin as jest.Mock).mockReturnValue(loginMock);
 
-    render(<GoogleSignUpButton />);
-    fireEvent.click(screen.getByText("SIGN UP WITH GOOGLE"));
+    render(
+      <MemoryRouter>
+        <GoogleSignUpButton />
+      </MemoryRouter>
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: /Sign up with Google/i })
+    );
     expect(loginMock).toHaveBeenCalled();
   });
 
@@ -131,8 +175,14 @@ describe("GoogleSignUpButton", () => {
           onError(new Error("fail"))
     );
 
-    render(<GoogleSignUpButton />);
-    fireEvent.click(screen.getByText("SIGN UP WITH GOOGLE"));
+    render(
+      <MemoryRouter>
+        <GoogleSignUpButton />
+      </MemoryRouter>
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: /Sign up with Google/i })
+    );
 
     await waitFor(() =>
       expect(screen.getByText(/Google login failed/)).toBeInTheDocument()
@@ -141,8 +191,8 @@ describe("GoogleSignUpButton", () => {
 
   it("shows error if user already exists", async () => {
     (axios.get as jest.Mock)
-      .mockResolvedValueOnce({ data: { sub: "123", name: "John" } }) // Google info
-      .mockResolvedValueOnce({ data: { exists: true } }); // DB says exists
+      .mockResolvedValueOnce({ data: { sub: "123", name: "John" } })
+      .mockResolvedValueOnce({ data: { exists: true } });
 
     const { useGoogleLogin } = require("@react-oauth/google");
     (useGoogleLogin as jest.Mock).mockImplementation(
@@ -151,8 +201,14 @@ describe("GoogleSignUpButton", () => {
           onSuccess({ access_token: "token" })
     );
 
-    render(<GoogleSignUpButton />);
-    fireEvent.click(screen.getByText("SIGN UP WITH GOOGLE"));
+    render(
+      <MemoryRouter>
+        <GoogleSignUpButton />
+      </MemoryRouter>
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: /Sign up with Google/i })
+    );
 
     await waitFor(() =>
       expect(screen.getByText(/User already exists/)).toBeInTheDocument()
@@ -161,8 +217,8 @@ describe("GoogleSignUpButton", () => {
 
   it("creates user and navigates on success", async () => {
     (axios.get as jest.Mock)
-      .mockResolvedValueOnce({ data: { sub: "123", name: "John" } }) // Google info
-      .mockResolvedValueOnce({ data: { exists: false } }); // DB says new
+      .mockResolvedValueOnce({ data: { sub: "123", name: "John" } })
+      .mockResolvedValueOnce({ data: { exists: false } });
     (axios.post as jest.Mock).mockResolvedValueOnce({});
 
     const { useGoogleLogin } = require("@react-oauth/google");
@@ -177,7 +233,9 @@ describe("GoogleSignUpButton", () => {
         <GoogleSignUpButton />
       </MemoryRouter>
     );
-    fireEvent.click(screen.getByText("SIGN UP WITH GOOGLE"));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Sign up with Google/i })
+    );
 
     await waitFor(() => {
       expect(mockSetUser).toHaveBeenCalledWith(expect.any(User));

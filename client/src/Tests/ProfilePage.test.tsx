@@ -30,7 +30,7 @@ function renderProfile(initialRoute = "/") {
     <MemoryRouter initialEntries={[initialRoute]}>
       <Routes>
         <Route path="/" element={<ProfilePage />} />
-        <Route path="/loginpage" element={<div>Mock LoginPage</div>} />
+        <Route path="/login" element={<div>Mock LoginPage</div>} />
       </Routes>
     </MemoryRouter>
   );

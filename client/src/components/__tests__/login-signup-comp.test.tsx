@@ -1,11 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import ComicSticker from "../LoginSignupComp/ComicStickers/ComicStickers";
-import ComicPanel from "../LoginSignupComp/ComicPanel/ComicPanel";
-import ComicBook from "../LoginSignupComp/ComicBook/ComicBook";
-import AuthPanel from "../LoginSignupComp/Auth/AuthPanel";
-import GoogleSignUpButton from "../LoginSignupComp/GoogleButtons/GoogleSignupButton";
+import { MemoryRouter } from "react-router-dom";
+
+import AuthScreen from "../LoginSignupComp/Auth/AuthScreen";
 import GoogleLogInButton from "../LoginSignupComp/GoogleButtons/GoogleLogInButton";
+import GoogleSignUpButton from "../LoginSignupComp/GoogleButtons/GoogleSignupButton";
 
 jest.mock("@react-oauth/google", () => ({
   useGoogleLogin: jest.fn(),
@@ -40,7 +39,7 @@ jest.mock("../../config", () => ({
   API_BASE: "http://localhost:3000",
 }));
 
-describe("Login & signup components", () => {
+describe("auth experience", () => {
   const mockUseGoogleLogin = require("@react-oauth/google").useGoogleLogin as jest.Mock;
   const axios = require("axios");
 
@@ -48,35 +47,31 @@ describe("Login & signup components", () => {
     jest.clearAllMocks();
   });
 
-  test("Comic helpers render correctly", () => {
-    const { rerender } = render(
-      <ComicSticker text="Pow" color="#fff" rotation={10} />
+  test("signup screen emphasises Google-only entry", () => {
+    render(
+      <MemoryRouter>
+        <AuthScreen mode="signup" />
+      </MemoryRouter>
     );
-    expect(screen.getByText("Pow")).toBeInTheDocument();
 
-    rerender(
-      <ComicPanel color="#abc">
-        <span>Inside</span>
-      </ComicPanel>
-    );
-    expect(screen.getByText("Inside")).toBeInTheDocument();
+    expect(screen.queryAllByRole("textbox")).toHaveLength(0);
+    expect(
+      screen.getByRole("button", { name: /Sign up with Google/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Google sign up is the exclusive way in/i)
+    ).toBeInTheDocument();
   });
 
-  test("ComicBook stitches panels together", () => {
-    render(<ComicBook />);
-    expect(screen.getAllByText(/SIGN UP|LOGIN/).length).toBeGreaterThan(0);
-  });
-
-  test("AuthPanel switches based on type", () => {
-    const { rerender } = render(
-      <AuthPanel type="signup" image="img.png" side="left" />
+  test("login screen showcases live match highlight copy", () => {
+    render(
+      <MemoryRouter>
+        <AuthScreen mode="login" />
+      </MemoryRouter>
     );
-    expect(screen.getByText("SIGN UP")).toBeInTheDocument();
-    expect(screen.getByText(/Already have an account/)).toBeInTheDocument();
 
-    rerender(<AuthPanel type="login" image="img.png" side="right" />);
-    expect(screen.getByText("LOGIN")).toBeInTheDocument();
-    expect(screen.getByText(/Don’t have an account/)).toBeInTheDocument();
+    expect(screen.getByText(/Live matches tracked/i)).toBeInTheDocument();
+    expect(screen.queryAllByRole("textbox")).toHaveLength(0);
   });
 
   test("GoogleSignUpButton creates new users", async () => {
@@ -101,11 +96,16 @@ describe("Login & signup components", () => {
       await onSuccess?.({ access_token: "token" });
     });
 
-    render(<GoogleSignUpButton />);
+    render(
+      <MemoryRouter>
+        <GoogleSignUpButton />
+      </MemoryRouter>
+    );
 
-    await user.click(screen.getByRole("button", { name: /SIGN UP WITH GOOGLE/i }));
+    await user.click(screen.getByRole("button", { name: /Sign up with Google/i }));
+    await screen.findByRole("button", { name: /Sign up with Google/i });
 
-    await waitFor(() => expect(axios.post).toHaveBeenCalled());
+    expect(axios.post).toHaveBeenCalled();
     expect(mockSetUser).toHaveBeenCalled();
     expect(navigateSpy).toHaveBeenCalledWith("/");
   });
@@ -131,10 +131,14 @@ describe("Login & signup components", () => {
       await onSuccess?.({ access_token: "token" });
     });
 
-    render(<GoogleLogInButton />);
+    render(
+      <MemoryRouter>
+        <GoogleLogInButton />
+      </MemoryRouter>
+    );
 
-    await user.click(screen.getByRole("button", { name: /LOGIN WITH GOOGLE/i }));
-    await waitFor(() => screen.getByText(/No account found/));
+    await user.click(screen.getByRole("button", { name: /Log in with Google/i }));
+    await screen.findByText(/No account found/i);
     expect(mockSetUser).not.toHaveBeenCalled();
   });
 
@@ -159,9 +163,13 @@ describe("Login & signup components", () => {
       await onSuccess?.({ access_token: "token" });
     });
 
-    render(<GoogleLogInButton />);
+    render(
+      <MemoryRouter>
+        <GoogleLogInButton />
+      </MemoryRouter>
+    );
 
-    await user.click(screen.getByRole("button", { name: /LOGIN WITH GOOGLE/i }));
+    await user.click(screen.getByRole("button", { name: /Log in with Google/i }));
     await waitFor(() => expect(mockSetUser).toHaveBeenCalled());
     expect(navigateSpy).toHaveBeenCalledWith("/");
   });

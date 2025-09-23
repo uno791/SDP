@@ -12,10 +12,10 @@ export default function Footer() {
         <div className={styles.actions}>
           {!user?.username && (
             <>
-              <Link to="/signuppage">
+              <Link to="/signup">
                 <button className={styles.primary}>Sign Up Free</button>
               </Link>
-              <Link to="/loginpage">
+              <Link to="/login">
                 <button className={styles.ghost}>Log In</button>
               </Link>
             </>
