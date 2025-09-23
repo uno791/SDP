@@ -19,8 +19,7 @@ const copy = {
     title: "Begin your Footbook journey",
     subtitle:
       "Unlock live dashboards, curated alerts, and supporter feeds as soon as the whistle blows.",
-    message:
-      "Google sign up is the exclusive way in while we finish polishing our manual registration flow.",
+
     googleLabel: "Sign up with Google",
     switchPrompt: "Already have an account?",
     switchLinkLabel: "Log in",
@@ -28,8 +27,14 @@ const copy = {
     pillLabel: "Live right now",
     features: [
       { icon: "⚡", text: "Customise match alerts for every club you follow." },
-      { icon: "📊", text: "Dive into dynamic stats and fixtures the moment you arrive." },
-      { icon: "🤝", text: "Sync across devices with a single secure Google identity." },
+      {
+        icon: "📊",
+        text: "Dive into dynamic stats and fixtures the moment you arrive.",
+      },
+      {
+        icon: "🤝",
+        text: "Sync across devices with a single secure Google identity.",
+      },
     ] as Feature[],
     statHighlight: {
       label: "Supporters onboard",
@@ -50,9 +55,18 @@ const copy = {
     switchHref: "/signup",
     pillLabel: "Tonight's fixtures",
     features: [
-      { icon: "🎯", text: "Resume curated feeds tailored to your favourite clubs." },
-      { icon: "🚨", text: "Stay synced with live score pushes and commentary streams." },
-      { icon: "🔒", text: "Secure, single-click access powered entirely by Google." },
+      {
+        icon: "🎯",
+        text: "Resume curated feeds tailored to your favourite clubs.",
+      },
+      {
+        icon: "🚨",
+        text: "Stay synced with live score pushes and commentary streams.",
+      },
+      {
+        icon: "🔒",
+        text: "Secure, single-click access powered entirely by Google.",
+      },
     ] as Feature[],
     statHighlight: {
       label: "Live matches tracked",
@@ -112,8 +126,6 @@ const AuthScreen = ({ mode }: AuthScreenProps) => {
             ) : (
               <GoogleLogInButton buttonText={copy[mode].googleLabel} />
             )}
-
-            <p className={styles.message}>{copy[mode].message}</p>
 
             <p className={styles.switchRow}>
               {copy[mode].switchPrompt}
