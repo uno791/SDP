@@ -50,6 +50,17 @@
   display: inline-block;
 }
 
+.deleteBtn {
+  margin-left: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+.deleteBtn:hover {
+  color: red;
+}
+
 .actions {
   display: flex;
   gap: 10px;
@@ -57,22 +68,69 @@
   margin-bottom: 20px;
 }
 
-.pause {
-  background-color: gray;
+/* Buttons */
+.start {
+  background-color: #27ae60; /* green */
   color: white;
   border: none;
   padding: 10px 20px;
   font-weight: bold;
   cursor: pointer;
+  border-radius: 6px;
+}
+.start:hover {
+  background-color: #1e8449;
+}
+
+.pause {
+  background-color: #f39c12; /* orange */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.pause:hover {
+  background-color: #d68910;
+}
+
+.resume {
+  background-color: #2980b9; /* blue */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.resume:hover {
+  background-color: #21618c;
+}
+
+.extend {
+  background-color: #8e9cff;
+  border: 2px solid black;
+  padding: 8px 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.extend:hover {
+  background-color: #6f7de3;
 }
 
 .end {
-  background-color: #e74c3c;
+  background-color: #e74c3c; /* red */
   color: white;
   border: none;
   padding: 10px 20px;
   font-weight: bold;
   cursor: pointer;
+  border-radius: 6px;
+}
+.end:hover {
+  background-color: #c0392b;
 }
 
 .subHeader {
@@ -96,6 +154,10 @@
   font-weight: bold;
   padding: 6px 12px;
   cursor: pointer;
+  border-radius: 6px;
+}
+.addEvent:hover {
+  background-color: #6f7de3;
 }
 
 .timeline {
@@ -105,4 +167,36 @@
 
 .timeline li {
   margin-bottom: 5px;
+}
+
+.pause:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.resume:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.possessionBox {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.possessionBox input[type="range"] {
+  flex: 1;
+}
+
+.savePossession {
+  padding: 4px 8px;
+  border: none;
+  background: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
 }

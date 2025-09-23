@@ -17,6 +17,10 @@ import ThreeFootball from "../components/LandingPageComp/ThreeFootball";
 import styles from "../components/LandingPageComp/LandingPage.module.css";
 import Loader3D from "../components/LandingPageComp/Layout/Loader3D";
 import PremierLeagueTable from "../components/LandingPageComp/PremierLeagueTable";
+import LiveUserMatches from "../components/LandingPageComp/LiveUserMatches";
+import UserMatches from "../components/LandingPageComp/UserMatches";
+
+
 /* ------------------------------ DATA ------------------------------ */
 const TEAM_NAMES = [
   "Arsenal",
@@ -194,12 +198,24 @@ export default function LandingPage() {
           <LiveMatchCard />
         </section>
 
+        {/* USER LIVE MATCHES */}
+        <section id="user-live" className={styles.sectionGray}>
+          <h3 className={styles.sectionHeading}>User Created Live Matches</h3>
+          <LiveUserMatches />
+        </section>
+
         {/* PAST MATCHES (your static examples) */}
         <section id="past" className={styles.sectionGray}>
           <div className={styles.stack}>
             <PastMatchCard /> 
           </div>
         </section>
+
+        {/* USER MATCHES (DATE PICKER) */}
+        <section id="user-matches" className={styles.sectionWhite}>
+          <UserMatches />
+        </section>
+
 
         {/* LEAGUE TABLE */}
         <section id="table" className={styles.sectionWhite}>

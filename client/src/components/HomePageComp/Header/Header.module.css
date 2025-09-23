@@ -194,50 +194,68 @@
   transition: all 0.3s ease;
 }
 
-/* Responsive nav */
+/* Mobile responsive navigation */
 @media (max-width: 768px) {
+  .nav {
+    position: relative;
+    height: auto;
+    min-height: 80px;
+    padding: 12px 16px;
+    z-index: 1000; /* keep header above content */
+  }
+
+  .logo {
+    height: 100px;
+  }
+
+  /* Hamburger menu */
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 40px;
+    height: 22px;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 2001; /* above nav background */
+    position: relative;
+  }
+
+  .hamburger span {
+    display: block;
+    height: 4px;
+    background: #ffb347;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+
+  /* Full-screen mobile menu */
   .links {
-    position: absolute;
-    top: 60px; /* below header */
+    position: fixed; /* fixed instead of absolute */
+    top: 60px; /* starts below header */
     right: 0;
+    left: 0; /* stretch full width */
     background: #0c2a47;
     flex-direction: column;
     gap: 12px;
     padding: 20px 16px 26px;
-    width: 100%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 
-    /* animation setup */
     max-height: 0;
     overflow: hidden;
     opacity: 0;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
+    transform: translateY(-10px);
+    transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+
+    z-index: 5000; /* way above everything */
   }
+
   .links.open {
     display: flex;
-    max-height: 400px; /* large enough to fit all links */
+    max-height: 100vh; /* fill vertical space */
     opacity: 1;
+    transform: translateY(0);
   }
-  .hamburger {
-    width: 40px;
-    height: 22px;
-    gap: 5px; /* adds space between bars */
-    display: flex;
-  }
-  .hamburger span {
-    height: 4px; /* thicker bars */
-  }
-  .nav {
-    height: auto; /* let padding/content define height */
-    min-height: 80px; /* ensure a thicker bar */
-    padding: 12px 16px;
-  }
-  .logo {
-    height: 100px; /* scale logo down a bit but still visible */
-  }
-}
-
-.profileIcon {
-  margin-right: 6px;
-  vertical-align: middle;
 }

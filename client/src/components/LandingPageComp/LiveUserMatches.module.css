@@ -1,0 +1,104 @@
+.container {
+  margin: 20px 0;
+}
+
+.heading {
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #102a43; /* dark navy */
+}
+
+.card {
+  background-color: #5e7a6b; /* green/gray background */
+  color: white;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.team {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+}
+
+.score {
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+.status {
+  margin-left: 8px;
+  color: orange;
+  font-weight: bold;
+}
+
+.arrow {
+  margin-left: 8px;
+}
+
+.timelineBox {
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  padding-top: 8px;
+}
+
+.headingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.datePicker {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.viewerBtn {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: #2563eb; /* blue */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.viewerBtn:hover {
+  background-color: #1d4ed8;
+}
+
+.possessionDisplay {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: white;
+}
+
+.possessionBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.possessionBar input[type="range"] {
+  flex: 1;
+  pointer-events: none; /* ✅ makes it read-only */
+  background: transparent;
+}
