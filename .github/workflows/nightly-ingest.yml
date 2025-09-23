@@ -14,6 +14,14 @@ on:
         description: "Comma list e.g. eng.1,esp.1 (optional)"
         required: false
         type: string
+      pastDays:
+        description: "Backfill days before DATE (default 6)"
+        required: false
+        type: string
+      futureDays:
+        description: "Days ahead to ingest (default 7)"
+        required: false
+        type: string
 
 jobs:
   ingest:
@@ -51,6 +59,9 @@ jobs:
           DEFAULT_LEAGUES: ${{ vars.DEFAULT_LEAGUES || secrets.DEFAULT_LEAGUES || 'eng.1' }}
           DATE: ${{ github.event.inputs.date }}
           LEAGUES: ${{ github.event.inputs.leagues }}
+          PAST_DAYS: ${{ github.event.inputs.pastDays || vars.INGEST_PAST_DAYS || '6' }}
+          FUTURE_DAYS: ${{ github.event.inputs.futureDays || vars.INGEST_FUTURE_DAYS || '7' }}
         run: |
           echo "Inputs: DATE='${DATE}' LEAGUES='${LEAGUES}' (DEFAULT_LEAGUES='${DEFAULT_LEAGUES}')"
+          echo "Window: PAST_DAYS='${PAST_DAYS}' FUTURE_DAYS='${FUTURE_DAYS}'"
           npx ts-node scripts/ingestDay.ts

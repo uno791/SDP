@@ -17,7 +17,7 @@ body,
 body {
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial,
     sans-serif;
-  background: #f7f1e5; /* was dark blue */
+  background: #ffffff; /* was dark blue */
   color: #0c2a47;
   min-height: 100vh;
   display: flex;

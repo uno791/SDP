@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom"; // 👈 NEW
 import styles from "./PastMatchCard.module.css";
 
 import {
@@ -299,16 +300,14 @@ function Card({
           )}
 
           <div className={styles.ctaWrap}>
-            <a
+            {/* ⬇️ Changed from <a href="espn..."> to a client-side route */}
+            <Link
               className={styles.cta}
-              href={`https://www.espn.com/soccer/match/_/gameId/${encodeURIComponent(
-                ev.id
-              )}`}
-              target="_blank"
-              rel="noreferrer"
+              to={`/matchviewer?id=${encodeURIComponent(ev.id)}`}
+              aria-label={`Open Match Viewer for match ${ev.id}`}
             >
               Open Match Viewer
-            </a>
+            </Link>
           </div>
         </div>
       )}

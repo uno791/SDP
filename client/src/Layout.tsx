@@ -10,7 +10,10 @@ export function Layout() {
     <>
       <Header onOpenMenu={() => setMenuOpen(true)} />
       <BurgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <Outlet />
+
+      <main style={{ paddingTop: "4rem" }}>
+        <Outlet />
+      </main>
     </>
   );
 }

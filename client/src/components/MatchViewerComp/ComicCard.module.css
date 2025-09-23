@@ -1,23 +1,25 @@
 .cardWrapper {
   position: relative;
-  width: 90%;
-  height: 90%;
-  margin: auto;
-  margin-bottom: 1rem;
-  margin-top: 1rem;
-}
-
-.title {
-  font-size: 1rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
+  width: 100%;
+  margin: 2rem auto;
 }
 
 .card {
-  background: #f5eedc;
-  /* background: #ffffff; */
-  border: 2px solid black;
-  padding: 1rem;
-  box-shadow: 4px 4px 0 black;
+  background: white;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  text-transform: none;
+  color: #0e5a4c; /* emerald-900 */
+}
+.greenCard {
+  background-color: #065f46 !important;
+  color: #fff !important;
 }
