@@ -1,10 +1,11 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import "@testing-library/jest-dom";
 
 // SUT
 import CreateMatch from "../pages/MatchPages/CreateMatch";
+import { renderWithUser } from "./test-utils";
 
 // ✅ Mock react-router navigate
 const mockNavigate = jest.fn();
@@ -18,7 +19,7 @@ jest.mock("react-router-dom", () => {
 
 // Helper to render CreateMatch inside router
 function renderCreateMatch() {
-  return render(
+  return renderWithUser(
     <MemoryRouter initialEntries={["/create-match"]}>
       <Routes>
         <Route path="/create-match" element={<CreateMatch />} />

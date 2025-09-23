@@ -52,6 +52,7 @@ describe("navigation components", () => {
       "/home",
       "/",
       "/favourite",
+      "/user-games",
       "/profile",
       "/mymatches",
       "/watchalongs",

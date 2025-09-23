@@ -1,29 +1,44 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import "@testing-library/jest-dom";
+import userEvent from "@testing-library/user-event";
+import axios from "axios";
 
-// SUT
 import LiveMatchUpdate from "../pages/MatchPages/LiveMatchUpdate";
+import { renderWithUser } from "./test-utils";
 
-// ✅ mock react-router-dom useParams
-jest.mock("react-router-dom", () => {
-  const original = jest.requireActual("react-router-dom");
+jest.mock("axios");
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+type MatchData = ReturnType<typeof createBaseMatch>;
+
+function createBaseMatch() {
   return {
-    ...original,
-    useParams: () => ({ id: "1" }),
+    id: 1,
+    home_team: { id: 10, name: "Liverpool" },
+    away_team: { id: 20, name: "Man United" },
+    home_score: 0,
+    away_score: 1,
+    status: "in_progress",
+    minute: 67,
+    events: [
+      {
+        id: 1,
+        minute: 55,
+        event_type: "goal",
+        team_id: 20,
+        player_name: "Cunha",
+      },
+    ],
+    home_possession: 55,
+    away_possession: 45,
   };
-});
+}
 
-// ✅ mock UserContext
-jest.mock("../Users/UserContext", () => ({
-  useUser: () => ({
-    user: { id: 123, username: "testuser" },
-  }),
-}));
+const mockReportsResponse = { data: { reports: [] } };
 
 function renderLiveMatchUpdate() {
-  return render(
+  return renderWithUser(
     <MemoryRouter initialEntries={["/live/1"]}>
       <Routes>
         <Route path="/live/:id" element={<LiveMatchUpdate />} />
@@ -34,57 +49,104 @@ function renderLiveMatchUpdate() {
 
 describe("LiveMatchUpdate Page", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.useFakeTimers();
+    mockedAxios.get.mockReset();
+    mockedAxios.post.mockReset();
+    mockedAxios.delete.mockReset();
   });
 
-  test("renders match title, username and score", () => {
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  const arrangeHappyPath = (matchOverride?: MatchData) => {
+    const matchData = matchOverride ? { ...matchOverride } : createBaseMatch();
+
+    mockedAxios.get.mockImplementation((url: string) => {
+      if (url.endsWith("/reports")) {
+        return Promise.resolve(mockReportsResponse);
+      }
+      return Promise.resolve({ data: { match: matchData } });
+    });
+
+    mockedAxios.post.mockResolvedValue({ data: {} });
+    mockedAxios.delete.mockResolvedValue({ data: {} });
+
+    return matchData;
+  };
+
+  test("renders match title, username and score", async () => {
+    arrangeHappyPath();
     renderLiveMatchUpdate();
 
     expect(
-      screen.getByRole("heading", { name: /liverpool vs man united/i })
+      await screen.findByRole("heading", { name: /liverpool vs man united/i })
     ).toBeInTheDocument();
-    expect(screen.getByText("testuser")).toBeInTheDocument();
+    expect(screen.getByText("Test User")).toBeInTheDocument();
     expect(screen.getByText(/0 - 1/)).toBeInTheDocument();
     expect(screen.getByText(/67'/)).toBeInTheDocument();
   });
 
-  test("renders existing timeline event", () => {
+  test("renders existing timeline event", async () => {
+    arrangeHappyPath();
     renderLiveMatchUpdate();
+
+    await screen.findByRole("heading", { name: /liverpool vs man united/i });
 
     expect(
       screen.getByText("55' Goal – Cunha (Man United)")
     ).toBeInTheDocument();
   });
 
-  test("can add a new event", () => {
+  test("can add a new event", async () => {
+    const matchData = arrangeHappyPath();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+    mockedAxios.post.mockImplementation(async () => {
+      matchData.events = [
+        ...matchData.events,
+        {
+          id: 2,
+          minute: 67,
+          event_type: "yellow_card",
+          team_id: matchData.home_team.id,
+          player_name: "Salah",
+        },
+      ];
+      return { data: {} };
+    });
+
     renderLiveMatchUpdate();
-
-    // select event type
-    fireEvent.change(screen.getByDisplayValue("Event Type"), {
-      target: { value: "Yellow Card" },
-    });
-    // select team
-    fireEvent.change(screen.getByDisplayValue("Team"), {
-      target: { value: "Liverpool" },
-    });
-    // select player
-    fireEvent.change(screen.getByDisplayValue("Player"), {
-      target: { value: "Salah" },
+    await screen.findByRole("heading", {
+      name: /liverpool vs man united/i,
     });
 
-    fireEvent.click(screen.getByText("ADD EVENT"));
+    await user.selectOptions(screen.getByDisplayValue("Event Type"), [
+      "yellow_card",
+    ]);
+    await user.selectOptions(screen.getByDisplayValue("Team"), [
+      String(matchData.home_team.id),
+    ]);
+    await user.type(screen.getByPlaceholderText("Player name"), "Salah");
 
-    expect(
-      screen.getByText("67' Yellow Card – Salah (Liverpool)")
-    ).toBeInTheDocument();
+    await user.click(screen.getByText("ADD EVENT"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("67' Yellow Card – Salah (Liverpool)")
+      ).toBeInTheDocument()
+    );
   });
 
-  test("does not add event if form is incomplete", () => {
+  test("does not add event if form is incomplete", async () => {
+    arrangeHappyPath();
     renderLiveMatchUpdate();
+
+    await screen.findByRole("heading", { name: /liverpool vs man united/i });
 
     fireEvent.click(screen.getByText("ADD EVENT"));
 
-    // still only initial event present
     const items = screen.getAllByRole("listitem");
     expect(items).toHaveLength(1);
   });

@@ -47,6 +47,20 @@ describe("UserContext", () => {
     expect(result.current.username).toBe("");
   });
 
+  test("respects initialUser without hitting storage", () => {
+    const initialUser = new User({ id: "seed", username: "seed-user" });
+
+    const { result } = renderHook(() => useUser(), {
+      wrapper: ({ children }: { children: React.ReactNode }) => (
+        <UserProvider initialUser={initialUser}>{children}</UserProvider>
+      ),
+    });
+
+    expect(result.current.user?.id).toBe("seed");
+    expect(result.current.username).toBe("seed-user");
+    expect(window.localStorage.getItem("user")).toBeNull();
+  });
+
   test("throws an error when useUser is called outside provider", () => {
     expect(() => renderHook(() => useUser())).toThrow(
       "useUser must be used within a UserProvider"

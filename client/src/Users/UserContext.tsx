@@ -1,5 +1,12 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import { User } from "../Users/User";
 
 interface UserContextType {
@@ -9,33 +16,79 @@ interface UserContextType {
   setUsername: (username: string) => void;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+export type StorageAdapter = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
+export const UserContext = createContext<UserContextType | undefined>(undefined);
+
+interface UserProviderProps {
+  children: React.ReactNode;
+  initialUser?: User | null;
+  storage?: StorageAdapter | null;
+}
+
+export const UserProvider: React.FC<UserProviderProps> = ({
   children,
+  initialUser,
+  storage,
 }) => {
-  const [user, setUserState] = useState<User | null>(null);
-  const [username, setUsername] = useState("");
+  const storageRef = useRef<StorageAdapter | null>(
+    storage ?? (typeof window !== "undefined" ? window.localStorage : null)
+  );
 
-  // Load user from localStorage on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setUserState(new User(parsed)); // Instantiate User class
-      setUsername(parsed.username);
+  const readStoredUser = useCallback((): User | null => {
+    const store = storageRef.current;
+    if (!store) return null;
+
+    const raw = store.getItem("user");
+    if (!raw) return null;
+
+    try {
+      const parsed = JSON.parse(raw);
+      return new User(parsed);
+    } catch (err) {
+      console.error("Failed to parse stored user", err);
+      return null;
     }
   }, []);
 
-  const setUser = (user: User | null) => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-      setUsername(user?.username || "No Username");
+  const initial =
+    initialUser !== undefined ? initialUser : readStoredUser();
+
+  const [user, setUserState] = useState<User | null>(initial);
+  const [username, setUsername] = useState<string>(initial?.username ?? "");
+
+  useEffect(() => {
+    if (initialUser !== undefined) return;
+    const stored = readStoredUser();
+    if (stored) {
+      setUserState(stored);
+      setUsername(stored.username ?? "");
+    }
+  }, [initialUser, readStoredUser]);
+
+  const setUser = (next: User | null) => {
+    const store = storageRef.current;
+    if (next) {
+      if (store) {
+        try {
+          store.setItem("user", JSON.stringify(next));
+        } catch (err) {
+          console.error("Failed to persist user", err);
+        }
+      }
+      setUsername(next.username || "No Username");
     } else {
-      localStorage.removeItem("user");
+      if (store) {
+        try {
+          store.removeItem("user");
+        } catch (err) {
+          console.error("Failed to clear user", err);
+        }
+      }
       setUsername("");
     }
-    setUserState(user);
+
+    setUserState(next);
   };
 
   return (

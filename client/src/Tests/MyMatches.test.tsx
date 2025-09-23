@@ -1,10 +1,11 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import "@testing-library/jest-dom";
 
 // SUT
 import MyMatches from "../pages/MatchPages/MyMatches";
+import { renderWithUser } from "./test-utils";
 
 // ✅ mock react-router-dom navigation
 const mockNavigate = jest.fn();
@@ -17,7 +18,7 @@ jest.mock("react-router-dom", () => {
 });
 
 function renderMyMatches(initialRoute = "/") {
-  return render(
+  return renderWithUser(
     <MemoryRouter initialEntries={[initialRoute]}>
       <Routes>
         <Route path="/" element={<MyMatches />} />

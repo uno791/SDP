@@ -1,8 +1,10 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import MatchCard from "../MatchPageComp/MatchCard";
 import MatchList from "../MatchPageComp/MatchList";
 import MatchForm from "../MatchPageComp/MatchForm";
+import { renderWithUser } from "../../Tests/test-utils";
 
 describe("Match page components", () => {
   const originalFetch = global.fetch;
@@ -26,7 +28,7 @@ describe("Match page components", () => {
     const onSeeMore = jest.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithUser(
       <MatchCard
         match={{
           id: 1,
@@ -40,13 +42,13 @@ describe("Match page components", () => {
       />
     );
 
-    expect(screen.getByText(/LIVE/)).toBeInTheDocument();
+    expect(screen.getByText(/Live/i)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "See More" }));
     expect(onSeeMore).toHaveBeenCalledWith(1);
   });
 
   test("MatchList renders cards for matches", () => {
-    render(
+    renderWithUser(
       <MatchList
         title="Today"
         matches={[
@@ -70,7 +72,14 @@ describe("Match page components", () => {
     const onCancel = jest.fn();
     const user = userEvent.setup();
 
-    render(<MatchForm onCancel={onCancel} />);
+    renderWithUser(
+      <MemoryRouter>
+        <MatchForm onCancel={onCancel} />
+      </MemoryRouter>
+    );
+
+    const userRadio = screen.getByRole("radio", { name: "PRIVATE" });
+    await user.click(userRadio);
 
     await waitFor(() => expect(global.fetch).toHaveBeenCalled());
 
