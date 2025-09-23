@@ -3,11 +3,10 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import "@testing-library/jest-dom";
 
-// SUT
 import CreateMatch from "../pages/MatchPages/CreateMatch";
 
-// ✅ Mock react-router navigate
 const mockNavigate = jest.fn();
+
 jest.mock("react-router-dom", () => {
   const original = jest.requireActual("react-router-dom");
   return {
@@ -16,7 +15,12 @@ jest.mock("react-router-dom", () => {
   };
 });
 
-// Helper to render CreateMatch inside router
+jest.mock("../Users/UserContext", () => ({
+  useUser: () => ({
+    user: { id: 99, username: "tester" },
+  }),
+}));
+
 function renderCreateMatch() {
   return render(
     <MemoryRouter initialEntries={["/create-match"]}>
@@ -36,7 +40,7 @@ describe("CreateMatch Page", () => {
   test("renders header and upload CSV button", () => {
     renderCreateMatch();
     expect(
-      screen.getByRole("heading", { name: /fill in match form or/i })
+      screen.getByRole("heading", { name: /build your fixture/i })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /upload as a csv/i })
@@ -61,16 +65,15 @@ describe("CreateMatch Page", () => {
   test("user can type team names and submit", () => {
     renderCreateMatch();
 
-    const [team1Input, team2Input] =
-      screen.getAllByPlaceholderText(/team names/i);
+    const [team1Input, team2Input] = screen.getAllByPlaceholderText(/team names/i);
 
     fireEvent.change(team1Input, { target: { value: "Barcelona" } });
     fireEvent.change(team2Input, { target: { value: "Real Madrid" } });
 
     fireEvent.click(screen.getByRole("button", { name: /create match/i }));
 
-    // ✅ Values persist in form inputs
     expect(team1Input).toHaveValue("Barcelona");
     expect(team2Input).toHaveValue("Real Madrid");
   });
 });
+

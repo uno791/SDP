@@ -1,36 +1,48 @@
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./CreateMatch.module.css";
-import MatchForm from "../../components/MatchPageComp/MatchForm";
 import Papa from "papaparse";
-import { useState } from "react";
+import MatchForm from "../../components/MatchPageComp/MatchForm";
+import styles from "./CreateMatch.module.css";
+
+type CsvRow = {
+  team1?: string;
+  team2?: string;
+  date?: string;
+  time?: string;
+  duration?: string;
+  lineupTeam1?: string;
+  lineupTeam2?: string;
+};
 
 const CreateMatch = () => {
   const navigate = useNavigate();
-  const [csvData, setCsvData] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [csvData, setCsvData] = useState<CsvRow | null>(null);
 
-  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
     Papa.parse(file, {
-      header: false, // no headers expected
+      header: false,
       skipEmptyLines: true,
-      complete: (results) => {
-        if (results.data && results.data.length > 0) {
-          const row = results.data[0]; // take the first row
-          const mapped = {
-            team1: row[0] || "",
-            team2: row[1] || "",
-            date: row[2] || "",
-            time: row[3] || "",
-            duration: row[4] || "",
-            lineupTeam1: row[5] || "",
-            lineupTeam2: row[6] || "",
-          };
-          setCsvData(mapped);
-        }
+      complete: (results: any) => {
+        const [row] = (results.data as string[][]) ?? [];
+        if (!row) return;
+
+        setCsvData({
+          team1: row[0] || "",
+          team2: row[1] || "",
+          date: row[2] || "",
+          time: row[3] || "",
+          duration: row[4] || "",
+          lineupTeam1: row[5] || "",
+          lineupTeam2: row[6] || "",
+        });
       },
     });
+
+    event.target.value = "";
   };
 
   const handleDownloadTemplate = () => {
@@ -46,22 +58,69 @@ const CreateMatch = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h2 className={styles.header}>FILL IN MATCH FORM OR</h2>
+    <div className={styles.page}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      `}</style>
 
-      {/* Upload CSV */}
-      <label className={styles.uploadCsv}>
-        UPLOAD AS A CSV
-        <input type="file" accept=".csv" hidden onChange={handleCsvUpload} />
-      </label>
+      <header className={styles.hero}>
+        <div className={styles.heroInner}>
+          <h1 className={styles.heroTitle}>Create Matches</h1>
+          <p className={styles.heroSubtitle}>
+            Build your fixture with a clean, simple interface. Import via CSV or create manually.
+          </p>
+        </div>
+      </header>
 
-      {/* Download CSV Template */}
-      <button className={styles.csvTemplate} onClick={handleDownloadTemplate}>
-        DOWNLOAD CSV TEMPLATE
-      </button>
+      <main className={styles.main}>
+        <div className={styles.mainInner}>
+          {/* Match Blueprint - main content */}
+          <section className={styles.formPanel}>
+            <div className={styles.formHeader}>
+              <h2 className={styles.formTitle}>Match Blueprint</h2>
+            </div>
 
-      {/* Pass CSV data into form */}
-      <MatchForm onCancel={() => navigate("/my-matches")} csvData={csvData} />
+            <MatchForm
+              onCancel={() => navigate("/my-matches")}
+              csvData={csvData ?? undefined}
+            />
+          </section>
+
+          {/* Quick Actions - sidebar */}
+          <aside className={styles.sidebar}>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>Quick Actions</h3>
+              <p className={styles.cardSubtitle}>
+                Import your match setup quickly or start from our template.
+              </p>
+              <div>
+                <button
+                  type="button"
+                  className={styles.uploadButton}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Upload as CSV
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv"
+                  hidden
+                  onChange={handleCsvUpload}
+                />
+                <button
+                  type="button"
+                  className={styles.templateButton}
+                  onClick={handleDownloadTemplate}
+                >
+                  Download Template
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
     </div>
   );
 };
