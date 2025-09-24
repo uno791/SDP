@@ -63,6 +63,43 @@ router.get("/teams", async (req, res) => {
   return res.status(200).json(data);
 });
 
+// 2) Create a team (or return existing if same name)
+router.post("/teams", async (req, res) => {
+  const { name, short_name, abbreviation, display_name, logo_url } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: "Team name is required" });
+  }
+
+  try {
+    // upsert: if team with same name exists, return it
+    const { data, error } = await supabase
+      .from("teams")
+      .upsert(
+        {
+          name: name.trim(),
+          short_name: short_name ?? null,
+          abbreviation: abbreviation ?? null,
+          display_name: display_name ?? null,
+          logo_url: logo_url ?? null,
+        },
+        { onConflict: "name" }
+      )
+      .select("*")
+      .single();
+
+    if (error) {
+      console.error("❌ Supabase error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(201).json(data);
+  } catch (err: any) {
+    console.error("❌ Failed to create team:", err);
+    return res.status(500).json({ error: "Unexpected server error" });
+  }
+});
+
 // Get user’s favourite teams (join with teams for names/logos)
 
 router.get("/favourite-teams/:userId", async (req, res) => {
@@ -698,6 +735,27 @@ router.get("/matches/:id", async (req, res) => {
  * POST /matches/:id/events
  * Adds a timeline event (goal, card, foul, etc.)
  */
+
+// PUT /matches/:id
+router.put("/matches/:id", async (req, res) => {
+  try {
+    const matchId = Number(req.params.id);
+    const updates = req.body;
+
+    const { error } = await supabase
+      .from("matches")
+      .update(updates)
+      .eq("id", matchId);
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error("PUT /matches/:id error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.post("/matches/:id/events", async (req, res) => {
   try {
     const match_id = Number(req.params.id);

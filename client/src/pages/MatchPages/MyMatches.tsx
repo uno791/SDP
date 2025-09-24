@@ -7,7 +7,8 @@ import { baseURL } from "../../config";
 import { useUser } from "../../Users/UserContext";
 
 type Match = {
-  id: number;
+  id?: number; // ✅ made optional
+  match_id?: number; // ✅ added fallback support
   home_team?: { id: number; name: string } | null;
   away_team?: { id: number; name: string } | null;
   home_score?: number | null;
@@ -95,7 +96,7 @@ const MyMatches = () => {
         : undefined;
 
     return {
-      id: m.id,
+      id: m.id ?? m.match_id ?? -1, // ✅ always a number
       team1: m.home_team?.name || "TBD",
       team2: m.away_team?.name || "TBD",
       score:
@@ -104,7 +105,15 @@ const MyMatches = () => {
           : "",
       status,
       minute,
-      date: new Date(m.utc_kickoff).toLocaleString(),
+      // ✅ fixed: format in local timezone properly
+      date: new Date(m.utc_kickoff).toLocaleString(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
     };
   };
 
@@ -127,7 +136,7 @@ const MyMatches = () => {
         return;
       }
       // remove from UI
-      setMatches(matches.filter((m) => m.id !== deleteMatchId));
+      setMatches(matches.filter((m) => (m.id ?? m.match_id) !== deleteMatchId));
     } catch (e) {
       console.error("Failed to delete match", e);
       alert("Unexpected error while deleting match");
@@ -176,9 +185,8 @@ const MyMatches = () => {
             subtitle="Get everything lined up before kickoff."
             matches={upcomingMatches.map(transform)}
             accent="upcoming"
-            // NEW: pass delete handler
             onDelete={handleDeleteClick}
-            onSeeMore={(id) => navigate(`/match/${id}`)}
+            onSeeMore={(id) => navigate(`/create-match/${id}`)} // ✅ correct edit path
           />
 
           <MatchList
