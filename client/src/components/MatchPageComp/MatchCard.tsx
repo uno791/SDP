@@ -13,7 +13,7 @@ type Match = {
 interface Props {
   match: Match;
   onSeeMore?: (id: number) => void;
-  onDelete?: (id: number) => void; // ✅ added
+  onDelete?: (id: number) => void;
 }
 
 const MatchCard = ({ match, onSeeMore, onDelete }: Props) => {
@@ -56,18 +56,26 @@ const MatchCard = ({ match, onSeeMore, onDelete }: Props) => {
       <div className={styles.meta}>
         <span className={`${styles.badge} ${badgeClass}`}>{badgeLabel}</span>
         <span className={styles.timeline}>{timelineCopy}</span>
-        <div className={styles.actions}>
-          <button
-            className={styles.moreButton}
-            onClick={() => onSeeMore && onSeeMore(match.id)}
-          >
-            See More
-          </button>
 
+        <div className={styles.actions}>
+          {/* Only show See More for live & upcoming matches */}
+          {(match.status === "live" || match.status === "upcoming") &&
+            onSeeMore && (
+              <button
+                className={styles.moreButton}
+                onClick={() => onSeeMore(match.id)}
+                type="button"
+              >
+                See More
+              </button>
+            )}
+
+          {/* Only show Delete for upcoming matches */}
           {match.status === "upcoming" && onDelete && (
             <button
               className={styles.deleteButton}
               onClick={() => onDelete(match.id)}
+              type="button"
             >
               Delete
             </button>
