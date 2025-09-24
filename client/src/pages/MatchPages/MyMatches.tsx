@@ -30,6 +30,9 @@ const MyMatches = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [now, setNow] = useState(new Date());
 
+  // NEW: track which match to delete
+  const [deleteMatchId, setDeleteMatchId] = useState<number | null>(null);
+
   useEffect(() => {
     if (!user?.id) return;
 
@@ -105,6 +108,34 @@ const MyMatches = () => {
     };
   };
 
+  // NEW: handle delete click
+  function handleDeleteClick(id: number) {
+    setDeleteMatchId(id);
+  }
+
+  // NEW: confirm delete
+  async function confirmDelete() {
+    if (!deleteMatchId) return;
+
+    try {
+      const res = await fetch(`${baseURL}/matches/${deleteMatchId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to delete match");
+        return;
+      }
+      // remove from UI
+      setMatches(matches.filter((m) => m.id !== deleteMatchId));
+    } catch (e) {
+      console.error("Failed to delete match", e);
+      alert("Unexpected error while deleting match");
+    } finally {
+      setDeleteMatchId(null);
+    }
+  }
+
   return (
     <div className={styles.page}>
       <style>{`
@@ -116,7 +147,8 @@ const MyMatches = () => {
         <div className={styles.heroInner}>
           <h1 className={styles.heroTitle}>Create Matches</h1>
           <p className={styles.heroSubtitle}>
-            Spin up new fixtures instantly and manage everything you’ve scheduled.
+            Spin up new fixtures instantly and manage everything you’ve
+            scheduled.
           </p>
         </div>
         <div className={styles.heroActions}>
@@ -144,6 +176,9 @@ const MyMatches = () => {
             subtitle="Get everything lined up before kickoff."
             matches={upcomingMatches.map(transform)}
             accent="upcoming"
+            // NEW: pass delete handler
+            onDelete={handleDeleteClick}
+            onSeeMore={(id) => navigate(`/match/${id}`)}
           />
 
           <MatchList
@@ -154,6 +189,30 @@ const MyMatches = () => {
           />
         </div>
       </main>
+
+      {/* NEW: delete confirmation modal */}
+      {deleteMatchId && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-lg font-bold">Are you sure?</h2>
+            <p>This will permanently delete the match.</p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                className="px-4 py-2 bg-gray-300 rounded"
+                onClick={() => setDeleteMatchId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-red-600 text-white rounded"
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

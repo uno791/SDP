@@ -501,6 +501,43 @@ app.patch("/matches/:id/possession", async (req, res) => {
   }
 });
 
+router.delete("/matches/:id", async (req, res) => {
+  try {
+    const matchId = Number(req.params.id);
+    if (!matchId) return res.status(400).json({ error: "Invalid match id" });
+
+    const { data: match, error: fetchErr } = await supabase
+      .from("matches")
+      .select("id, status")
+      .eq("id", matchId)
+      .maybeSingle();
+
+    if (fetchErr || !match) {
+      return res.status(404).json({ error: "Match not found" });
+    }
+
+    if (match.status !== "scheduled") {
+      return res
+        .status(400)
+        .json({ error: "Only upcoming (scheduled) matches can be deleted" });
+    }
+
+    const { error: delErr } = await supabase
+      .from("matches")
+      .delete()
+      .eq("id", matchId);
+
+    if (delErr) {
+      return res.status(500).json({ error: delErr.message });
+    }
+
+    return res.json({ success: true });
+  } catch (e: any) {
+    console.error("DELETE /matches/:id error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
 /**
  * GET /matches/:id
  * Returns match with team/venue names and events.
@@ -1324,66 +1361,71 @@ type WatchalongItem = {
 
 const FALLBACK_WATCHALONGS: WatchalongItem[] = [
   {
-    id: 'sample-live-1',
-    title: 'The Red Banner Watchalong: Man United vs Arsenal',
-    channelTitle: 'The Red Banner',
-    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+    id: "sample-live-1",
+    title: "The Red Banner Watchalong: Man United vs Arsenal",
+    channelTitle: "The Red Banner",
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
     isLive: true,
     liveViewers: 12450,
-    description: 'Live watchalong with instant reaction to every kick at Old Trafford.',
+    description:
+      "Live watchalong with instant reaction to every kick at Old Trafford.",
   },
   {
-    id: 'sample-live-2',
-    title: 'City Voice Live: Manchester City Watchalong',
-    channelTitle: 'City Voice',
-    url: 'https://www.youtube.com/watch?v=9bZkp7q19f0',
-    thumbnail: 'https://i.ytimg.com/vi/9bZkp7q19f0/hqdefault.jpg',
+    id: "sample-live-2",
+    title: "City Voice Live: Manchester City Watchalong",
+    channelTitle: "City Voice",
+    url: "https://www.youtube.com/watch?v=9bZkp7q19f0",
+    thumbnail: "https://i.ytimg.com/vi/9bZkp7q19f0/hqdefault.jpg",
     isLive: true,
     liveViewers: 8320,
-    description: 'Join the City Voice crew for minute-by-minute reactions and tactical discussion.',
+    description:
+      "Join the City Voice crew for minute-by-minute reactions and tactical discussion.",
   },
   {
-    id: 'sample-live-3',
-    title: 'North London Derby Watchalong',
-    channelTitle: 'Premier Fan TV',
-    url: 'https://www.youtube.com/watch?v=3JZ_D3ELwOQ',
-    thumbnail: 'https://i.ytimg.com/vi/3JZ_D3ELwOQ/hqdefault.jpg',
+    id: "sample-live-3",
+    title: "North London Derby Watchalong",
+    channelTitle: "Premier Fan TV",
+    url: "https://www.youtube.com/watch?v=3JZ_D3ELwOQ",
+    thumbnail: "https://i.ytimg.com/vi/3JZ_D3ELwOQ/hqdefault.jpg",
     isLive: true,
     liveViewers: 5640,
-    description: 'Live Premier League watch party with polls, chat, and analysis.',
+    description:
+      "Live Premier League watch party with polls, chat, and analysis.",
   },
 ];
 
 const FALLBACK_REACTIONS: WatchalongItem[] = [
   {
-    id: 'sample-reaction-1',
-    title: 'Liverpool Fans GO WILD vs Chelsea! Last-Minute Winner Reaction',
-    channelTitle: 'Kop Corner',
-    url: 'https://www.youtube.com/watch?v=l482T0yNkeo',
-    thumbnail: 'https://i.ytimg.com/vi/l482T0yNkeo/hqdefault.jpg',
-    description: 'Pure chaos in the studio as the Reds snatch all three points.',
-    publishedAt: '2024-08-28T19:15:00Z',
+    id: "sample-reaction-1",
+    title: "Liverpool Fans GO WILD vs Chelsea! Last-Minute Winner Reaction",
+    channelTitle: "Kop Corner",
+    url: "https://www.youtube.com/watch?v=l482T0yNkeo",
+    thumbnail: "https://i.ytimg.com/vi/l482T0yNkeo/hqdefault.jpg",
+    description:
+      "Pure chaos in the studio as the Reds snatch all three points.",
+    publishedAt: "2024-08-28T19:15:00Z",
     viewCount: 98000,
   },
   {
-    id: 'sample-reaction-2',
-    title: 'Arsenal Fan TV: Reactions to 4-2 North London Thriller',
-    channelTitle: 'Arsenal Fan TV',
-    url: 'https://www.youtube.com/watch?v=fJ9rUzIMcZQ',
-    thumbnail: 'https://i.ytimg.com/vi/fJ9rUzIMcZQ/hqdefault.jpg',
-    description: 'Instant fan takes from the Emirates after a goal-packed derby.',
-    publishedAt: '2024-09-14T18:45:00Z',
+    id: "sample-reaction-2",
+    title: "Arsenal Fan TV: Reactions to 4-2 North London Thriller",
+    channelTitle: "Arsenal Fan TV",
+    url: "https://www.youtube.com/watch?v=fJ9rUzIMcZQ",
+    thumbnail: "https://i.ytimg.com/vi/fJ9rUzIMcZQ/hqdefault.jpg",
+    description:
+      "Instant fan takes from the Emirates after a goal-packed derby.",
+    publishedAt: "2024-09-14T18:45:00Z",
     viewCount: 125000,
   },
   {
-    id: 'sample-reaction-3',
-    title: 'Brighton vs Spurs Fan Reactions | Premier League Highlights',
-    channelTitle: 'Fan Zone Live',
-    url: 'https://www.youtube.com/watch?v=60ItHLz5WEA',
-    thumbnail: 'https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg',
-    description: 'Best bits from the south coast as Seagulls stun Spurs.',
-    publishedAt: '2024-09-08T16:05:00Z',
+    id: "sample-reaction-3",
+    title: "Brighton vs Spurs Fan Reactions | Premier League Highlights",
+    channelTitle: "Fan Zone Live",
+    url: "https://www.youtube.com/watch?v=60ItHLz5WEA",
+    thumbnail: "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg",
+    description: "Best bits from the south coast as Seagulls stun Spurs.",
+    publishedAt: "2024-09-08T16:05:00Z",
     viewCount: 67000,
   },
 ];
@@ -1394,48 +1436,60 @@ function parseLimit(v: unknown, fallback: number) {
   return Math.min(Math.max(Math.round(n), 1), 25);
 }
 
-router.get('/watchalongs', async (req, res) => {
+router.get("/watchalongs", async (req, res) => {
   const key = process.env.YOUTUBE_API_KEY;
-  const mode = typeof req.query.mode === 'string' && req.query.mode.toLowerCase() === 'clips' ? 'clips' : 'watchalong';
-  const rawQuery = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+  const mode =
+    typeof req.query.mode === "string" &&
+    req.query.mode.toLowerCase() === "clips"
+      ? "clips"
+      : "watchalong";
+  const rawQuery = typeof req.query.q === "string" ? req.query.q.trim() : "";
   const limit = parseLimit(req.query.limit, 8);
-  const query = rawQuery || (mode === 'watchalong' ? 'premier league watchalong' : 'premier league fan reaction');
+  const query =
+    rawQuery ||
+    (mode === "watchalong"
+      ? "premier league watchalong"
+      : "premier league fan reaction");
 
   if (!key) {
-    const fallbackItems = (mode === 'watchalong' ? FALLBACK_WATCHALONGS : FALLBACK_REACTIONS).slice(0, limit);
+    const fallbackItems = (
+      mode === "watchalong" ? FALLBACK_WATCHALONGS : FALLBACK_REACTIONS
+    ).slice(0, limit);
     return res.json({
       items: fallbackItems,
       query,
       mode,
       isFallback: true,
-      message: 'Set YOUTUBE_API_KEY for live YouTube data.'
+      message: "Set YOUTUBE_API_KEY for live YouTube data.",
     });
   }
 
   try {
     const searchParams = new URLSearchParams({
       key,
-      part: 'snippet',
+      part: "snippet",
       maxResults: String(limit),
       q: query,
-      type: 'video',
-      safeSearch: 'moderate',
+      type: "video",
+      safeSearch: "moderate",
     });
 
-    if (mode === 'watchalong') {
-      searchParams.set('eventType', 'live');
-      searchParams.set('order', 'viewCount');
+    if (mode === "watchalong") {
+      searchParams.set("eventType", "live");
+      searchParams.set("order", "viewCount");
     } else {
-      searchParams.set('order', 'date');
-      searchParams.set('videoDuration', 'medium');
+      searchParams.set("order", "date");
+      searchParams.set("videoDuration", "medium");
     }
 
     const searchUrl = `https://www.googleapis.com/youtube/v3/search?${searchParams.toString()}`;
     const searchResp = await fetch(searchUrl);
     if (!searchResp.ok) {
       const body = await searchResp.text();
-      console.error('YouTube search error', searchResp.status, body);
-      return res.status(502).json({ error: 'Failed to reach YouTube search API' });
+      console.error("YouTube search error", searchResp.status, body);
+      return res
+        .status(502)
+        .json({ error: "Failed to reach YouTube search API" });
     }
 
     const searchJson: any = await searchResp.json();
@@ -1449,56 +1503,66 @@ router.get('/watchalongs', async (req, res) => {
 
     const detailsParams = new URLSearchParams({
       key,
-      part: 'snippet,statistics,contentDetails,liveStreamingDetails',
-      id: ids.join(','),
+      part: "snippet,statistics,contentDetails,liveStreamingDetails",
+      id: ids.join(","),
     });
 
     const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?${detailsParams.toString()}`;
     const detailsResp = await fetch(detailsUrl);
     if (!detailsResp.ok) {
       const body = await detailsResp.text();
-      console.error('YouTube videos error', detailsResp.status, body);
-      return res.status(502).json({ error: 'Failed to reach YouTube videos API' });
+      console.error("YouTube videos error", detailsResp.status, body);
+      return res
+        .status(502)
+        .json({ error: "Failed to reach YouTube videos API" });
     }
 
     const detailsJson: any = await detailsResp.json();
-    const videos: WatchalongItem[] = (detailsJson.items ?? []).map((video: any) => {
-      const snippet = video?.snippet ?? {};
-      const liveDetails = video?.liveStreamingDetails ?? {};
-      const stats = video?.statistics ?? {};
-      const thumbnails = snippet?.thumbnails ?? {};
-      const thumbnail =
-        thumbnails?.maxres?.url ??
-        thumbnails?.standard?.url ??
-        thumbnails?.high?.url ??
-        thumbnails?.medium?.url ??
-        thumbnails?.default?.url ??
-        '';
+    const videos: WatchalongItem[] = (detailsJson.items ?? []).map(
+      (video: any) => {
+        const snippet = video?.snippet ?? {};
+        const liveDetails = video?.liveStreamingDetails ?? {};
+        const stats = video?.statistics ?? {};
+        const thumbnails = snippet?.thumbnails ?? {};
+        const thumbnail =
+          thumbnails?.maxres?.url ??
+          thumbnails?.standard?.url ??
+          thumbnails?.high?.url ??
+          thumbnails?.medium?.url ??
+          thumbnails?.default?.url ??
+          "";
 
-      const liveBroadcast = snippet?.liveBroadcastContent;
-      const isLive = liveBroadcast === 'live' || Boolean(liveDetails?.actualStartTime && !liveDetails?.actualEndTime);
+        const liveBroadcast = snippet?.liveBroadcastContent;
+        const isLive =
+          liveBroadcast === "live" ||
+          Boolean(liveDetails?.actualStartTime && !liveDetails?.actualEndTime);
 
-      return {
-        id: video?.id ?? '',
-        title: snippet?.title ?? 'Untitled stream',
-        channelTitle: snippet?.channelTitle ?? 'Unknown channel',
-        url: `https://www.youtube.com/watch?v=${video?.id}`,
-        thumbnail,
-        description: snippet?.description ?? undefined,
-        publishedAt: snippet?.publishedAt ?? undefined,
-        isLive,
-        liveViewers: liveDetails?.concurrentViewers ? Number(liveDetails.concurrentViewers) : null,
-        scheduledStartTime: liveDetails?.scheduledStartTime ?? undefined,
-        actualStartTime: liveDetails?.actualStartTime ?? undefined,
-        viewCount: stats?.viewCount ? Number(stats.viewCount) : null,
-        duration: video?.contentDetails?.duration ?? undefined,
-      } satisfies WatchalongItem;
-    });
+        return {
+          id: video?.id ?? "",
+          title: snippet?.title ?? "Untitled stream",
+          channelTitle: snippet?.channelTitle ?? "Unknown channel",
+          url: `https://www.youtube.com/watch?v=${video?.id}`,
+          thumbnail,
+          description: snippet?.description ?? undefined,
+          publishedAt: snippet?.publishedAt ?? undefined,
+          isLive,
+          liveViewers: liveDetails?.concurrentViewers
+            ? Number(liveDetails.concurrentViewers)
+            : null,
+          scheduledStartTime: liveDetails?.scheduledStartTime ?? undefined,
+          actualStartTime: liveDetails?.actualStartTime ?? undefined,
+          viewCount: stats?.viewCount ? Number(stats.viewCount) : null,
+          duration: video?.contentDetails?.duration ?? undefined,
+        } satisfies WatchalongItem;
+      }
+    );
 
     return res.json({ items: videos, query, mode });
   } catch (error: any) {
-    console.error('GET /watchalongs error', error);
-    return res.status(500).json({ error: 'Unexpected error fetching watchalongs' });
+    console.error("GET /watchalongs error", error);
+    return res
+      .status(500)
+      .json({ error: "Unexpected error fetching watchalongs" });
   }
 });
 

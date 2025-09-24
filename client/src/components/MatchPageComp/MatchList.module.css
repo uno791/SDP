@@ -65,6 +65,31 @@
   background: #f8fafc;
 }
 
+.deleteButton {
+  border: none;
+  border-radius: 999px; /* pill shape like createButton */
+  padding: 0.65rem 1.5rem;
+  background: #dc2626; /* red tone */
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  margin-left: 0.5rem; /* spacing from See More */
+}
+
+.deleteButton:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(220, 38, 38, 0.35);
+}
+
+.deleteButton:focus-visible {
+  outline: 3px solid rgba(220, 38, 38, 0.4);
+  outline-offset: 2px;
+}
+
 @media (max-width: 640px) {
   .section {
     padding: 1.75rem;
