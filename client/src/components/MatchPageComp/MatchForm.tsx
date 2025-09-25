@@ -163,6 +163,7 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
   const [allUsernames, setAllUsernames] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [userToAdd, setUserToAdd] = useState<string>("");
+  const [formErrors, setFormErrors] = useState<string[]>([]);
 
   // ✅ Fetch all teams
   useEffect(() => {
@@ -188,15 +189,21 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
     setTeam2(csvData.team2 || "");
     setDate(csvData.date || "");
     setTime(csvData.time || "");
-    setDuration(csvData.duration || "");
+    setDuration(csvData.duration?.trim() || "");
     setLineupTeam1(
       csvData.lineupTeam1
-        ? csvData.lineupTeam1.split(";").map((s: string) => s.trim())
+        ? csvData.lineupTeam1
+            .split(";")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
         : []
     );
     setLineupTeam2(
       csvData.lineupTeam2
-        ? csvData.lineupTeam2.split(";").map((s: string) => s.trim())
+        ? csvData.lineupTeam2
+            .split(";")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
         : []
     );
   }, [csvData]);
@@ -229,11 +236,28 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
           }
         }
 
-        setDuration(data.notes_json?.duration || "");
+        const fetchedDuration = data.notes_json?.duration;
+        setDuration(
+          fetchedDuration === undefined || fetchedDuration === null
+            ? ""
+            : String(fetchedDuration)
+        );
         setPrivacy(data.notes_json?.privacy || "public");
         setSelectedUsers(data.notes_json?.invitedUsers || []);
-        setLineupTeam1(data.notes_json?.lineupTeam1 || []);
-        setLineupTeam2(data.notes_json?.lineupTeam2 || []);
+        setLineupTeam1(
+          Array.isArray(data.notes_json?.lineupTeam1)
+            ? data.notes_json.lineupTeam1.filter((name: string) =>
+                Boolean(name && String(name).trim())
+              )
+            : []
+        );
+        setLineupTeam2(
+          Array.isArray(data.notes_json?.lineupTeam2)
+            ? data.notes_json.lineupTeam2.filter((name: string) =>
+                Boolean(name && String(name).trim())
+              )
+            : []
+        );
       } catch (err) {
         console.error("❌ Error fetching match:", err);
       }
@@ -312,15 +336,104 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
       return;
     }
 
+    const validationErrors: string[] = [];
+
+    const trimmedTeam1 = team1.trim();
+    const trimmedTeam2 = team2.trim();
+    const trimmedDate = date.trim();
+    const trimmedTime = time.trim();
+    const trimmedDuration = duration.trim();
+
+    if (!trimmedTeam1) {
+      validationErrors.push("Team 1 name is required.");
+    }
+    if (!trimmedTeam2) {
+      validationErrors.push("Team 2 name is required.");
+    }
+
+    if (!trimmedDate) {
+      validationErrors.push("Match date is required.");
+    } else if (Number.isNaN(Date.parse(trimmedDate))) {
+      validationErrors.push("Match date must be a valid calendar date.");
+    }
+
+    const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+    if (!trimmedTime) {
+      validationErrors.push("Kickoff time is required.");
+    } else if (!timePattern.test(trimmedTime)) {
+      validationErrors.push("Kickoff time must be in HH:MM format.");
+    }
+
+    let parsedDuration = Number.NaN;
+    if (!trimmedDuration) {
+      validationErrors.push("Duration is required.");
+    } else {
+      parsedDuration = Number(trimmedDuration);
+      if (!Number.isFinite(parsedDuration) || parsedDuration <= 0) {
+        validationErrors.push("Duration must be a positive number of minutes.");
+      }
+    }
+
+    const sanitizedLineupTeam1 = lineupTeam1
+      .map((name) => name.trim())
+      .filter(Boolean);
+    const sanitizedLineupTeam2 = lineupTeam2
+      .map((name) => name.trim())
+      .filter(Boolean);
+
+    if (sanitizedLineupTeam1.length < 1) {
+      validationErrors.push("Team 1 must include at least one player in the lineup.");
+    }
+
+    if (sanitizedLineupTeam2.length < 1) {
+      validationErrors.push("Team 2 must include at least one player in the lineup.");
+    }
+
+    let kickoffLocal: Date | null = null;
+    if (validationErrors.length === 0) {
+      kickoffLocal = new Date(`${trimmedDate}T${trimmedTime}:00`);
+      if (Number.isNaN(kickoffLocal.getTime())) {
+        validationErrors.push("Date and time combination is invalid.");
+      }
+    }
+
+    if (validationErrors.length > 0) {
+      setFormErrors(validationErrors);
+      const isJsDom =
+        typeof navigator !== "undefined" && /jsdom/i.test(navigator.userAgent);
+      if (
+        !isJsDom &&
+        typeof window !== "undefined" &&
+        typeof window.scrollTo === "function"
+      ) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+
+    setFormErrors([]);
+
+    const roundedDuration = Math.round(parsedDuration);
+    if (duration !== String(roundedDuration)) {
+      setDuration(String(roundedDuration));
+    }
+    if (team1 !== trimmedTeam1) setTeam1(trimmedTeam1);
+    if (team2 !== trimmedTeam2) setTeam2(trimmedTeam2);
+    setLineupTeam1(sanitizedLineupTeam1);
+    setLineupTeam2(sanitizedLineupTeam2);
+
     try {
       const base = API_BASE || "http://localhost:3000";
 
-      const kickoffLocal = new Date(`${date}T${time}:00`);
-      const utc_kickoff = kickoffLocal.toISOString();
+      const utc_kickoff = kickoffLocal!.toISOString();
 
       // ensure team IDs
-      const team1Id = await ensureTeam(team1);
-      const team2Id = await ensureTeam(team2);
+      const team1Id = await ensureTeam(trimmedTeam1);
+      const team2Id = await ensureTeam(trimmedTeam2);
+
+      if (!team1Id || !team2Id) {
+        throw new Error("Teams could not be resolved. Please double-check team names.");
+      }
 
       const payload = {
         league_code: "custom.user",
@@ -330,11 +443,11 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
         away_team_id: team2Id,
         created_by: user.id,
         notes_json: {
-          duration,
+          duration: roundedDuration,
           privacy,
           invitedUsers: privacy === "private" ? selectedUsers : [],
-          lineupTeam1,
-          lineupTeam2,
+          lineupTeam1: sanitizedLineupTeam1,
+          lineupTeam2: sanitizedLineupTeam2,
         },
       };
 
@@ -361,6 +474,16 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      {formErrors.length > 0 && (
+        <div className={styles.errorSummary} role="alert" aria-live="assertive">
+          <p className={styles.errorSummaryTitle}>We found some issues:</p>
+          <ul className={styles.errorList}>
+            {formErrors.map((error, idx) => (
+              <li key={idx}>{error}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       {/* Teams */}
       <h3 className={styles.subHeader}>FILL IN TEAM</h3>
       <div className={styles.teams}>
@@ -421,6 +544,9 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
           <input
             className={styles.durationInput}
             placeholder="Minutes"
+            type="number"
+            min={1}
+            step={1}
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
           />

@@ -198,6 +198,30 @@
   gap: 0.4rem;
 }
 
+.errorSummary {
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  background: #fee2e2;
+  padding: 1rem 1.25rem;
+  color: #7f1d1d;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.errorSummaryTitle {
+  font-weight: 700;
+  margin: 0;
+}
+
+.errorList {
+  margin: 0;
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .label {
   font-weight: 600;
   color: #374151;

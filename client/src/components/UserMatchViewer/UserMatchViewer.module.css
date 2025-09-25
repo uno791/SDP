@@ -23,39 +23,6 @@
   background-color: #f70000;
 }
 
-.tabBar {
-  display: flex;
-  gap: 0.75rem;
-  margin: 1.75rem 0 1.25rem;
-}
-
-.tabButton {
-  flex: 1;
-  border: 1px solid #047857;
-  border-radius: 0.75rem;
-  padding: 0.6rem 0.75rem;
-  background: #f0fdf4;
-  color: #047857;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.tabButton:hover {
-  background: #a9d4be;
-  outline: none;
-}
-
-.activeTab {
-  background: #047857;
-  color: #ffffff;
-  box-shadow: 0 4px 10px rgba(6, 95, 70, 0.18);
-}
-
-.tabPanel {
-  min-height: 220px;
-}
-
 .timelineEmpty {
   text-align: center;
   color: #4b5563;
@@ -104,19 +71,6 @@
   color: #4b5563;
 }
 
-.statsSection {
-  display: grid;
-  gap: 1rem;
-}
-
-.timelineCard,
-.squadCard {
-  background: #f9fafb;
-  border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
-  padding: 1rem;
-}
-
 .squadGrid {
   display: flex;
   flex-wrap: wrap;
@@ -127,7 +81,7 @@
   flex: 1 1 220px;
 }
 
-.squadColumn h3 {
+.squadHeading {
   margin: 0 0 0.75rem;
   font-size: 1rem;
   color: #065f46;

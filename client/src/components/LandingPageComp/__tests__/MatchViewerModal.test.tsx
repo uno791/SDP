@@ -49,7 +49,6 @@ describe("MatchViewerModal", () => {
     expect(screen.getByText(/75' LIVE/)).toBeInTheDocument();
     expect(screen.getAllByText(/Goal/i).length).toBeGreaterThan(0);
 
-    await user.click(screen.getByRole("button", { name: /Stats/i }));
     const shotsOnRow = screen.getByText(/Shots on Target/i)
       .parentElement as HTMLElement;
     const shotsOnCells = shotsOnRow.querySelectorAll("div");
@@ -62,7 +61,6 @@ describe("MatchViewerModal", () => {
     expect(shotsOffCells[0]).toHaveTextContent("1");
     expect(shotsOffCells[shotsOffCells.length - 1]).toHaveTextContent("0");
 
-    await user.click(screen.getByRole("button", { name: /Squad/i }));
     expect(screen.getByText(/Player A/i)).toBeInTheDocument();
     expect(screen.getByText(/Player C/i)).toBeInTheDocument();
 

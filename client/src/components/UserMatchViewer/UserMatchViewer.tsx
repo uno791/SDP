@@ -1,9 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
-import ComicCard from "../MatchViewerComp/ComicCard";
-import GameSummaryCard from "../MatchViewerComp/GameSummaryCard";
-import TriStatRow from "../MatchViewerComp/TriStatRow";
-import matchViewStyles from "../MatchViewerComp/MatchView.module.css";
+import MatchViewerContent, {
+  type MatchViewerSection,
+} from "../MatchViewerComp/MatchViewerContent";
 
 import styles from "./UserMatchViewer.module.css";
 
@@ -207,8 +206,6 @@ export default function UserMatchViewer({
   awaySquad,
   onClose,
 }: Props) {
-  const [tab, setTab] = useState<"events" | "stats" | "squad">("events");
-
   const homeName = match.home_team?.name || "Home";
   const awayName = match.away_team?.name || "Away";
 
@@ -239,6 +236,138 @@ export default function UserMatchViewer({
 
   const statusText = formatStatus(match);
 
+  const sections: MatchViewerSection[] = [
+    {
+      title: "Shooting",
+      rows: [
+        {
+          label: "Shots on Target",
+          left: formatNumber(stats.home.shotsOn),
+          right: formatNumber(stats.away.shotsOn),
+        },
+        {
+          label: "Shots off Target",
+          left: formatNumber(stats.home.shotsOff),
+          right: formatNumber(stats.away.shotsOff),
+        },
+        {
+          label: "Total Shots",
+          left: formatNumber(stats.home.totalShots),
+          right: formatNumber(stats.away.totalShots),
+        },
+        {
+          label: "Shot Accuracy",
+          left: formatPercent(stats.home.shotAccuracy),
+          right: formatPercent(stats.away.shotAccuracy),
+        },
+      ],
+    },
+    {
+      title: "Discipline",
+      rows: [
+        {
+          label: "Fouls committed",
+          left: formatNumber(stats.home.fouls),
+          right: formatNumber(stats.away.fouls),
+        },
+        {
+          label: "Yellow cards",
+          left: formatNumber(stats.home.yellow),
+          right: formatNumber(stats.away.yellow),
+        },
+        {
+          label: "Red cards",
+          left: formatNumber(stats.home.red),
+          right: formatNumber(stats.away.red),
+        },
+      ],
+    },
+    {
+      title: "Goalkeeping & Subs",
+      rows: [
+        {
+          label: "Saves",
+          left: formatNumber(stats.home.saves),
+          right: formatNumber(stats.away.saves),
+        },
+        {
+          label: "Substitutions",
+          left: formatNumber(stats.home.subs),
+          right: formatNumber(stats.away.subs),
+        },
+      ],
+    },
+    {
+      title: "Match Timeline",
+      content:
+        timelineEvents.length === 0 ? (
+          <p className={styles.timelineEmpty}>No events yet.</p>
+        ) : (
+          <ul className={styles.timelineList}>
+            {timelineEvents.map((ev) => (
+              <li key={ev.id} className={styles.timelineItem}>
+                <span className={styles.timelineMinute}>
+                  {ev.minute != null ? `${ev.minute}'` : "—"}
+                </span>
+                <div className={styles.timelineBody}>
+                  <span className={styles.timelineType}>
+                    {formatEventType(ev.event_type)}
+                  </span>
+                  <span className={styles.timelineMeta}>
+                    {ev.player_name ?? ""}
+                    {ev.team_id && ev.team_id === match.home_team?.id
+                      ? ` • ${homeName}`
+                      : ev.team_id && ev.team_id === match.away_team?.id
+                      ? ` • ${awayName}`
+                      : ""}
+                    {formatDetail(ev.detail)
+                      ? ` • ${formatDetail(ev.detail)}`
+                      : ""}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ),
+    },
+    {
+      title: "Squads",
+      content: (
+        <div className={styles.squadGrid}>
+          <div className={styles.squadColumn}>
+            <h3 className={styles.squadHeading}>{homeName} Squad</h3>
+            <div className={styles.playerList}>
+              {homeSquad.length === 0 ? (
+                <span className={styles.chipEmpty}>No squad data</span>
+              ) : (
+                homeSquad.map((player, idx) => (
+                  <span key={`${player}-${idx}`} className={styles.playerChip}>
+                    {player}
+                  </span>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className={styles.squadColumn}>
+            <h3 className={styles.squadHeading}>{awayName} Squad</h3>
+            <div className={styles.playerList}>
+              {awaySquad.length === 0 ? (
+                <span className={styles.chipEmpty}>No squad data</span>
+              ) : (
+                awaySquad.map((player, idx) => (
+                  <span key={`${player}-${idx}`} className={styles.playerChip}>
+                    {player}
+                  </span>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className={styles.viewer}>
       <button
@@ -250,195 +379,20 @@ export default function UserMatchViewer({
         X
       </button>
 
-      <ComicCard>
-        <div className={matchViewStyles.container}>
-          <h1 className={matchViewStyles.heading}>
-            {homeName} vs {awayName}
-          </h1>
-          <div className={matchViewStyles.subheading}>User Match Viewer</div>
-
-          <GameSummaryCard
-            homeName={homeName}
-            awayName={awayName}
-            homeScore={match.home_score ?? 0}
-            awayScore={match.away_score ?? 0}
-            statusText={statusText}
-            homeLogoUrl={match.home_team?.logo_url ?? undefined}
-            awayLogoUrl={match.away_team?.logo_url ?? undefined}
-            homeScorers={scorers.home}
-            awayScorers={scorers.away}
-          />
-
-          <div className={styles.tabBar}>
-            <button
-              type="button"
-              className={`${styles.tabButton} ${
-                tab === "events" ? styles.activeTab : ""
-              }`}
-              onClick={() => setTab("events")}
-            >
-              Events
-            </button>
-            <button
-              type="button"
-              className={`${styles.tabButton} ${
-                tab === "stats" ? styles.activeTab : ""
-              }`}
-              onClick={() => setTab("stats")}
-            >
-              Stats
-            </button>
-            <button
-              type="button"
-              className={`${styles.tabButton} ${
-                tab === "squad" ? styles.activeTab : ""
-              }`}
-              onClick={() => setTab("squad")}
-            >
-              Squad
-            </button>
-          </div>
-
-          <div className={styles.tabPanel}>
-            {tab === "events" && (
-              <div className={styles.timelineCard}>
-                {timelineEvents.length === 0 ? (
-                  <p className={styles.timelineEmpty}>No events yet.</p>
-                ) : (
-                  <ul className={styles.timelineList}>
-                    {timelineEvents.map((ev) => (
-                      <li key={ev.id} className={styles.timelineItem}>
-                        <span className={styles.timelineMinute}>
-                          {ev.minute != null ? `${ev.minute}'` : "—"}
-                        </span>
-                        <div className={styles.timelineBody}>
-                          <span className={styles.timelineType}>
-                            {formatEventType(ev.event_type)}
-                          </span>
-                          <span className={styles.timelineMeta}>
-                            {ev.player_name ?? ""}
-                            {ev.team_id && ev.team_id === match.home_team?.id
-                              ? ` • ${homeName}`
-                              : ev.team_id && ev.team_id === match.away_team?.id
-                              ? ` • ${awayName}`
-                              : ""}
-                            {formatDetail(ev.detail)
-                              ? ` • ${formatDetail(ev.detail)}`
-                              : ""}
-                          </span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-
-            {tab === "stats" && (
-              <div className={styles.statsSection}>
-                <section className={matchViewStyles.section}>
-                  <h2 className={matchViewStyles.sectionTitle}>Shooting</h2>
-                  <TriStatRow
-                    label="Shots on Target"
-                    left={formatNumber(stats.home.shotsOn)}
-                    right={formatNumber(stats.away.shotsOn)}
-                  />
-                  <TriStatRow
-                    label="Shots off Target"
-                    left={formatNumber(stats.home.shotsOff)}
-                    right={formatNumber(stats.away.shotsOff)}
-                  />
-                  <TriStatRow
-                    label="Total Shots"
-                    left={formatNumber(stats.home.totalShots)}
-                    right={formatNumber(stats.away.totalShots)}
-                  />
-                  <TriStatRow
-                    label="Shot Accuracy"
-                    left={formatPercent(stats.home.shotAccuracy)}
-                    right={formatPercent(stats.away.shotAccuracy)}
-                  />
-                </section>
-
-                <section className={matchViewStyles.section}>
-                  <h2 className={matchViewStyles.sectionTitle}>Discipline</h2>
-                  <TriStatRow
-                    label="Fouls committed"
-                    left={formatNumber(stats.home.fouls)}
-                    right={formatNumber(stats.away.fouls)}
-                  />
-                  <TriStatRow
-                    label="Yellow cards"
-                    left={formatNumber(stats.home.yellow)}
-                    right={formatNumber(stats.away.yellow)}
-                  />
-                  <TriStatRow
-                    label="Red cards"
-                    left={formatNumber(stats.home.red)}
-                    right={formatNumber(stats.away.red)}
-                  />
-                </section>
-
-                <section className={matchViewStyles.section}>
-                  <h2 className={matchViewStyles.sectionTitle}>
-                    Goalkeeping &amp; Subs
-                  </h2>
-                  <TriStatRow
-                    label="Saves"
-                    left={formatNumber(stats.home.saves)}
-                    right={formatNumber(stats.away.saves)}
-                  />
-                  <TriStatRow
-                    label="Substitutions"
-                    left={formatNumber(stats.home.subs)}
-                    right={formatNumber(stats.away.subs)}
-                  />
-                </section>
-              </div>
-            )}
-
-            {tab === "squad" && (
-              <div className={`${styles.squadCard} ${styles.squadGrid}`}>
-                <div className={styles.squadColumn}>
-                  <h3>{homeName} Squad</h3>
-                  <div className={styles.playerList}>
-                    {homeSquad.length === 0 ? (
-                      <span className={styles.chipEmpty}>No squad data</span>
-                    ) : (
-                      homeSquad.map((player, idx) => (
-                        <span
-                          key={`${player}-${idx}`}
-                          className={styles.playerChip}
-                        >
-                          {player}
-                        </span>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.squadColumn}>
-                  <h3>{awayName} Squad</h3>
-                  <div className={styles.playerList}>
-                    {awaySquad.length === 0 ? (
-                      <span className={styles.chipEmpty}>No squad data</span>
-                    ) : (
-                      awaySquad.map((player, idx) => (
-                        <span
-                          key={`${player}-${idx}`}
-                          className={styles.playerChip}
-                        >
-                          {player}
-                        </span>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </ComicCard>
+      <MatchViewerContent
+        title={`${homeName} vs ${awayName}`}
+        subtitle="User Match Viewer"
+        homeName={homeName}
+        awayName={awayName}
+        homeScore={match.home_score ?? 0}
+        awayScore={match.away_score ?? 0}
+        statusText={statusText}
+        homeLogoUrl={match.home_team?.logo_url ?? null}
+        awayLogoUrl={match.away_team?.logo_url ?? null}
+        homeScorers={scorers.home}
+        awayScorers={scorers.away}
+        sections={sections}
+      />
     </div>
   );
 }

@@ -109,4 +109,27 @@ describe("Match page components", () => {
     await user.click(screen.getByRole("button", { name: "CANCEL" }));
     expect(onCancel).toHaveBeenCalled();
   });
+
+  test("MatchForm blocks submission when required data is missing", async () => {
+    const onCancel = jest.fn();
+    const user = userEvent.setup();
+
+    renderWithUser(
+      <MemoryRouter>
+        <MatchForm onCancel={onCancel} />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole("button", { name: /CREATE MATCH/i }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(/team 1 name is required/i);
+    expect(alert).toHaveTextContent(/team 2 name is required/i);
+    expect(alert).toHaveTextContent(/match date is required/i);
+    expect(alert).toHaveTextContent(/kickoff time is required/i);
+    expect(alert).toHaveTextContent(/duration is required/i);
+    expect(alert).toHaveTextContent(/team 1 must include at least one player/i);
+    expect(alert).toHaveTextContent(/team 2 must include at least one player/i);
+    expect(onCancel).not.toHaveBeenCalled();
+  });
 });
