@@ -1,176 +1,108 @@
-// import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-// import userEvent from "@testing-library/user-event";
-// import { MemoryRouter } from "react-router-dom";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import "@testing-library/jest-dom";
 
-// import AuthScreen from "../LoginSignupComp/Auth/AuthScreen";
-// import GoogleLogInButton from "../LoginSignupComp/GoogleButtons/GoogleLogInButton";
-// import GoogleSignUpButton from "../LoginSignupComp/GoogleButtons/GoogleSignupButton";
+import GoogleLogInButton from "../LoginSignupComp/GoogleButtons/GoogleLogInButton";
+import GoogleSignUpButton from "../LoginSignupComp/GoogleButtons/GoogleSignupButton";
 
-// jest.mock("@react-oauth/google", () => ({
-//   useGoogleLogin: jest.fn(),
-// }));
+const mockUseGoogleLogin = jest.fn();
+const mockSetUser = jest.fn();
+const mockNavigate = jest.fn();
 
-// jest.mock("axios", () => ({
-//   get: jest.fn(),
-//   post: jest.fn(),
-// }));
+jest.mock("@react-oauth/google", () => ({
+  useGoogleLogin: (config: any) => mockUseGoogleLogin(config),
+}));
 
-// const navigateSpy = jest.fn();
+jest.mock("../../Users/UserContext", () => ({
+  useUser: () => ({
+    setUser: mockSetUser,
+  }),
+}));
 
-// jest.mock("react-router-dom", () => ({
-//   ...jest.requireActual("react-router-dom"),
-//   useNavigate: () => navigateSpy,
-// }));
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockNavigate,
+}));
 
-// const mockSetUser = jest.fn();
-// const mockSetUsername = jest.fn();
+jest.mock("axios", () => ({
+  get: jest.fn(),
+  post: jest.fn(),
+}));
 
-// jest.mock("../../Users/UserContext", () => ({
-//   useUser: () => ({
-//     user: null,
-//     setUser: mockSetUser,
-//     username: "",
-//     setUsername: mockSetUsername,
-//   }),
-// }));
+describe("Google auth buttons", () => {
+  beforeEach(() => {
+    mockUseGoogleLogin.mockReset();
+    mockSetUser.mockReset();
+    mockNavigate.mockReset();
+  });
 
-// jest.mock("../../config", () => ({
-//   baseURL: "http://localhost:3000",
-//   API_BASE: "http://localhost:3000",
-// }));
+  test("GoogleLogInButton triggers the Google login flow on click", () => {
+    const loginFn = jest.fn();
+    mockUseGoogleLogin.mockReturnValue(loginFn);
 
-// describe("auth experience", () => {
-//   const mockUseGoogleLogin = require("@react-oauth/google").useGoogleLogin as jest.Mock;
-//   const axios = require("axios");
+    render(
+      <MemoryRouter>
+        <GoogleLogInButton />
+      </MemoryRouter>
+    );
 
-//   beforeEach(() => {
-//     jest.clearAllMocks();
-//   });
+    fireEvent.click(screen.getByRole("button", { name: /Log in with Google/i }));
+    expect(loginFn).toHaveBeenCalled();
+  });
 
-//   test("signup screen emphasises Google-only entry", () => {
-//     render(
-//       <MemoryRouter>
-//         <AuthScreen mode="signup" />
-//       </MemoryRouter>
-//     );
+  test("GoogleLogInButton surfaces SDK errors to the user", async () => {
+    mockUseGoogleLogin.mockReturnValue(jest.fn());
 
-//     expect(screen.queryAllByRole("textbox")).toHaveLength(0);
-//     expect(
-//       screen.getByRole("button", { name: /Sign up with Google/i })
-//     ).toBeInTheDocument();
-//     expect(
-//       screen.getByText(/Google sign up is the exclusive way in/i)
-//     ).toBeInTheDocument();
-//   });
+    render(
+      <MemoryRouter>
+        <GoogleLogInButton />
+      </MemoryRouter>
+    );
 
-//   test("login screen showcases live match highlight copy", () => {
-//     render(
-//       <MemoryRouter>
-//         <AuthScreen mode="login" />
-//       </MemoryRouter>
-//     );
+    const config = mockUseGoogleLogin.mock.calls[0]?.[0];
+    expect(config).toBeDefined();
 
-//     expect(screen.getByText(/Live matches tracked/i)).toBeInTheDocument();
-//     expect(screen.queryAllByRole("textbox")).toHaveLength(0);
-//   });
+    await act(async () => {
+      config?.onError?.(new Error("fail"));
+    });
 
-//   test("GoogleSignUpButton creates new users", async () => {
-//     const user = userEvent.setup();
-//     const googleUser = {
-//       data: {
-//         sub: "sub-1",
-//         name: "Alex",
-//         email: "alex@example.com",
-//         given_name: "Alex",
-//         family_name: "Nine",
-//         picture: "pic.png",
-//       },
-//     };
+    expect(
+      screen.getByText(/Google login failed\. Please try again\./i)
+    ).toBeInTheDocument();
+  });
 
-//     (axios.get as jest.Mock)
-//       .mockResolvedValueOnce(googleUser)
-//       .mockResolvedValueOnce({ data: { exists: false } });
-//     (axios.post as jest.Mock).mockResolvedValue({});
+  test("GoogleSignUpButton renders custom copy when provided", () => {
+    mockUseGoogleLogin.mockReturnValue(jest.fn());
 
-//     mockUseGoogleLogin.mockImplementation(({ onSuccess }: any) => async () => {
-//       await onSuccess?.({ access_token: "token" });
-//     });
+    render(
+      <MemoryRouter>
+        <GoogleSignUpButton buttonText="Join Footbook" />
+      </MemoryRouter>
+    );
 
-//     render(
-//       <MemoryRouter>
-//         <GoogleSignUpButton />
-//       </MemoryRouter>
-//     );
+    expect(
+      screen.getByRole("button", { name: /Join Footbook/i })
+    ).toBeInTheDocument();
+  });
 
-//     await user.click(screen.getByRole("button", { name: /Sign up with Google/i }));
-//     await screen.findByRole("button", { name: /Sign up with Google/i });
+  test("GoogleSignUpButton shows a Google error message", async () => {
+    mockUseGoogleLogin.mockReturnValue(jest.fn());
 
-//     expect(axios.post).toHaveBeenCalled();
-//     expect(mockSetUser).toHaveBeenCalled();
-//     expect(navigateSpy).toHaveBeenCalledWith("/");
-//   });
+    render(
+      <MemoryRouter>
+        <GoogleSignUpButton />
+      </MemoryRouter>
+    );
 
-//   test("GoogleLogInButton handles missing accounts", async () => {
-//     const user = userEvent.setup();
-//     const googleUser = {
-//       data: {
-//         sub: "sub-2",
-//         name: "Sam",
-//         email: "sam@example.com",
-//         given_name: "Sam",
-//         family_name: "Smith",
-//         picture: "pic.png",
-//       },
-//     };
+    const config = mockUseGoogleLogin.mock.calls[0]?.[0];
+    expect(config).toBeDefined();
 
-//     (axios.get as jest.Mock)
-//       .mockResolvedValueOnce(googleUser)
-//       .mockResolvedValueOnce({ data: { exists: false } });
+    await act(async () => {
+      config?.onError?.(new Error("boom"));
+    });
 
-//     mockUseGoogleLogin.mockImplementation(({ onSuccess }: any) => async () => {
-//       await onSuccess?.({ access_token: "token" });
-//     });
-
-//     render(
-//       <MemoryRouter>
-//         <GoogleLogInButton />
-//       </MemoryRouter>
-//     );
-
-//     await user.click(screen.getByRole("button", { name: /Log in with Google/i }));
-//     await screen.findByText(/No account found/i);
-//     expect(mockSetUser).not.toHaveBeenCalled();
-//   });
-
-//   test("GoogleLogInButton logs in existing users", async () => {
-//     const user = userEvent.setup();
-//     const googleUser = {
-//       data: {
-//         sub: "sub-3",
-//         name: "Taylor",
-//         email: "taylor@example.com",
-//         given_name: "Taylor",
-//         family_name: "Swift",
-//         picture: "pic.png",
-//       },
-//     };
-
-//     (axios.get as jest.Mock)
-//       .mockResolvedValueOnce(googleUser)
-//       .mockResolvedValueOnce({ data: { exists: true, username: "Taylor" } });
-
-//     mockUseGoogleLogin.mockImplementation(({ onSuccess }: any) => async () => {
-//       await onSuccess?.({ access_token: "token" });
-//     });
-
-//     render(
-//       <MemoryRouter>
-//         <GoogleLogInButton />
-//       </MemoryRouter>
-//     );
-
-//     await user.click(screen.getByRole("button", { name: /Log in with Google/i }));
-//     await waitFor(() => expect(mockSetUser).toHaveBeenCalled());
-//     expect(navigateSpy).toHaveBeenCalledWith("/");
-//   });
-// });
+    expect(
+      screen.getByText(/Google login failed\. Please try again\./i)
+    ).toBeInTheDocument();
+  });
+});
