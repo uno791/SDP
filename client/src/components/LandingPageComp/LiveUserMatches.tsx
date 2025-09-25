@@ -5,6 +5,7 @@ import LiveMatchTimeline from "./LiveMatchTimeline";
 import MatchViewerModal from "./MatchViewerModal";
 import ReportModal from "./ReportModal"; // ✅ added
 import styles from "./LiveUserMatches.module.css";
+import { useUser } from "../../Users/UserContext"; // ✅ added
 
 type Match = {
   id: number;
@@ -21,6 +22,7 @@ type Match = {
 };
 
 export default function LiveUserMatches() {
+  const { user } = useUser(); // ✅ current logged-in user
   const [matches, setMatches] = useState<Match[]>([]);
   const [now, setNow] = useState(new Date());
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -28,8 +30,12 @@ export default function LiveUserMatches() {
   const [reportMatchId, setReportMatchId] = useState<number | null>(null); // ✅ added
 
   useEffect(() => {
+    const url = new URL(`${baseURL}/matches`);
+    if (user?.id) url.searchParams.set("user_id", user.id);
+    if (user?.username) url.searchParams.set("username", user.username);
+
     axios
-      .get(`${baseURL}/matches`)
+      .get(url.toString())
       .then((res) => {
         console.log("[Frontend] /matches response:", res.data);
         setMatches(res.data.matches || []);
@@ -37,7 +43,7 @@ export default function LiveUserMatches() {
       .catch((err) =>
         console.error("[Frontend] Failed to fetch matches:", err)
       );
-  }, []);
+  }, [user?.id, user?.username]);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 30000);

@@ -208,7 +208,13 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
     const fetchMatch = async () => {
       try {
         const base = API_BASE || "http://localhost:3000";
-        const res = await fetch(`${base}/matches/${matchId}`);
+        // const res = await fetch(`${base}/matches/${matchId}`);
+        const url = new URL(`${base}/matches/${matchId}`);
+        if (user?.id) url.searchParams.set("user_id", user.id);
+        if (user?.username) url.searchParams.set("username", user.username);
+
+        const res = await fetch(url.toString());
+
         if (!res.ok) throw new Error("Failed to fetch match");
         const data = await res.json();
 

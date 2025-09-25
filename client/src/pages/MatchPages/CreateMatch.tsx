@@ -3,6 +3,7 @@ import styles from "./CreateMatch.module.css";
 import MatchForm from "../../components/MatchPageComp/MatchForm";
 import Papa, { type ParseResult } from "papaparse";
 import { useRef, useState, useEffect } from "react";
+import { useUser } from "../../Users/UserContext"; // add this at the top
 import type { ChangeEvent } from "react";
 import { baseURL } from "../../config";
 
@@ -21,6 +22,7 @@ const CreateMatch = () => {
   const { id } = useParams<{ id?: string }>(); // ✅ useParams typed
   const [csvData, setCsvData] = useState<CsvFormData | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { user } = useUser();
 
   // ✅ Load existing match if editing
   useEffect(() => {
@@ -28,7 +30,13 @@ const CreateMatch = () => {
 
     async function fetchMatch() {
       try {
-        const res = await fetch(`${baseURL}/matches/${id}`);
+        //const res = await fetch(`${baseURL}/matches/${id}`);
+        const url = new URL(`${baseURL}/matches/${id}`);
+        if (user?.id) url.searchParams.set("user_id", user.id);
+        if (user?.username) url.searchParams.set("username", user.username);
+
+        const res = await fetch(url.toString());
+
         if (!res.ok) {
           console.error("Failed to fetch match");
           return;

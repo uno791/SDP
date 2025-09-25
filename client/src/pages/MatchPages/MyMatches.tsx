@@ -37,15 +37,21 @@ const MyMatches = () => {
   useEffect(() => {
     if (!user?.id) return;
 
+    // ✅ build URL with created_by + user context
+    const url = new URL(`${baseURL}/matches`);
+    url.searchParams.set("created_by", user.id); // only matches created by this user
+    if (user?.id) url.searchParams.set("user_id", user.id);
+    if (user?.username) url.searchParams.set("username", user.username);
+
     axios
-      .get(`${baseURL}/matches?created_by=${user.id}`)
+      .get(url.toString())
       .then((res) => {
         setMatches(res.data.matches || []);
       })
       .catch((err) => {
         console.error("Failed to fetch matches:", err);
       });
-  }, [user?.id]);
+  }, [user?.id, user?.username]);
 
   useEffect(() => {
     const interval = setInterval(() => {

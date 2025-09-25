@@ -593,6 +593,24 @@ router.get("/matches/:id", async (req, res) => {
     if (mErr || !match)
       return res.status(404).json({ error: "Match not found" });
 
+    // 🔒 Privacy check
+    const { user_id, username } = req.query as {
+      user_id?: string;
+      username?: string;
+    };
+    const privacy = match.notes_json?.privacy || "public";
+    if (privacy === "private") {
+      if (!user_id || !username) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      if (
+        match.created_by !== user_id &&
+        !(match.notes_json?.invitedUsers || []).includes(username)
+      ) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+    }
+
     // join names
     const [{ data: home }, { data: away }, { data: venue }] = await Promise.all(
       [
@@ -651,7 +669,6 @@ router.get("/matches/:id", async (req, res) => {
     return res.status(500).json({ error: e.message });
   }
 });
-
 /**
  * GET /matches/:id
  * Returns match with team/venue names and events.
@@ -1306,13 +1323,24 @@ app.delete("/matches/:id/reports/:reportId", async (req, res) => {
 
 router.get("/matches", async (req, res) => {
   try {
-    const { league_code, status, from, to, created_by, type } = req.query as {
+    const {
+      league_code,
+      status,
+      from,
+      to,
+      created_by,
+      type,
+      user_id,
+      username,
+    } = req.query as {
       league_code?: string;
       status?: string;
       from?: string;
       to?: string;
       created_by?: string;
-      type?: string; // <-- NEW
+      type?: string;
+      user_id?: string; // NEW
+      username?: string; // NEW
     };
 
     let q = supabase.from("matches").select("*");
@@ -1328,16 +1356,26 @@ router.get("/matches", async (req, res) => {
     const { data: matches, error } = await q;
     if (error) return res.status(500).json({ error: error.message });
 
+    // 🔒 Filter private matches
+    const filtered = (matches ?? []).filter((m: any) => {
+      const privacy = m.notes_json?.privacy || "public";
+      if (privacy === "public") return true;
+      if (!user_id || !username) return false;
+      if (m.created_by === user_id) return true;
+      if ((m.notes_json?.invitedUsers || []).includes(username)) return true;
+      return false;
+    });
+
     // join names (batched lookups)
     const teamIds = Array.from(
       new Set(
-        (matches ?? [])
+        (filtered ?? [])
           .flatMap((m) => [m.home_team_id, m.away_team_id])
           .filter(Boolean)
       )
     ) as number[];
     const venueIds = Array.from(
-      new Set((matches ?? []).map((m) => m.venue_id).filter(Boolean))
+      new Set((filtered ?? []).map((m) => m.venue_id).filter(Boolean))
     ) as number[];
 
     const [teamsRes, venuesRes] = await Promise.all([
@@ -1362,7 +1400,7 @@ router.get("/matches", async (req, res) => {
       (venuesRes.data ?? []).map((v) => [v.id, v])
     );
 
-    let enriched = (matches ?? []).map((m) => ({
+    let enriched = (filtered ?? []).map((m) => ({
       ...m,
       home_team: m.home_team_id ? teamMap.get(m.home_team_id) : null,
       away_team: m.away_team_id ? teamMap.get(m.away_team_id) : null,
