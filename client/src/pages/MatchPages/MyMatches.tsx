@@ -7,7 +7,8 @@ import { baseURL } from "../../config";
 import { useUser } from "../../Users/UserContext";
 
 type Match = {
-  id: number;
+  id?: number; // ✅ made optional
+  match_id?: number; // ✅ added fallback support
   home_team?: { id: number; name: string } | null;
   away_team?: { id: number; name: string } | null;
   home_score?: number | null;
@@ -30,18 +31,27 @@ const MyMatches = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [now, setNow] = useState(new Date());
 
+  // NEW: track which match to delete
+  const [deleteMatchId, setDeleteMatchId] = useState<number | null>(null);
+
   useEffect(() => {
     if (!user?.id) return;
 
+    // ✅ build URL with created_by + user context
+    const url = new URL(`${baseURL}/matches`);
+    url.searchParams.set("created_by", user.id); // only matches created by this user
+    if (user?.id) url.searchParams.set("user_id", user.id);
+    if (user?.username) url.searchParams.set("username", user.username);
+
     axios
-      .get(`${baseURL}/matches?created_by=${user.id}`)
+      .get(url.toString())
       .then((res) => {
         setMatches(res.data.matches || []);
       })
       .catch((err) => {
         console.error("Failed to fetch matches:", err);
       });
-  }, [user?.id]);
+  }, [user?.id, user?.username]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -92,7 +102,7 @@ const MyMatches = () => {
         : undefined;
 
     return {
-      id: m.id,
+      id: m.id ?? m.match_id ?? -1, // ✅ always a number
       team1: m.home_team?.name || "TBD",
       team2: m.away_team?.name || "TBD",
       score:
@@ -101,9 +111,45 @@ const MyMatches = () => {
           : "",
       status,
       minute,
-      date: new Date(m.utc_kickoff).toLocaleString(),
+      // ✅ fixed: format in local timezone properly
+      date: new Date(m.utc_kickoff).toLocaleString(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
     };
   };
+
+  // NEW: handle delete click
+  function handleDeleteClick(id: number) {
+    setDeleteMatchId(id);
+  }
+
+  // NEW: confirm delete
+  async function confirmDelete() {
+    if (!deleteMatchId) return;
+
+    try {
+      const res = await fetch(`${baseURL}/matches/${deleteMatchId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to delete match");
+        return;
+      }
+      // remove from UI
+      setMatches(matches.filter((m) => (m.id ?? m.match_id) !== deleteMatchId));
+    } catch (e) {
+      console.error("Failed to delete match", e);
+      alert("Unexpected error while deleting match");
+    } finally {
+      setDeleteMatchId(null);
+    }
+  }
 
   return (
     <div className={styles.page}>
@@ -116,7 +162,8 @@ const MyMatches = () => {
         <div className={styles.heroInner}>
           <h1 className={styles.heroTitle}>Create Matches</h1>
           <p className={styles.heroSubtitle}>
-            Spin up new fixtures instantly and manage everything you’ve scheduled.
+            Spin up new fixtures instantly and manage everything you’ve
+            scheduled.
           </p>
         </div>
         <div className={styles.heroActions}>
@@ -144,6 +191,8 @@ const MyMatches = () => {
             subtitle="Get everything lined up before kickoff."
             matches={upcomingMatches.map(transform)}
             accent="upcoming"
+            onDelete={handleDeleteClick}
+            onSeeMore={(id) => navigate(`/create-match/${id}`)} // ✅ correct edit path
           />
 
           <MatchList
@@ -154,6 +203,30 @@ const MyMatches = () => {
           />
         </div>
       </main>
+
+      {/* NEW: delete confirmation modal */}
+      {deleteMatchId && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-lg font-bold">Are you sure?</h2>
+            <p>This will permanently delete the match.</p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                className="px-4 py-2 bg-gray-300 rounded"
+                onClick={() => setDeleteMatchId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-red-600 text-white rounded"
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -23,8 +23,13 @@ type Match = {
   status: string;
   minute: number | null;
   events: Event[];
-  home_possession?: number | null; // ✅ new
-  away_possession?: number | null; // ✅ new
+  home_possession?: number | null;
+  away_possession?: number | null;
+  // ✅ added lineups
+  notes_json?: {
+    lineupTeam1?: string[];
+    lineupTeam2?: string[];
+  };
 };
 
 type Report = {
@@ -60,15 +65,18 @@ const LiveMatchUpdate = () => {
   const [minute, setMinute] = useState<number | "">("");
   const [detail, setDetail] = useState("");
 
+  // ✅ new: available players for selected team
+  const [availablePlayers, setAvailablePlayers] = useState<string[]>([]);
+
   // Extend match duration
   const [extraMinutes, setExtraMinutes] = useState<number>(1);
 
-  // ✅ Reports state
+  // Reports state
   const [reports, setReports] = useState<Report[]>([]);
 
-  // ✅ Possession state
+  // Possession state
   const [possession, setPossession] = useState<number>(50);
-  const [savingPossession, setSavingPossession] = useState(false); // NEW
+  const [savingPossession, setSavingPossession] = useState(false);
 
   const isTestEnv =
     typeof process !== "undefined" && process.env.NODE_ENV === "test";
@@ -79,10 +87,9 @@ const LiveMatchUpdate = () => {
       const res = await axios.get(`${baseURL}/matches/${id}`);
       setMatch(res.data.match);
 
-      // ✅ update possession from backend
+      // update possession from backend
       setPossession(res.data.match.home_possession ?? 50);
 
-      // ✅ Only update liveMinute if not paused
       if (!isPaused) {
         setLiveMinute(res.data.match.minute ?? null);
       }
@@ -98,7 +105,7 @@ const LiveMatchUpdate = () => {
     }
   };
 
-  // ✅ Fetch reports
+  // Fetch reports
   const fetchReports = async () => {
     try {
       const res = await axios.get(`${baseURL}/matches/${id}/reports`);
@@ -119,9 +126,9 @@ const LiveMatchUpdate = () => {
 
     const interval = setInterval(fetchMatch, 10000);
     return () => clearInterval(interval);
-  }, [id, isPaused, isTestEnv]); // depends on pause state
+  }, [id, isPaused, isTestEnv]);
 
-  // ✅ Reports polling
+  // Reports polling
   useEffect(() => {
     if (!id) return;
     fetchReports();
@@ -132,7 +139,7 @@ const LiveMatchUpdate = () => {
     return () => clearInterval(interval);
   }, [id, isTestEnv]);
 
-  // Live ticking clock (pause-aware)
+  // Live ticking clock
   useEffect(() => {
     if (!match || isPaused || isTestEnv) return;
 
@@ -150,6 +157,22 @@ const LiveMatchUpdate = () => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, [isTestEnv]);
+
+  // ✅ Update available players when team changes
+  useEffect(() => {
+    if (!match || !teamId) {
+      setAvailablePlayers([]);
+      return;
+    }
+
+    if (teamId === match.home_team?.id) {
+      setAvailablePlayers(match.notes_json?.lineupTeam1 ?? []);
+    } else if (teamId === match.away_team?.id) {
+      setAvailablePlayers(match.notes_json?.lineupTeam2 ?? []);
+    } else {
+      setAvailablePlayers([]);
+    }
+  }, [teamId, match]);
 
   const handleAddEvent = async () => {
     if (!eventType || !teamId || !player) {
@@ -227,12 +250,11 @@ const LiveMatchUpdate = () => {
     }
   };
 
-  // ✅ Save possession
   const handleSavePossession = async () => {
     if (!match) return;
 
     try {
-      setSavingPossession(true); // show "Saving..."
+      setSavingPossession(true);
       await axios.patch(`${baseURL}/matches/${match.id}/possession`, {
         home_possession: possession,
         away_possession: 100 - possession,
@@ -241,7 +263,7 @@ const LiveMatchUpdate = () => {
     } catch (err) {
       console.error("❌ Failed to save possession:", err);
     } finally {
-      setSavingPossession(false); // back to "SAVE"
+      setSavingPossession(false);
     }
   };
 
@@ -257,7 +279,6 @@ const LiveMatchUpdate = () => {
 
       <p className={styles.username}>{user?.username ?? "Guest"}</p>
 
-      {/* ✅ Real-time clock */}
       <p className={styles.clock}>Current Time: {now.toLocaleTimeString()}</p>
 
       <div className={styles.scoreBox}>
@@ -308,7 +329,6 @@ const LiveMatchUpdate = () => {
         </button>
       </div>
 
-      {/* ✅ Possession slider */}
       <h3 className={styles.subHeader}>POSSESSION</h3>
       <div className={styles.possessionBox}>
         <span>
@@ -367,12 +387,15 @@ const LiveMatchUpdate = () => {
           )}
         </select>
 
-        <input
-          type="text"
-          value={player}
-          onChange={(e) => setPlayer(e.target.value)}
-          placeholder="Player name"
-        />
+        {/* ✅ Player dropdown instead of text input */}
+        <select value={player} onChange={(e) => setPlayer(e.target.value)}>
+          <option value="">Select Player</option>
+          {availablePlayers.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
 
         <input
           type="number"
@@ -424,7 +447,10 @@ const LiveMatchUpdate = () => {
             timelineSegments.push(`| ${ev.detail}`);
           }
 
-          const timelineText = timelineSegments.join(" ").replace(/\s+/g, " ").trim();
+          const timelineText = timelineSegments
+            .join(" ")
+            .replace(/\s+/g, " ")
+            .trim();
 
           return (
             <li key={ev.id}>
@@ -442,7 +468,6 @@ const LiveMatchUpdate = () => {
         })}
       </ul>
 
-      {/* ✅ Reports section */}
       <h3 className={styles.subHeader}>USER REPORTS:</h3>
       {reports.length === 0 ? (
         <p>No reports yet</p>

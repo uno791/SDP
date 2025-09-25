@@ -7,10 +7,12 @@ import { useUser } from "../../Users/UserContext"; // ✅ bring in logged-in use
 interface Props {
   onCancel: () => void;
   csvData?: any; // ✅ optional prop for prefilling from CSV
+  matchId?: number; // ✅ optional prop for editing
 }
 
 type Privacy = "private" | "public";
 type UsernameRow = { username: string };
+type Team = { id: number; name: string };
 
 function TeamLineupEditor({
   teamLabel,
@@ -142,12 +144,14 @@ function TeamLineupEditor({
   );
 }
 
-const MatchForm = ({ onCancel, csvData }: Props) => {
+const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
   const { user } = useUser();
   const navigate = useNavigate();
 
-  const [team1, setTeam1] = useState("");
-  const [team2, setTeam2] = useState("");
+  const [team1, setTeam1] = useState(""); // team name
+  const [team2, setTeam2] = useState(""); // team name
+  const [teams, setTeams] = useState<Team[]>([]); // ✅ all teams
+
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("");
@@ -160,7 +164,23 @@ const MatchForm = ({ onCancel, csvData }: Props) => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [userToAdd, setUserToAdd] = useState<string>("");
 
-  // ✅ Prefill form when csvData changes
+  // ✅ Fetch all teams
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const base = API_BASE || "http://localhost:3000";
+        const res = await fetch(`${base}/teams`);
+        if (!res.ok) throw new Error("Failed to fetch teams");
+        const data: Team[] = await res.json();
+        setTeams(data);
+      } catch (err) {
+        console.error("❌ Error fetching teams:", err);
+      }
+    };
+    fetchTeams();
+  }, []);
+
+  // ✅ Prefill from csvData (assume team names in CSV)
   useEffect(() => {
     if (!csvData) return;
 
@@ -181,6 +201,48 @@ const MatchForm = ({ onCancel, csvData }: Props) => {
     );
   }, [csvData]);
 
+  // ✅ Prefill from API if matchId exists (edit mode)
+  useEffect(() => {
+    if (!matchId) return;
+
+    const fetchMatch = async () => {
+      try {
+        const base = API_BASE || "http://localhost:3000";
+        // const res = await fetch(`${base}/matches/${matchId}`);
+        const url = new URL(`${base}/matches/${matchId}`);
+        if (user?.id) url.searchParams.set("user_id", user.id);
+        if (user?.username) url.searchParams.set("username", user.username);
+
+        const res = await fetch(url.toString());
+
+        if (!res.ok) throw new Error("Failed to fetch match");
+        const data = await res.json();
+
+        setTeam1(data.home_team?.name || "");
+        setTeam2(data.away_team?.name || "");
+
+        if (data.utc_kickoff) {
+          const kickoff = new Date(data.utc_kickoff.replace(" ", "T"));
+          if (!isNaN(kickoff.getTime())) {
+            setDate(kickoff.toISOString().split("T")[0]);
+            setTime(kickoff.toISOString().split("T")[1].slice(0, 5));
+          }
+        }
+
+        setDuration(data.notes_json?.duration || "");
+        setPrivacy(data.notes_json?.privacy || "public");
+        setSelectedUsers(data.notes_json?.invitedUsers || []);
+        setLineupTeam1(data.notes_json?.lineupTeam1 || []);
+        setLineupTeam2(data.notes_json?.lineupTeam2 || []);
+      } catch (err) {
+        console.error("❌ Error fetching match:", err);
+      }
+    };
+
+    fetchMatch();
+  }, [matchId]);
+
+  // ✅ fetch usernames for private matches
   useEffect(() => {
     if (privacy !== "private") return;
     if (allUsernames.length > 0) return;
@@ -222,27 +284,50 @@ const MatchForm = ({ onCancel, csvData }: Props) => {
     setSelectedUsers((prev) => prev.filter((u) => u !== name));
   };
 
+  const ensureTeam = async (name: string): Promise<number | null> => {
+    if (!name.trim()) return null;
+    const existing = teams.find(
+      (t) => t.name.toLowerCase() === name.toLowerCase()
+    );
+    if (existing) return existing.id;
+
+    // create new team
+    const base = API_BASE || "http://localhost:3000";
+    const res = await fetch(`${base}/teams`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw new Error("Failed to create team");
+    const newTeam: Team = await res.json();
+    setTeams((prev) => [...prev, newTeam]);
+    return newTeam.id;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user?.id) {
-      alert("You must be logged in to create a match");
+      alert("You must be logged in to create or edit a match");
       return;
     }
 
     try {
       const base = API_BASE || "http://localhost:3000";
 
-      // ✅ don’t append "Z"
       const kickoffLocal = new Date(`${date}T${time}:00`);
       const utc_kickoff = kickoffLocal.toISOString();
+
+      // ensure team IDs
+      const team1Id = await ensureTeam(team1);
+      const team2Id = await ensureTeam(team2);
 
       const payload = {
         league_code: "custom.user",
         utc_kickoff,
         status: "scheduled",
-        home_team_name: team1,
-        away_team_name: team2,
+        home_team_id: team1Id,
+        away_team_id: team2Id,
         created_by: user.id,
         notes_json: {
           duration,
@@ -253,21 +338,24 @@ const MatchForm = ({ onCancel, csvData }: Props) => {
         },
       };
 
-      const res = await fetch(`${base}/matches`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        matchId ? `${base}/matches/${matchId}` : `${base}/matches`,
+        {
+          method: matchId ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || "Failed to create match");
+        throw new Error(err.error || "Failed to save match");
       }
 
       navigate("/mymatches");
     } catch (err) {
-      console.error("❌ Failed to create match", err);
-      alert("Failed to create match, see console for details.");
+      console.error("❌ Failed to save match", err);
+      alert("Failed to save match, see console for details.");
     }
   };
 
@@ -280,7 +368,7 @@ const MatchForm = ({ onCancel, csvData }: Props) => {
           <label className={styles.teamLabel}>TEAM 1</label>
           <input
             className={styles.textInput}
-            placeholder="Team Names"
+            placeholder="Enter Team Name"
             value={team1}
             onChange={(e) => setTeam1(e.target.value)}
           />
@@ -295,7 +383,7 @@ const MatchForm = ({ onCancel, csvData }: Props) => {
           <label className={styles.teamLabel}>TEAM 2</label>
           <input
             className={styles.textInput}
-            placeholder="Team Names"
+            placeholder="Enter Team Name"
             value={team2}
             onChange={(e) => setTeam2(e.target.value)}
           />
@@ -415,7 +503,7 @@ const MatchForm = ({ onCancel, csvData }: Props) => {
           CANCEL
         </button>
         <button type="submit" className={styles.create}>
-          CREATE MATCH
+          {matchId ? "UPDATE MATCH" : "CREATE MATCH"}
         </button>
       </div>
     </form>
