@@ -52,6 +52,10 @@ function createBaseMatch() {
     ],
     home_possession: 55,
     away_possession: 45,
+    notes_json: {
+      lineupTeam1: ["Salah", "Mac Allister"],
+      lineupTeam2: ["Rashford", "Fernandes"],
+    },
   };
 }
 
@@ -130,7 +134,7 @@ describe("LiveMatchUpdate Page", () => {
           id: 2,
           minute: 67,
           event_type: "yellow_card",
-          team_id: matchData.home_team.id,
+          team_id: matchData.home_team?.id,
           player_name: "Salah",
         },
       ];
@@ -142,13 +146,26 @@ describe("LiveMatchUpdate Page", () => {
       name: /liverpool vs man united/i,
     });
 
-    await user.selectOptions(screen.getByDisplayValue("Event Type"), [
-      "yellow_card",
-    ]);
-    await user.selectOptions(screen.getByDisplayValue("Team"), [
-      String(matchData.home_team.id),
-    ]);
-    await user.type(screen.getByPlaceholderText("Player name"), "Salah");
+    const eventTypeSelect = screen
+      .getByText("Event Type")
+      .closest("select") as HTMLSelectElement;
+    const teamSelect = screen
+      .getByText("Team")
+      .closest("select") as HTMLSelectElement;
+    const playerSelect = screen
+      .getByText("Select Player")
+      .closest("select") as HTMLSelectElement;
+
+    await user.selectOptions(eventTypeSelect, "yellow_card");
+    await user.selectOptions(teamSelect, String(matchData.home_team?.id));
+
+    await waitFor(() => {
+      expect(playerSelect.querySelectorAll("option")).toHaveLength(3);
+    });
+
+    await user.selectOptions(playerSelect, "Salah");
+
+    await user.type(screen.getByPlaceholderText("Minute"), "67");
 
     await user.click(screen.getByText("ADD EVENT"));
 
