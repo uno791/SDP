@@ -15,13 +15,22 @@ interface Props {
   title: string;
   matches: Match[];
   onSeeMore?: (id: number) => void;
+  onDelete?: (id: number) => void; // ✅ still declared here
   subtitle?: string;
   accent?: "live" | "upcoming" | "past";
 }
 
-const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+const capitalize = (value: string) =>
+  value.charAt(0).toUpperCase() + value.slice(1);
 
-const MatchList = ({ title, matches, onSeeMore, subtitle, accent }: Props) => {
+const MatchList = ({
+  title,
+  matches,
+  onSeeMore,
+  onDelete,
+  subtitle,
+  accent,
+}: Props) => {
   const accentClass = accent ? styles[`accent${capitalize(accent)}`] : "";
   const emptyMessage = `No ${title.toLowerCase()} to show right now.`;
 
@@ -37,7 +46,12 @@ const MatchList = ({ title, matches, onSeeMore, subtitle, accent }: Props) => {
       ) : (
         <div className={styles.cards}>
           {matches.map((match) => (
-            <MatchCard key={match.id} match={match} onSeeMore={onSeeMore} />
+            <MatchCard
+              key={match.id}
+              match={match}
+              onSeeMore={onSeeMore}
+              onDelete={onDelete}
+            />
           ))}
         </div>
       )}

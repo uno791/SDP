@@ -31,14 +31,16 @@ function App() {
             {/* Routes inside Layout will have the NavBar */}
             <Route element={<Layout />}>
               <Route path="/home" element={<Home />} />
-
               <Route path="/doodlehome" element={<DoodleHome />} />
               <Route path="/mymatches" element={<MyMatches />} />
               <Route path="create-match" element={<CreateMatch />} />
+              <Route path="/edit-match/:id" element={<CreateMatch />} />{" "}
+              {/* ✅ new route */}
+              <Route path="/create-match/:id" element={<CreateMatch />} />{" "}
+              {/* <-- add this */}
               <Route path="/live/:id" element={<LiveMatchUpdate />} />
               <Route path="/favourite" element={<FavouritesPage />} />
               <Route path="/user-games" element={<UserGamesPage />} />
-
               {/* New Profile route */}
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/watchalongs" element={<Watchalongs />} />

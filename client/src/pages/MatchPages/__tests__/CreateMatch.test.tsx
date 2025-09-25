@@ -1,8 +1,9 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 
 import CreateMatch from "../CreateMatch";
+import { renderWithUser } from "../../../Tests/test-utils";
 
 const parseMock = jest.fn();
 jest.mock("papaparse", () => ({
@@ -19,7 +20,7 @@ jest.mock("../../../components/MatchPageComp/MatchForm", () => ({
 }));
 
 const renderCreateMatch = () =>
-  render(
+  renderWithUser(
     <MemoryRouter>
       <CreateMatch />
     </MemoryRouter>

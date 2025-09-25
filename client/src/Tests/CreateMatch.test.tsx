@@ -47,7 +47,7 @@ describe("CreateMatch Page", () => {
   test("renders MatchForm with team input fields", () => {
     renderCreateMatch();
     expect(screen.getByText(/fill in team/i)).toBeInTheDocument();
-    expect(screen.getAllByPlaceholderText(/team names/i).length).toBe(2);
+    expect(screen.getAllByPlaceholderText(/enter team name/i).length).toBe(2);
     expect(
       screen.getByRole("button", { name: /create match/i })
     ).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe("CreateMatch Page", () => {
     renderCreateMatch();
 
     const [team1Input, team2Input] =
-      screen.getAllByPlaceholderText(/team names/i);
+      screen.getAllByPlaceholderText(/enter team name/i);
 
     fireEvent.change(team1Input, { target: { value: "Barcelona" } });
     fireEvent.change(team2Input, { target: { value: "Real Madrid" } });

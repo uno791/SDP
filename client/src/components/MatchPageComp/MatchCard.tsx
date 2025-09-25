@@ -13,14 +13,18 @@ type Match = {
 interface Props {
   match: Match;
   onSeeMore?: (id: number) => void;
+  onDelete?: (id: number) => void;
 }
 
-const MatchCard = ({ match, onSeeMore }: Props) => {
-  const scoreDisplay = match.score && match.score.trim() !== "" ? match.score : "–";
+const MatchCard = ({ match, onSeeMore, onDelete }: Props) => {
+  const scoreDisplay =
+    match.score && match.score.trim() !== "" ? match.score : "â€“";
 
   let badgeClass = styles.badgeUpcoming;
   let badgeLabel = "Upcoming";
-  let timelineCopy = match.date ? `Kickoff - ${match.date}` : "Awaiting kickoff";
+  let timelineCopy = match.date
+    ? `Kickoff - ${match.date}`
+    : "Awaiting kickoff";
 
   if (match.status === "live") {
     badgeClass = styles.badgeLive;
@@ -52,12 +56,31 @@ const MatchCard = ({ match, onSeeMore }: Props) => {
       <div className={styles.meta}>
         <span className={`${styles.badge} ${badgeClass}`}>{badgeLabel}</span>
         <span className={styles.timeline}>{timelineCopy}</span>
-        <button
-          className={styles.moreButton}
-          onClick={() => onSeeMore && onSeeMore(match.id)}
-        >
-          See More
-        </button>
+
+        <div className={styles.actions}>
+          {/* Only show See More for live & upcoming matches */}
+          {(match.status === "live" || match.status === "upcoming") &&
+            onSeeMore && (
+              <button
+                className={styles.moreButton}
+                onClick={() => onSeeMore(match.id)}
+                type="button"
+              >
+                See More
+              </button>
+            )}
+
+          {/* Only show Delete for upcoming matches */}
+          {match.status === "upcoming" && onDelete && (
+            <button
+              className={styles.deleteButton}
+              onClick={() => onDelete(match.id)}
+              type="button"
+            >
+              Delete
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

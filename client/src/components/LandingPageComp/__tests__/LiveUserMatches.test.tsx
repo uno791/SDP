@@ -1,10 +1,11 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import axios from "axios";
 import { act } from "react";
 
 import LiveUserMatches from "../LiveUserMatches";
+import { renderWithUser } from "../../../Tests/test-utils";
 
 jest.mock("axios");
 jest.mock("../LiveMatchTimeline", () => ({
@@ -51,7 +52,7 @@ describe("LiveUserMatches", () => {
   test("shows empty state when no matches are live", async () => {
     mockedAxios.get.mockResolvedValueOnce({ data: { matches: [] } });
 
-    render(<LiveUserMatches />);
+    renderWithUser(<LiveUserMatches />);
 
     await waitFor(() => expect(mockedAxios.get).toHaveBeenCalled());
     expect(
@@ -80,7 +81,7 @@ describe("LiveUserMatches", () => {
     });
 
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
-    render(<LiveUserMatches />);
+    renderWithUser(<LiveUserMatches />);
 
     const homeTeamLabels = await screen.findAllByText(/Arsenal/i);
     expect(homeTeamLabels.length).toBeGreaterThan(0);
