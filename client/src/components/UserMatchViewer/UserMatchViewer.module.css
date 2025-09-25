@@ -1,0 +1,172 @@
+.viewer {
+  position: relative;
+  padding: 1.5rem 1rem;
+}
+
+.closeButton {
+  position: absolute;
+  top: 4rem;
+  right: 1.2rem;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #f70000;
+  transition: transform 0.15s ease, color 0.15s ease;
+  z-index: 10;
+}
+
+.closeButton:hover {
+  transform: scale(1.05);
+  color: white;
+  background-color: #f70000;
+}
+
+.tabBar {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1.75rem 0 1.25rem;
+}
+
+.tabButton {
+  flex: 1;
+  border: 1px solid #047857;
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #f0fdf4;
+  color: #047857;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tabButton:hover {
+  background: #a9d4be;
+  outline: none;
+}
+
+.activeTab {
+  background: #047857;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(6, 95, 70, 0.18);
+}
+
+.tabPanel {
+  min-height: 220px;
+}
+
+.timelineEmpty {
+  text-align: center;
+  color: #4b5563;
+}
+
+.timelineList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.timelineItem {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.timelineMinute {
+  font-weight: 700;
+  color: #047857;
+  min-width: 3rem;
+}
+
+.timelineBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: #1f2937;
+}
+
+.timelineType {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.timelineMeta {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.statsSection {
+  display: grid;
+  gap: 1rem;
+}
+
+.timelineCard,
+.squadCard {
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+.squadGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.squadColumn {
+  flex: 1 1 220px;
+}
+
+.squadColumn h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: #065f46;
+}
+
+.playerList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.playerChip {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 9999px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  color: #065f46;
+}
+
+.chipEmpty {
+  color: #6b7280;
+}
+
+@media (max-width: 640px) {
+  .viewer {
+    padding: 1rem 0.5rem;
+  }
+
+  .closeButton {
+    top: 0.25rem;
+    right: 0.25rem;
+  }
+
+  .timelineItem {
+    flex-direction: column;
+  }
+
+  .timelineMinute {
+    min-width: unset;
+  }
+}

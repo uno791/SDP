@@ -6,12 +6,6 @@ import axios from "axios";
 import MatchViewerModal from "../MatchViewerModal";
 
 jest.mock("axios");
-jest.mock("../LiveMatchTimeline", () => ({
-  __esModule: true,
-  default: ({ matchId }: { matchId: number }) => (
-    <div data-testid={`timeline-${matchId}`}>Timeline {matchId}</div>
-  ),
-}));
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
@@ -48,27 +42,33 @@ describe("MatchViewerModal", () => {
 
     expect(screen.getByText(/Loading/)).toBeInTheDocument();
 
-    expect(await screen.findByText(/Arsenal/i)).toBeInTheDocument();
-    expect(screen.getByText(/2 - 1/)).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: /arsenal vs chelsea/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText("2–1")).toBeInTheDocument();
     expect(screen.getByText(/75' LIVE/)).toBeInTheDocument();
-    expect(screen.getByTestId("timeline-9")).toBeInTheDocument();
+    expect(screen.getAllByText(/Goal/i).length).toBeGreaterThan(0);
 
     await user.click(screen.getByRole("button", { name: /Stats/i }));
-    const shotsOnBlock = screen.getByText(/Shots on Target/i)
+    const shotsOnRow = screen.getByText(/Shots on Target/i)
       .parentElement as HTMLElement;
-    expect(shotsOnBlock).toHaveTextContent("1");
-    expect(shotsOnBlock).toHaveTextContent("0");
+    const shotsOnCells = shotsOnRow.querySelectorAll("div");
+    expect(shotsOnCells[0]).toHaveTextContent("1");
+    expect(shotsOnCells[shotsOnCells.length - 1]).toHaveTextContent("0");
 
-    const shotsOffBlock = screen.getByText(/Shots off Target/i)
+    const shotsOffRow = screen.getByText(/Shots off Target/i)
       .parentElement as HTMLElement;
-    expect(shotsOffBlock).toHaveTextContent("1");
-    expect(shotsOffBlock).toHaveTextContent("0");
+    const shotsOffCells = shotsOffRow.querySelectorAll("div");
+    expect(shotsOffCells[0]).toHaveTextContent("1");
+    expect(shotsOffCells[shotsOffCells.length - 1]).toHaveTextContent("0");
 
     await user.click(screen.getByRole("button", { name: /Squad/i }));
     expect(screen.getByText(/Player A/i)).toBeInTheDocument();
     expect(screen.getByText(/Player C/i)).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /✕/i }));
+    await user.click(
+      screen.getByRole("button", { name: /close match viewer/i })
+    );
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
