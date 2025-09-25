@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./MatchForm.module.css";
-import { API_BASE } from "../../config";
+
+import { baseURL } from "../../config";
 import { useUser } from "../../Users/UserContext"; // ✅ bring in logged-in user
 
 interface Props {
@@ -169,7 +170,7 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const base = API_BASE || "http://localhost:3000";
+        const base = baseURL || "http://localhost:3000";
         const res = await fetch(`${base}/teams`);
         if (!res.ok) throw new Error("Failed to fetch teams");
         const data: Team[] = await res.json();
@@ -214,7 +215,7 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
 
     const fetchMatch = async () => {
       try {
-        const base = API_BASE || "http://localhost:3000";
+        const base = baseURL || "http://localhost:3000";
         // const res = await fetch(`${base}/matches/${matchId}`);
         const url = new URL(`${base}/matches/${matchId}`);
         if (user?.id) url.searchParams.set("user_id", user.id);
@@ -273,7 +274,7 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
 
     const fetchNames = async () => {
       try {
-        const base = API_BASE || "http://localhost:3000";
+        const base = baseURL || "http://localhost:3000";
         const res = await fetch(`${base}/names`);
         if (!res.ok) throw new Error(`Failed to fetch names: ${res.status}`);
         const data: UsernameRow[] = await res.json();
@@ -316,7 +317,7 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
     if (existing) return existing.id;
 
     // create new team
-    const base = API_BASE || "http://localhost:3000";
+    const base = baseURL || "http://localhost:3000";
     const res = await fetch(`${base}/teams`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -382,11 +383,15 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
       .filter(Boolean);
 
     if (sanitizedLineupTeam1.length < 1) {
-      validationErrors.push("Team 1 must include at least one player in the lineup.");
+      validationErrors.push(
+        "Team 1 must include at least one player in the lineup."
+      );
     }
 
     if (sanitizedLineupTeam2.length < 1) {
-      validationErrors.push("Team 2 must include at least one player in the lineup.");
+      validationErrors.push(
+        "Team 2 must include at least one player in the lineup."
+      );
     }
 
     let kickoffLocal: Date | null = null;
@@ -423,7 +428,7 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
     setLineupTeam2(sanitizedLineupTeam2);
 
     try {
-      const base = API_BASE || "http://localhost:3000";
+      const base = baseURL || "http://localhost:3000";
 
       const utc_kickoff = kickoffLocal!.toISOString();
 
@@ -432,7 +437,9 @@ const MatchForm = ({ onCancel, csvData, matchId }: Props) => {
       const team2Id = await ensureTeam(trimmedTeam2);
 
       if (!team1Id || !team2Id) {
-        throw new Error("Teams could not be resolved. Please double-check team names.");
+        throw new Error(
+          "Teams could not be resolved. Please double-check team names."
+        );
       }
 
       const payload = {
