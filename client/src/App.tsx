@@ -46,8 +46,6 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/signuppage" element={<SignupPage />} />
-            <Route path="/loginpage" element={<LoginPage />} />
             <Route path="/matchviewer" element={<MatchViewer />} />
             <Route path="/playerstats" element={<PlayerStats />} />
             <Route path="/commentary" element={<Commentary />} />
