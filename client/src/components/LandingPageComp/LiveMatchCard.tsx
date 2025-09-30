@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./LiveMatchCard.module.css";
+import { Link } from "react-router-dom";
 
 /* Adjust the import path if your API file lives elsewhere */
 import type { ScoreboardResponse } from "../../api/espn";
@@ -238,17 +239,13 @@ function LiveMatchCardSingle({
           </div>
 
           <div className={styles.ctaWrap}>
-            <a
+            <Link
               className={styles.cta}
-              href={`https://www.espn.com/soccer/match/_/gameId/${encodeURIComponent(
-                ev.id
-              )}`}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
+              to={`/matchviewer?id=${encodeURIComponent(ev.id)}`}
+              aria-label={`Open Match Viewer for match ${ev.id}`}
             >
               Open Match Viewer
-            </a>
+            </Link>
           </div>
         </div>
       </div>

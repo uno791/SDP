@@ -390,10 +390,10 @@ export default function MatchViewer() {
         },
       ],
     },
-    {
-      title: "Player Stats",
-      content: <PlayerStatsCard />,
-    },
+    // {
+    //   title: "Player Stats",
+    //   content: <PlayerStatsCard />,
+    // },
   ];
 
   return (
