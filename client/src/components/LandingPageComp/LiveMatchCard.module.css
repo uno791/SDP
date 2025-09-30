@@ -123,6 +123,14 @@
   min-height: 0;
 }
 
+.sectionTitle {
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.4px;
+  color: var(--card-fg);
+  margin: 4px 0 16px;
+}
+
 /* Stat rows */
 .statLabel {
   grid-column: 1 / span 3;

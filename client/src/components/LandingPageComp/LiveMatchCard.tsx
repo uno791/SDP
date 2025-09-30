@@ -192,6 +192,7 @@ function LiveMatchCardSingle({
 
       <div className={`${styles.collapse} ${open ? styles.openCollapse : ""}`}>
         <div className={styles.collapseInner}>
+          <div className={styles.sectionTitle}>Match Statistics</div>
           <hr className={styles.rule} />
 
           {possession && (

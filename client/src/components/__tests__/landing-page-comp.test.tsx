@@ -179,11 +179,20 @@ describe("Landing page components", () => {
   });
 
   test("LiveMatchCard renders fetched scoreboard", async () => {
-    render(<LiveMatchCard showLabel />);
+    render(
+      <MemoryRouter>
+        <LiveMatchCard showLabel />
+      </MemoryRouter>
+    );
 
-    await waitFor(() => screen.getByText(/Live now|Showing matches/));
+    await waitFor(() => screen.getByText(/Match Statistics/));
     expect(screen.getByText("Foot")).toBeInTheDocument();
     expect(screen.getByText(/Hero/)).toBeInTheDocument();
+
+    const matchViewerLink = screen.getByRole("link", {
+      name: /open match viewer/i,
+    });
+    expect(matchViewerLink).toHaveAttribute("href", "/matchviewer?id=evt-1");
   });
 
   test("PastMatchCard lists past results and supports navigation", async () => {
