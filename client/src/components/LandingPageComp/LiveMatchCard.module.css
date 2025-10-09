@@ -294,7 +294,7 @@
 /* Grid wrapper (multi-cards) */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 18px;
 }
 
@@ -314,5 +314,15 @@
   .collapse,
   .cta {
     transition: none;
+  }
+}
+
+@media (max-width: 500px) {
+  .card {
+    padding: 12px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
   }
 }

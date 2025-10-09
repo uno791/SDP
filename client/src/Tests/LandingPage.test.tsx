@@ -2,6 +2,7 @@ import React from "react";
 import { act, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
+import { MemoryRouter } from "react-router-dom";
 import LandingPage from "../pages/LandingPage";
 
 // Mock framer-motion hooks + components
@@ -82,7 +83,11 @@ describe("LandingPage", () => {
 
   test("shows loader initially and hides after timeout", async () => {
     jest.useFakeTimers();
-    render(<LandingPage />);
+    render(
+      <MemoryRouter>
+        <LandingPage />
+      </MemoryRouter>
+    );
 
     expect(screen.getByTestId("landing-loader")).toBeInTheDocument();
 
@@ -97,7 +102,11 @@ describe("LandingPage", () => {
 
   test("opens and closes burger menu via header callback and renders sections", async () => {
     jest.useFakeTimers();
-    render(<LandingPage />);
+    render(
+      <MemoryRouter>
+        <LandingPage />
+      </MemoryRouter>
+    );
 
     act(() => {
       jest.runAllTimers();

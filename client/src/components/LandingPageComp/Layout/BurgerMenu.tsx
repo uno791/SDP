@@ -1,5 +1,7 @@
-import styles from "./BurgerMenu.module.css";
+import { useContext } from "react";
 import { X } from "lucide-react";
+import styles from "./BurgerMenu.module.css";
+import { UserContext } from "../../../Users/UserContext";
 
 type Section = { id: string; label: string };
 
@@ -18,6 +20,18 @@ type BurgerMenuProps = {
 };
 
 export default function BurgerMenu({ open, onClose }: BurgerMenuProps) {
+  const userContext = useContext(UserContext);
+  const user = userContext?.user ?? null;
+
+  const sections = user
+    ? SECTIONS.filter((section) => section.id !== "signup")
+    : SECTIONS;
+
+  const handleSignOut = () => {
+    userContext?.setUser?.(null);
+    onClose();
+  };
+
   return (
     <aside className={`${styles.menu} ${open ? styles.open : ""}`}>
       <div className={styles.top}>
@@ -27,7 +41,7 @@ export default function BurgerMenu({ open, onClose }: BurgerMenuProps) {
         </button>
       </div>
       <nav className={styles.nav}>
-        {SECTIONS.map((s) => (
+        {sections.map((s) => (
           <a
             key={s.id}
             href={`/${s.id}`}
@@ -38,6 +52,16 @@ export default function BurgerMenu({ open, onClose }: BurgerMenuProps) {
           </a>
         ))}
       </nav>
+
+      {user && userContext?.setUser && (
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className={styles.signOutButton}
+        >
+          Sign Out
+        </button>
+      )}
     </aside>
   );
 }

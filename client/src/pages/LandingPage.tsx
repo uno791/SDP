@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   motion,
   AnimatePresence,
@@ -170,6 +171,9 @@ export default function LandingPage() {
                 <a href="#news" className={styles.secondaryBtn}>
                   Latest News
                 </a>
+                <Link to="/signup" className={styles.secondaryBtn}>
+                  Sign Up / Log In
+                </Link>
               </div>
             </div>
 
@@ -197,10 +201,9 @@ export default function LandingPage() {
         {/* PAST MATCHES (your static examples) */}
         <section id="past" className={styles.sectionGray}>
           <div className={styles.stack}>
-            <PastMatchCard /> 
+            <PastMatchCard />
           </div>
         </section>
-
 
         {/* LEAGUE TABLE */}
         <section id="table" className={styles.sectionWhite}>
@@ -229,4 +232,3 @@ export default function LandingPage() {
     </div>
   );
 }
-

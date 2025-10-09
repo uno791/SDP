@@ -191,7 +191,15 @@ function LiveMatchCardSingle({
         </div>
       </div>
 
-      <div id={collapseId} className={styles.collapse}>
+      <div
+        id={collapseId}
+        className={styles.collapse}
+        style={{
+          gridTemplateRows: open ? "1fr" : "0fr",
+          opacity: open ? 1 : 0,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.collapseInner}>
           <div className={styles.sectionTitle}>Match Statistics</div>
           <hr className={styles.rule} />

@@ -4,6 +4,8 @@ import { MemoryRouter } from "react-router-dom";
 import { NavBar } from "../NavBar";
 import Header from "../LandingPageComp/Layout/Header";
 import BurgerMenu from "../LandingPageComp/Layout/BurgerMenu";
+import { UserProvider } from "../../Users/UserContext";
+import { User } from "../../Users/User";
 
 describe("navigation components", () => {
   test("NavBar renders all destination buttons", () => {
@@ -45,7 +47,11 @@ describe("navigation components", () => {
     const onClose = jest.fn();
     const user = userEvent.setup();
 
-    render(<BurgerMenu open onClose={onClose} />);
+    render(
+      <UserProvider storage={null}>
+        <BurgerMenu open onClose={onClose} />
+      </UserProvider>
+    );
 
     const links = screen.getAllByRole("link");
     expect(links.map((l) => l.getAttribute("href"))).toEqual([
@@ -58,6 +64,31 @@ describe("navigation components", () => {
     ]);
 
     await user.click(links[0]!);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  test("BurgerMenu shows sign out button when user is logged in", async () => {
+    const onClose = jest.fn();
+    const user = userEvent.setup();
+    const initialUser = new User({ id: "test-user", username: "Jane" });
+
+    render(
+      <UserProvider initialUser={initialUser} storage={null}>
+        <BurgerMenu open onClose={onClose} />
+      </UserProvider>
+    );
+
+    const signOut = screen.getByRole("button", { name: /sign out/i });
+    expect(signOut).toBeInTheDocument();
+
+    // With a logged-in user the SignUp link should be hidden
+    expect(
+      screen
+        .getAllByRole("link")
+        .map((link) => link.getAttribute("href"))
+    ).not.toContain("/signup");
+
+    await user.click(signOut);
     expect(onClose).toHaveBeenCalled();
   });
 });

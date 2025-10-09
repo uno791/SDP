@@ -52,10 +52,11 @@ describe("3D landing components", () => {
     mockUseGLTF.preload?.mockReset?.();
   });
 
-  test("Loader3D renders loading text", () => {
+  test("Loader3D renders animated text loader", () => {
     render(<Loader3D />);
-    expect(screen.getByText(/FootBook — loading live data…/)).toBeInTheDocument();
-    expect(mockUseGLTF).toHaveBeenCalled();
+    expect(screen.getByRole("status")).toBeInTheDocument();
+    expect(screen.getAllByText(/Loading/i).length).toBeGreaterThan(1);
+    expect(mockUseGLTF).not.toHaveBeenCalled();
   });
 
   test("ThreeFootball renders canvas content", () => {

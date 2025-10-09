@@ -179,11 +179,62 @@
     inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
+.signOutButton {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.75),
+    rgba(220, 38, 38, 0.6)
+  );
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease,
+    background 160ms ease;
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.28);
+}
+
+.signOutButton:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.85),
+    rgba(220, 38, 38, 0.65)
+  );
+}
+
+.signOutButton:active {
+  transform: translateY(0);
+}
+
+.signOutButton:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.72);
+  outline-offset: 2px;
+}
+
 /* Motion respect */
 @media (prefers-reduced-motion: reduce) {
   .menu,
   .closeButton,
   .link {
     transition: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .menu {
+    width: clamp(18rem, 90vw, 22rem);
+    right: 0;
+    border-radius: 1rem 0 0 1rem;
+    transform: translateX(110%) translateZ(0);
+  }
+
+  .open {
+    transform: translateX(0) translateZ(0);
   }
 }
