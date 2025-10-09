@@ -49,13 +49,12 @@ describe("navigation components", () => {
 
     const links = screen.getAllByRole("link");
     expect(links.map((l) => l.getAttribute("href"))).toEqual([
-      "/home",
       "/",
       "/favourite",
-      "/user-games",
-      "/signup",
-      "/mymatches",
       "/watchalongs",
+      "/user-games",
+      "/mymatches",
+      "/signup",
     ]);
 
     await user.click(links[0]!);
