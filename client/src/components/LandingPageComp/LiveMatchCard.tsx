@@ -152,13 +152,14 @@ function LiveMatchCardSingle({
       onToggle();
     }
   };
-
+  const collapseId = `match-collapse-${ev.id}`;
   return (
     <div
       className={`${styles.card} ${open ? styles.open : ""}`}
       role="button"
       tabIndex={0}
       aria-expanded={open}
+      aria-controls={collapseId}
       onClick={onToggle}
       onKeyDown={onKey}
     >
@@ -190,7 +191,7 @@ function LiveMatchCardSingle({
         </div>
       </div>
 
-      <div className={`${styles.collapse} ${open ? styles.openCollapse : ""}`}>
+      <div id={collapseId} className={styles.collapse}>
         <div className={styles.collapseInner}>
           <div className={styles.sectionTitle}>Match Statistics</div>
           <hr className={styles.rule} />
@@ -243,6 +244,7 @@ function LiveMatchCardSingle({
             <Link
               className={styles.cta}
               to={`/matchviewer?id=${encodeURIComponent(ev.id)}`}
+              onClick={(e) => e.stopPropagation()}
               aria-label={`Open Match Viewer for match ${ev.id}`}
             >
               Open Match Viewer

@@ -4,13 +4,12 @@ import { X } from "lucide-react";
 type Section = { id: string; label: string };
 
 const SECTIONS: Section[] = [
-  { id: "home", label: "Old Home" },
   { id: "", label: "Home" },
   { id: "favourite", label: "Favourite Teams" },
-  { id: "user-games", label: "User Games" },
-  { id: "signup", label: "SignUp/LogIn" },
-  { id: "mymatches", label: "User Matches" },
   { id: "watchalongs", label: "Watchalong Hub" },
+  { id: "user-games", label: "User Games" },
+  { id: "mymatches", label: "My Matches" },
+  { id: "signup", label: "SignUp/LogIn" },
 ];
 
 type BurgerMenuProps = {
