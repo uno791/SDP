@@ -21,6 +21,7 @@ import FavouritesPage from "./pages/FavouritesPage";
 import PlayerStats from "./pages/PlayerStats";
 import Commentary from "./pages/Commentary";
 import Watchalongs from "./pages/Watchalongs";
+import FPLPage from "./pages/FPLPage";
 
 function App() {
   return (
@@ -30,7 +31,7 @@ function App() {
           <Routes>
             {/* Routes inside Layout will have the NavBar */}
             <Route element={<Layout />}>
-              <Route path="/home" element={<Home />} />
+              <Route path="/oldhome" element={<Home />} />
               <Route path="/doodlehome" element={<DoodleHome />} />
               <Route path="/mymatches" element={<MyMatches />} />
               <Route path="create-match" element={<CreateMatch />} />
@@ -51,6 +52,7 @@ function App() {
             <Route path="/matchviewer" element={<MatchViewer />} />
             <Route path="/playerstats" element={<PlayerStats />} />
             <Route path="/commentary" element={<Commentary />} />
+            <Route path="/fpl" element={<FPLPage />} />
           </Routes>
         </Router>
       </UserProvider>

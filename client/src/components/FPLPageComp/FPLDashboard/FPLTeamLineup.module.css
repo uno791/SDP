@@ -1,0 +1,105 @@
+.wrapper {
+  text-align: center;
+  color: #fff;
+  padding: 2rem;
+}
+
+.heading {
+  color: #00ffb3;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.pitch {
+  background: linear-gradient(180deg, #166d2d, #216c2d);
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6);
+  margin-bottom: 2rem;
+}
+
+/* Each "row" for GK / DEF / MID / FWD */
+.row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.playerCard {
+  background: #0e0e0e;
+  border-radius: 10px;
+  padding: 0.5rem;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.playerImage {
+  border-radius: 6px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 0.3rem;
+}
+
+.playerName {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  text-align: center;
+}
+
+.badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #00d9ff;
+  color: #000;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.7rem;
+}
+
+/* Bench area */
+.bench {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.playerCardBench {
+  background: #111;
+  border-radius: 10px;
+  padding: 0.5rem;
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.playerImageBench {
+  width: 100%;
+  border-radius: 5px;
+  margin-bottom: 0.3rem;
+}
+.playerImage {
+  border-radius: 6px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 0.3rem;
+  background-color: #111; /* fallback background */
+}
+
+.playerImage[src*="placeholder"] {
+  filter: brightness(0.4) contrast(1.2);
+}

@@ -1662,6 +1662,56 @@ router.get("/watchalongs", async (req, res) => {
   }
 });
 
+// ----------------------
+// FPL API proxy routes
+// ----------------------
+const BASE_URL = "https://fantasy.premierleague.com/api";
+
+async function safeFetch(url: string, res: Response) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    const data = await r.json();
+    res.json(data);
+  } catch (err: any) {
+    console.error("FPL API error:", err.message);
+    res.status(500).json({ error: "Failed to fetch FPL data" });
+  }
+}
+
+app.get("/api/fpl/bootstrap-static", (req, res) =>
+  safeFetch(`${BASE_URL}/bootstrap-static/`, res)
+);
+
+app.get("/api/fpl/entry/:id", (req, res) =>
+  safeFetch(`${BASE_URL}/entry/${req.params.id}/`, res)
+);
+
+app.get("/api/fpl/entry/:id/history", (req, res) =>
+  safeFetch(`${BASE_URL}/entry/${req.params.id}/history/`, res)
+);
+
+app.get("/api/fpl/entry/:id/event/:gw/picks", (req, res) =>
+  safeFetch(
+    `${BASE_URL}/entry/${req.params.id}/event/${req.params.gw}/picks/`,
+    res
+  )
+);
+
+app.get("/api/fpl/event/:gw/live", (req, res) =>
+  safeFetch(`${BASE_URL}/event/${req.params.gw}/live/`, res)
+);
+
+app.get("/api/fpl/fixtures", (req, res) =>
+  safeFetch(`${BASE_URL}/fixtures/`, res)
+);
+
+app.get("/api/fpl/teams", (req, res) => safeFetch(`${BASE_URL}/teams/`, res));
+
+app.get("/api/fpl/player/:id", (req, res) =>
+  safeFetch(`${BASE_URL}/element-summary/${req.params.id}/`, res)
+);
+
 /* --------------- Start server --------------- */
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);

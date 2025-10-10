@@ -1,0 +1,56 @@
+.card {
+  background: #181828;
+  padding: 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0, 255, 150, 0.1);
+  margin: 1rem auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+.heading {
+  color: #00ff9d;
+  font-size: 1.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.statBox {
+  background: #202032;
+  border-radius: 10px;
+  padding: 1rem;
+  flex: 1;
+  min-width: 120px;
+  margin: 0.3rem;
+}
+
+.statBox h3 {
+  font-size: 1.6rem;
+  color: #00e0ff;
+  margin: 0;
+}
+
+.statBox p {
+  color: #aaa;
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.extraRow {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  color: #ccc;
+}
+
+.statSmall span {
+  color: #00ff9d;
+  font-weight: 600;
+}
