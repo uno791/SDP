@@ -3,6 +3,7 @@ import styles from "./FPLDashboard.module.css";
 import { getEntryHistory, getUserPicks, getBootstrap } from "../../../api/fpl";
 import FPLSummaryCard from "./FPLSummaryCard";
 import FPLTeamLineup from "./FPLTeamLineup";
+import FPLTransferAnalysis from "./FPLTransferAnalysis";
 
 // --------------------
 // Type Definitions
@@ -108,6 +109,7 @@ export default function FPLDashboard({ teamId, onBack }: Props) {
       </button>
       {summary && <FPLSummaryCard data={summary} />}
       {picks.length > 0 && <FPLTeamLineup picks={picks} players={players} />}
+      <FPLTransferAnalysis teamId={teamId} players={players} />
     </div>
   );
 }

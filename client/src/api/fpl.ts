@@ -93,6 +93,12 @@ export const getFixtures = () => safeGet(`${BASE_PROXY_URL}/fixtures`);
 export const getTeams = () => safeGet(`${BASE_PROXY_URL}/teams`);
 
 /**
+ * Fetch all transfers made by a given user (entry ID)
+ */
+export const getTransfers = (entryId: number) =>
+  safeGet(`${BASE_PROXY_URL}/entry/${entryId}/transfers`);
+
+/**
  * Fetch detailed player (element) data by ID.
  *
  * @param elementId - Player’s unique ID in FPL

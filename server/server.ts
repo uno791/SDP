@@ -1712,6 +1712,11 @@ app.get("/api/fpl/player/:id", (req, res) =>
   safeFetch(`${BASE_URL}/element-summary/${req.params.id}/`, res)
 );
 
+// ✅ Fetch all transfers made by a user (entry ID)
+app.get("/api/fpl/entry/:id/transfers", (req, res) =>
+  safeFetch(`${BASE_URL}/entry/${req.params.id}/transfers/`, res)
+);
+
 /* --------------- Start server --------------- */
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
