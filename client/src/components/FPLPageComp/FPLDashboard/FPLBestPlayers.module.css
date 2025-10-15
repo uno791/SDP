@@ -1,0 +1,76 @@
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  margin-top: 24px;
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.heading {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1c1c1c;
+}
+
+.dropdown {
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  color: #333;
+  cursor: pointer;
+}
+
+.dropdown:focus {
+  outline: none;
+  border-color: #888;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table thead {
+  background: #f4f6f8;
+}
+
+.table th {
+  color: #555;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e3e3e3;
+}
+
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.table tr:hover td {
+  background-color: #f9fafc;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1rem;
+  color: #666;
+  padding: 24px;
+}

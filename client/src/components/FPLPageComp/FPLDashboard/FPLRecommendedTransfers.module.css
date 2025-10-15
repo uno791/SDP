@@ -1,0 +1,82 @@
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  margin-top: 24px;
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.heading {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1c1c1c;
+}
+
+.transferBlock {
+  margin-bottom: 24px;
+  border-top: 1px solid #ececec;
+  padding-top: 16px;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #777;
+  margin-bottom: 4px;
+}
+
+.outSection,
+.inSection {
+  margin-bottom: 12px;
+}
+
+.playerOut {
+  background: #ffecec;
+  border-left: 4px solid #e74c3c;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #c0392b;
+  font-weight: 500;
+}
+
+.playerIn {
+  background: #ecf9ee;
+  border-left: 4px solid #27ae60;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #1e8449;
+  font-weight: 500;
+  margin-bottom: 8px;
+  list-style: none;
+}
+
+.stat {
+  font-size: 0.8rem;
+  color: #555;
+  margin-left: 8px;
+}
+
+.playerList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1rem;
+  color: #666;
+  padding: 24px;
+}

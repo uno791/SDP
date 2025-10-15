@@ -1727,6 +1727,21 @@ app.get("/api/fpl/leagues-h2h/:id/standings", (req, res) =>
   safeFetch(`${BASE_URL}/leagues-h2h/${req.params.id}/standings/`, res)
 );
 
+// ✅ Classic League Standings
+app.get("/api/fpl/leagues-classic/:id/standings", (req, res) =>
+  safeFetch(`${BASE_URL}/leagues-classic/${req.params.id}/standings/`, res)
+);
+
+// ✅ Head-to-Head League Standings
+app.get("/api/fpl/leagues-h2h/:id/standings", (req, res) =>
+  safeFetch(`${BASE_URL}/leagues-h2h/${req.params.id}/standings/`, res)
+);
+
+// ✅ Player Element Summary (Detailed stats, fixture history)
+app.get("/api/fpl/element-summary/:id", (req, res) =>
+  safeFetch(`${BASE_URL}/element-summary/${req.params.id}/`, res)
+);
+
 /* --------------- Start server --------------- */
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);

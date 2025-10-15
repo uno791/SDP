@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import styles from "./FPLDashboard.module.css";
 import { getEntryHistory, getUserPicks, getBootstrap } from "../../../api/fpl";
+
 import FPLSummaryCard from "./FPLSummaryCard";
 import FPLTeamLineup from "./FPLTeamLineup";
 import FPLTransferAnalysis from "./FPLTransferAnalysis";
-import FPLLeagueInsights from "./FPLLeagueInsights"; // ✅ newly added
+import FPLLeagueInsights from "./FPLLeagueInsights";
+import FPLBestPlayers from "./FPLBestPlayers";
+import FPLRecommendedTransfers from "./FPLRecommendedTransfers";
 
 // --------------------
 // Type Definitions
 // --------------------
 
-// Full player structure as returned by the FPL API
+// Player as returned by FPL API
 export interface FPLPlayer {
   id: number;
   web_name: string;
@@ -63,7 +66,7 @@ export default function FPLDashboard({ teamId, onBack }: Props) {
       try {
         setLoading(true);
 
-        // 1️⃣ Load bootstrap (player metadata)
+        // 1️⃣ Load bootstrap (all player metadata)
         const bootstrap = (await getBootstrap()) as FPLBootstrap | null;
         const playerDict: Record<number, FPLPlayer> = Object.fromEntries(
           (bootstrap?.elements || [])
@@ -72,26 +75,27 @@ export default function FPLDashboard({ teamId, onBack }: Props) {
         );
         setPlayers(playerDict);
 
-        // 2️⃣ Load entry history (points, ranks, etc.)
+        // 2️⃣ Load team’s entry history
         const history = (await getEntryHistory(teamId)) as FPLHistory | null;
         setSummary(history);
 
-        // Determine the latest gameweek played
+        // Get latest Gameweek
         const currentGw = history?.current?.slice(-1)[0]?.event || null;
         setCurrentGW(currentGw);
 
-        // 3️⃣ Load picks for latest gameweek
+        // 3️⃣ Load user picks for the latest GW
         if (!currentGw) {
           setPicks([]);
           return;
         }
+
         const picksData = (await getUserPicks(
           teamId,
           currentGw
         )) as FPLPicks | null;
         setPicks(picksData?.picks || []);
-      } catch (err) {
-        console.error("Error loading FPL dashboard:", err);
+      } catch (error) {
+        console.error("Error loading FPL dashboard:", error);
       } finally {
         setLoading(false);
       }
@@ -110,17 +114,25 @@ export default function FPLDashboard({ teamId, onBack }: Props) {
         ← Back
       </button>
 
-      {/* Summary of team performance */}
+      {/* Team Summary */}
       {summary && <FPLSummaryCard data={summary} />}
 
-      {/* Current team lineup */}
+      {/* Lineup */}
       {picks.length > 0 && <FPLTeamLineup picks={picks} players={players} />}
 
-      {/* Transfer analysis */}
+      {/* Transfer Analysis */}
       <FPLTransferAnalysis teamId={teamId} players={players} />
 
-      {/* ✅ New: Mini-league insights and stats */}
+      {/* League Insights */}
       {currentGW && <FPLLeagueInsights teamId={teamId} currentGW={currentGW} />}
+
+      {/* Best Performing Players */}
+      <FPLBestPlayers />
+
+      {/* Recommended Transfers */}
+      {currentGW && (
+        <FPLRecommendedTransfers teamId={teamId} currentGW={currentGW} />
+      )}
     </div>
   );
 }
