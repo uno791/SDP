@@ -11,7 +11,6 @@ const SECTIONS: Section[] = [
   { id: "watchalongs", label: "Watchalong Hub" },
   { id: "user-games", label: "User Games" },
   { id: "mymatches", label: "My Matches" },
-  { id: "fpl", label: "FPL Dashboard" }, // ✅ Added new menu item
   { id: "signup", label: "SignUp/LogIn" },
 ];
 
@@ -41,7 +40,6 @@ export default function BurgerMenu({ open, onClose }: BurgerMenuProps) {
           <X />
         </button>
       </div>
-
       <nav className={styles.nav}>
         {sections.map((s) => (
           <a

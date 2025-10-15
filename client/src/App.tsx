@@ -13,13 +13,14 @@ import CreateMatch from "./pages/MatchPages/CreateMatch";
 import LiveMatchUpdate from "./pages/MatchPages/LiveMatchUpdate";
 import LandingPage from "./pages/LandingPage";
 import UserGamesPage from "./pages/UserGamesPage";
+// import the new profile page
 import ProfilePage from "./pages/ProfilePage";
 import MatchViewer from "./pages/MatchViewer";
 import FavouritesPage from "./pages/FavouritesPage";
+
 import PlayerStats from "./pages/PlayerStats";
 import Commentary from "./pages/Commentary";
 import Watchalongs from "./pages/Watchalongs";
-import FPLPage from "./pages/FPLPage";
 
 function App() {
   return (
@@ -27,24 +28,23 @@ function App() {
       <UserProvider>
         <Router>
           <Routes>
-            {/* Routes that include the header/nav from Layout */}
+            {/* Routes inside Layout will have the NavBar */}
             <Route element={<Layout />}>
-              <Route path="/oldhome" element={<Home />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/doodlehome" element={<DoodleHome />} />
               <Route path="/mymatches" element={<MyMatches />} />
               <Route path="create-match" element={<CreateMatch />} />
-              <Route path="/edit-match/:id" element={<CreateMatch />} />
-              <Route path="/create-match/:id" element={<CreateMatch />} />
+              <Route path="/edit-match/:id" element={<CreateMatch />} />{" "}
+              {/* ✅ new route */}
+              <Route path="/create-match/:id" element={<CreateMatch />} />{" "}
+              {/* <-- add this */}
               <Route path="/live/:id" element={<LiveMatchUpdate />} />
               <Route path="/favourite" element={<FavouritesPage />} />
               <Route path="/user-games" element={<UserGamesPage />} />
+              {/* New Profile route */}
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/watchalongs" element={<Watchalongs />} />
-              <Route path="/fpl" element={<FPLPage />} />{" "}
-              {/* ✅ moved inside Layout */}
             </Route>
-
-            {/* Routes that don't use Layout */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/login" element={<LoginPage />} />
