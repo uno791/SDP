@@ -140,8 +140,20 @@ export type ScoreboardResponse = {
   }>;
 };
 
-const SCOREBOARD_BASE =
-  "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard";
+export type LeagueId = "eng1" | "esp1" | "ita1" | "ger1" | "fra1" | "ucl" | "uel" | "uecl";
+
+const LEAGUE_TO_PATH: Record<LeagueId, string> = {
+  eng1: "soccer/eng.1",
+  esp1: "soccer/esp.1",
+  ita1: "soccer/ita.1",
+  ger1: "soccer/ger.1",
+  fra1: "soccer/fra.1",
+  ucl: "soccer/uefa.champions",
+  uel: "soccer/uefa.europa",
+  uecl: "soccer/uefa.europa.conf",
+};
+
+const ESPN_API_ROOT = "https://site.api.espn.com/apis/site/v2/sports/";
 
 /** Format YYYYMMDD for ESPN’s `?dates=` */
 export function formatEspnDate(d: Date) {
@@ -151,8 +163,12 @@ export function formatEspnDate(d: Date) {
   return `${y}${m}${day}`;
 }
 
-export async function fetchScoreboard(date?: Date): Promise<ScoreboardResponse> {
-  const url = new URL(SCOREBOARD_BASE);
+export async function fetchScoreboard(
+  date?: Date,
+  league: LeagueId = "eng1"
+): Promise<ScoreboardResponse> {
+  const path = LEAGUE_TO_PATH[league] ?? LEAGUE_TO_PATH.eng1;
+  const url = new URL(`${ESPN_API_ROOT}${path}/scoreboard`);
   if (date) url.searchParams.set("dates", formatEspnDate(date));
   const res = await fetch(url.toString());
   if (!res.ok) throw new Error(`ESPN scoreboard fetch failed: ${res.status}`);
@@ -1020,8 +1036,12 @@ function extractSubMinutesFromPBPByName(
 }
 
 /** ----------- MAIN: fetch + normalize full summary ----------- */
-export async function fetchSummaryNormalized(eventId: string): Promise<SummaryNormalized> {
-  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=${encodeURIComponent(
+export async function fetchSummaryNormalized(
+  eventId: string,
+  league: LeagueId = "eng1"
+): Promise<SummaryNormalized> {
+  const path = LEAGUE_TO_PATH[league] ?? LEAGUE_TO_PATH.eng1;
+  const url = `https://site.api.espn.com/apis/site/v2/sports/${path}/summary?event=${encodeURIComponent(
     eventId
   )}`;
   const res = await fetch(url, { headers: { accept: "application/json" } });
@@ -1110,7 +1130,7 @@ export async function fetchSummaryNormalized(eventId: string): Promise<SummaryNo
     try {
       const date = compDate ? new Date(compDate) : undefined;
       if (date && !isNaN(date.getTime())) {
-        const sb = await fetchScoreboard(date);
+        const sb = await fetchScoreboard(date, league);
         const ev = (sb.events ?? []).find((e) => String(e.id) === String(eventId));
         if (ev) {
           const det = extractStatsFromScoreboardEvent(ev);

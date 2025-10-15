@@ -18,6 +18,7 @@ import ThreeFootball from "../components/LandingPageComp/ThreeFootball";
 import styles from "../components/LandingPageComp/LandingPage.module.css";
 import Loader3D from "../components/LandingPageComp/Layout/Loader3D";
 import PremierLeagueTable from "../components/LandingPageComp/PremierLeagueTable";
+import type { LeagueId } from "../api/espn";
 /* ------------------------------ DATA ------------------------------ */
 const TEAM_NAMES = [
   "Arsenal",
@@ -107,10 +108,63 @@ const newsItems = [
   },
 ];
 
+const LEAGUE_STORAGE_KEY = "league";
+const DEFAULT_LEAGUE: LeagueId = "eng1";
+const LEAGUE_OPTIONS: Array<{ id: LeagueId; label: string }> = [
+  { id: "eng1", label: "Premier League" },
+  { id: "esp1", label: "LaLiga" },
+  { id: "ita1", label: "Serie A" },
+  { id: "ger1", label: "Bundesliga" },
+  { id: "fra1", label: "Ligue 1" },
+  { id: "ucl", label: "UEFA Champions League" },
+  { id: "uel", label: "UEFA Europa League" },
+  { id: "uecl", label: "UEFA Europa Conference League" },
+];
+
+const isLeagueId = (value: string | null): value is LeagueId =>
+  value != null && LEAGUE_OPTIONS.some((option) => option.id === value);
+
 /* ------------------------------ PAGE ------------------------------ */
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [league, setLeague] = useState<LeagueId>(() => {
+    if (typeof window === "undefined") return DEFAULT_LEAGUE;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get("league");
+      if (isLeagueId(query)) {
+        localStorage.setItem(LEAGUE_STORAGE_KEY, query);
+        return query;
+      }
+      const stored = localStorage.getItem(LEAGUE_STORAGE_KEY);
+      if (isLeagueId(stored)) return stored;
+    } catch {
+      /* ignore */
+    }
+    return DEFAULT_LEAGUE;
+  });
+
+  const handleLeagueChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const next = event.target.value as LeagueId;
+    setLeague(next);
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(LEAGUE_STORAGE_KEY, league);
+    } catch {
+      /* ignore storage errors */
+    }
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("league", league);
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    } catch {
+      /* ignore history errors */
+    }
+  }, [league]);
 
   // Fonts
   const FontImports = () => (
@@ -159,8 +213,33 @@ export default function LandingPage() {
 
             <div className={styles.heroOverlay}>
               <h2 className={styles.heroHeading}>
-                LIVE PREMIER LEAGUE ACTION — IN YOUR HANDS
+                LIVE FOOTBALL ACTION - IN YOUR HANDS
               </h2>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  margin: "0.75rem 0",
+                }}
+              >
+                <label htmlFor="landing-league-select" style={{ fontWeight: 600 }}>
+                  League
+                </label>
+                <select
+                  id="landing-league-select"
+                  value={league}
+                  onChange={handleLeagueChange}
+                  aria-label="Select league"
+                  style={{ padding: "0.25rem 0.5rem", borderRadius: "4px" }}
+                >
+                  {LEAGUE_OPTIONS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <p className={styles.heroSub}>
                 REAL-TIME SCORES, FIXTURES, TABLES, AND NEWS
               </p>
@@ -195,13 +274,13 @@ export default function LandingPage() {
         <section id="live" className={styles.sectionWhite}>
           <h3 className={styles.sectionHeading}>Live Matches</h3>
           {/* LiveMatchCard already fetches and renders a full grid with fallback & dedupe */}
-          <LiveMatchCard />
+          <LiveMatchCard league={league} />
         </section>
 
         {/* PAST MATCHES (your static examples) */}
         <section id="past" className={styles.sectionGray}>
           <div className={styles.stack}>
-            <PastMatchCard />
+            <PastMatchCard league={league} />
           </div>
         </section>
 

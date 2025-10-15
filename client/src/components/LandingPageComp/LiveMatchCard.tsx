@@ -3,7 +3,7 @@ import styles from "./LiveMatchCard.module.css";
 import { Link } from "react-router-dom";
 
 /* Adjust the import path if your API file lives elsewhere */
-import type { ScoreboardResponse } from "../../api/espn";
+import type { LeagueId, ScoreboardResponse } from "../../api/espn";
 import {
   fetchScoreboard,
   extractStatsFromScoreboardEvent,
@@ -14,6 +14,7 @@ type Event = ScoreboardResponse["events"][number];
 type GridProps = {
   /** Show the “Live now / Showing matches for YYYY-MM-DD” label above the grid */
   showLabel?: boolean;
+  league?: LeagueId;
 };
 
 /* ---------------- utils ---------------- */
@@ -267,7 +268,7 @@ function LiveMatchCardSingle({
 /* ---------------- Grid with fallback, de-dupe, accordion + 15s polling ---------------- */
 const POLL_MS = 15_000;
 
-export default function LiveMatchCard({ showLabel = true }: GridProps) {
+export default function LiveMatchCard({ showLabel = true, league = "eng1" }: GridProps) {
   const [data, setData] = useState<ScoreboardResponse | null>(null);
   const [usedDate, setUsedDate] = useState<Date | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -293,7 +294,7 @@ export default function LiveMatchCard({ showLabel = true }: GridProps) {
 
       for (let i = 0; i <= maxLookback; i++) {
         try {
-          const res = await fetchScoreboard(day);
+          const res = await fetchScoreboard(day, league);
           const evs = uniqueEvents(res?.events ?? []);
           if (evs.length > 0) {
             found = { ...res, events: evs };
@@ -318,7 +319,7 @@ export default function LiveMatchCard({ showLabel = true }: GridProps) {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [league]);
 
   // Always call hooks before early returns (stable hook order)
   const events = useMemo(() => {
@@ -349,7 +350,7 @@ export default function LiveMatchCard({ showLabel = true }: GridProps) {
 
       const targetDate = usedDate ?? new Date();
       try {
-        const res = await fetchScoreboard(targetDate);
+        const res = await fetchScoreboard(targetDate, league);
         const evs = uniqueEvents(res?.events ?? []);
 
         // Keep currently open card open if it still exists after refresh
@@ -397,7 +398,7 @@ export default function LiveMatchCard({ showLabel = true }: GridProps) {
       stop();
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [usedDate, hasLive, openId]);
+  }, [usedDate, hasLive, openId, league]);
 
   if (loading) return <div className={styles.state}>Loading matches…</div>;
   if (err)
