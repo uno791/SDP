@@ -33,6 +33,8 @@ type Props = {
   sections: MatchViewerSection[];
   goalHighlight?: boolean;
   overlay?: ReactNode;
+  summaryHighlightClassName?: string;
+  winnerSide?: "home" | "away" | null;
 };
 
 export default function MatchViewerContent({
@@ -50,6 +52,8 @@ export default function MatchViewerContent({
   sections,
   goalHighlight = false,
   overlay,
+  summaryHighlightClassName,
+  winnerSide = null,
 }: Props) {
   return (
     <ComicCard>
@@ -69,7 +73,13 @@ export default function MatchViewerContent({
           awayLogoUrl={awayLogoUrl ?? undefined}
           homeScorers={homeScorers}
           awayScorers={awayScorers}
-          className={goalHighlight ? "animate-goal" : undefined}
+          className={[
+            goalHighlight ? "animate-goal" : "",
+            summaryHighlightClassName ?? "",
+          ]
+            .filter(Boolean)
+            .join(" ") || undefined}
+          winnerSide={winnerSide}
         />
 
         {sections

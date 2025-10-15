@@ -121,31 +121,34 @@ export default function GameSummaryCard({
   homeScorers,
   awayScorers,
   className,
-}: Props & { className?: string }) {
+  winnerSide = null,
+}: Props & { className?: string; winnerSide?: "home" | "away" | null }) {
   const leftItems = (homeScorers ?? []).map(fmtScorer);
   const rightItems = (awayScorers ?? []).map(fmtScorer);
+  const rootClassName = [styles.card, className].filter(Boolean).join(" ");
 
   const NameWithLogo = ({
     name,
     logo,
     align = "left",
+    highlight = false,
   }: {
     name: string;
     logo?: string | null;
     align?: "left" | "right";
+    highlight?: boolean;
   }) => {
     const url = logo && String(logo).trim() !== "" ? String(logo) : undefined;
+    const wrapperClass = styles.teamWrapper;
+    const infoClass = [
+      styles.teamInfo,
+      align === "right" ? styles.teamInfoRight : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
     return (
-      <div className={`${className ?? ""}`}>
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 12,
-            justifyContent: align === "left" ? "flex-start" : "flex-end",
-            minWidth: 0,
-          }}
-        >
+      <div className={wrapperClass}>
+        <div className={infoClass}>
           {align === "left" && url ? (
             <img
               src={url}
@@ -159,7 +162,18 @@ export default function GameSummaryCard({
               }}
             />
           ) : null}
-          <span style={{ fontWeight: 700, fontSize: 16, whiteSpace: "nowrap" }}>
+          <span
+            style={{
+              fontWeight: 700,
+              fontSize: 16,
+              whiteSpace: "nowrap",
+              color: highlight ? "#ffffffff" : undefined,
+              textShadow: highlight
+                ? "0 0 12px rgba(251, 191, 36, 0.75)"
+                : undefined,
+              transition: "color 0.8s ease, text-shadow 0.8s ease",
+            }}
+          >
             {name}
           </span>
           {align === "right" && url ? (
@@ -180,13 +194,14 @@ export default function GameSummaryCard({
     );
   };
   return (
-    <div className={styles.card}>
+    <div className={rootClassName}>
       <div className={styles.header}>
         <div className={styles.teamLeft}>
           <NameWithLogo
             name={homeName}
             logo={homeLogoUrl ?? undefined}
             align="left"
+            highlight={winnerSide === "home"}
           />
         </div>
 
@@ -202,6 +217,7 @@ export default function GameSummaryCard({
             name={awayName}
             logo={awayLogoUrl ?? undefined}
             align="right"
+            highlight={winnerSide === "away"}
           />
         </div>
       </div>

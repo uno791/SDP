@@ -41,3 +41,66 @@ h4 {
 main {
   background: transparent;
 }
+
+.falling-card {
+  position: absolute;
+  top: -15vh;
+  border-radius: 0.35rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  animation-name: card-fall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+
+@keyframes card-fall {
+  0% {
+    top: -18vh;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.95;
+  }
+  100% {
+    top: 110vh;
+    opacity: 0;
+  }
+}
+
+.firework {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+  box-shadow:
+    0 -14px currentColor,
+    0 14px currentColor,
+    14px 0 currentColor,
+    -14px 0 currentColor,
+    10px 10px currentColor,
+    -10px 10px currentColor,
+    10px -10px currentColor,
+    -10px -10px currentColor;
+  opacity: 0;
+  animation-name: firework-burst;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes firework-burst {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}

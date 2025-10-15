@@ -199,6 +199,53 @@ const formatEventType = (type: string) =>
 const formatDetail = (detail?: string | null) =>
   detail && detail.trim().length > 0 ? detail : undefined;
 
+const FINAL_STATUS_KEYWORDS = ["final", "full", "completed", "ended"];
+
+function detectWinner(match: Match): "home" | "away" | null {
+  const homeScore = match.home_score ?? null;
+  const awayScore = match.away_score ?? null;
+  if (homeScore == null || awayScore == null) return null;
+  if (homeScore === awayScore) return null;
+  const status = String(match.status ?? "").toLowerCase();
+  const isFinal = FINAL_STATUS_KEYWORDS.some((kw) => status.includes(kw));
+  if (!isFinal) return null;
+  return homeScore > awayScore ? "home" : "away";
+}
+
+function timelineHighlightClass(ev: Event, match: Match): string {
+  const type = ev.event_type?.toLowerCase() ?? "";
+  if (!type) return "";
+  const detail = ev.detail?.toLowerCase() ?? "";
+
+  if (GOAL_TYPES.has(type)) {
+    if (type.includes("penalty") || detail.includes("penalty")) {
+      return styles.timelineItemPenalty;
+    }
+    return styles.timelineItemGoal;
+  }
+
+  if (type.includes("penalty")) {
+    return styles.timelineItemPenalty;
+  }
+
+  if (type.includes("red")) {
+    return styles.timelineItemRedCard;
+  }
+
+  if (
+    type.includes("full") ||
+    type.includes("match_ended") ||
+    type.includes("end_of_game") ||
+    type.includes("game_over")
+  ) {
+    const winner = detectWinner(match);
+    if (winner === "home") return styles.timelineItemWinnerHome;
+    if (winner === "away") return styles.timelineItemWinnerAway;
+  }
+
+  return "";
+}
+
 export default function UserMatchViewer({
   match,
   events,
@@ -304,29 +351,36 @@ export default function UserMatchViewer({
           <p className={styles.timelineEmpty}>No events yet.</p>
         ) : (
           <ul className={styles.timelineList}>
-            {timelineEvents.map((ev) => (
-              <li key={ev.id} className={styles.timelineItem}>
-                <span className={styles.timelineMinute}>
-                  {ev.minute != null ? `${ev.minute}'` : "—"}
-                </span>
-                <div className={styles.timelineBody}>
-                  <span className={styles.timelineType}>
-                    {formatEventType(ev.event_type)}
+            {timelineEvents.map((ev) => {
+              const highlight = timelineHighlightClass(ev, match);
+              const itemClass = [styles.timelineItem, highlight]
+                .filter(Boolean)
+                .join(" ");
+
+              return (
+                <li key={ev.id} className={itemClass}>
+                  <span className={styles.timelineMinute}>
+                    {ev.minute != null ? `${ev.minute}'` : "—"}
                   </span>
-                  <span className={styles.timelineMeta}>
-                    {ev.player_name ?? ""}
-                    {ev.team_id && ev.team_id === match.home_team?.id
-                      ? ` • ${homeName}`
-                      : ev.team_id && ev.team_id === match.away_team?.id
-                      ? ` • ${awayName}`
-                      : ""}
-                    {formatDetail(ev.detail)
-                      ? ` • ${formatDetail(ev.detail)}`
-                      : ""}
-                  </span>
-                </div>
-              </li>
-            ))}
+                  <div className={styles.timelineBody}>
+                    <span className={styles.timelineType}>
+                      {formatEventType(ev.event_type)}
+                    </span>
+                    <span className={styles.timelineMeta}>
+                      {ev.player_name ?? ""}
+                      {ev.team_id && ev.team_id === match.home_team?.id
+                        ? ` • ${homeName}`
+                        : ev.team_id && ev.team_id === match.away_team?.id
+                        ? ` • ${awayName}`
+                        : ""}
+                      {formatDetail(ev.detail)
+                        ? ` • ${formatDetail(ev.detail)}`
+                        : ""}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         ),
     },

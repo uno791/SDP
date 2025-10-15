@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import ComicCard from "../components/MatchViewerComp/ComicCard";
@@ -120,6 +127,9 @@ function buildDisplayScorers(
   };
 }
 
+type OverlayKind = "goal" | "red-card" | "yellow-card" | "winner";
+type OverlayState = { kind: OverlayKind; key: number } | null;
+
 /* ───────── Component ───────── */
 export default function MatchViewer() {
   const [sp] = useSearchParams();
@@ -134,9 +144,91 @@ export default function MatchViewer() {
   >(null);
 
   const [goalAnim, setGoalAnim] = useState(false);
-  const [lastGoalCount, setLastGoalCount] = useState(0);
+  const [summaryHighlight, setSummaryHighlight] = useState<string | null>(null);
+  const [overlayState, setOverlayState] = useState<OverlayState>(null);
+  const [overrideWinner, setOverrideWinner] = useState<"home" | "away" | null>(
+    null
+  );
+
+  const goalCountsRef = useRef<{ home: number; away: number }>({
+    home: 0,
+    away: 0,
+  });
+  const goalAnimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const overlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const redCardTrackerRef = useRef<{ home: number; away: number } | null>(null);
+  const penaltyTrackerRef = useRef<{ home: number; away: number } | null>(null);
+  const yellowCardTrackerRef = useRef<{ home: number; away: number } | null>(
+    null
+  );
+  const winnerHighlightRef = useRef<"home" | "away" | null>(null);
+  const winnerOverrideTimerRef =
+    useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerHighlight = useCallback(
+    (className: string, duration = 2500) => {
+      setSummaryHighlight(className);
+      if (highlightTimerRef.current) {
+        clearTimeout(highlightTimerRef.current);
+      }
+      highlightTimerRef.current = setTimeout(() => {
+        setSummaryHighlight(null);
+        highlightTimerRef.current = null;
+      }, duration);
+    },
+    []
+  );
+
+  const activateOverlay = useCallback(
+    (kind: OverlayKind, duration = 2500) => {
+      const key = Date.now();
+      setOverlayState({ kind, key });
+      if (overlayTimerRef.current) {
+        clearTimeout(overlayTimerRef.current);
+      }
+      overlayTimerRef.current = setTimeout(() => {
+        setOverlayState(null);
+        overlayTimerRef.current = null;
+      }, duration);
+    },
+    []
+  );
+
+  const startGoalAnimation = useCallback(
+    (highlightClass: string, duration = 2500) => {
+      triggerHighlight(highlightClass, duration);
+      activateOverlay("goal", duration);
+      setGoalAnim(true);
+      if (goalAnimTimerRef.current) {
+        clearTimeout(goalAnimTimerRef.current);
+      }
+      goalAnimTimerRef.current = setTimeout(() => {
+        setGoalAnim(false);
+        goalAnimTimerRef.current = null;
+      }, duration);
+    },
+    [activateOverlay, triggerHighlight]
+  );
 
   const today = useMemo(() => new Date(), []);
+
+  useEffect(() => {
+    return () => {
+      if (goalAnimTimerRef.current) {
+        clearTimeout(goalAnimTimerRef.current);
+      }
+      if (highlightTimerRef.current) {
+        clearTimeout(highlightTimerRef.current);
+      }
+      if (overlayTimerRef.current) {
+        clearTimeout(overlayTimerRef.current);
+      }
+      if (winnerOverrideTimerRef.current) {
+        clearTimeout(winnerOverrideTimerRef.current);
+      }
+    };
+  }, []);
 
   // fetch data
   useEffect(() => {
@@ -205,14 +297,315 @@ export default function MatchViewer() {
 
   // trigger animation on goal change
   useEffect(() => {
-    const totalGoals = homeScorers.length + awayScorers.length;
-    if (totalGoals > lastGoalCount) {
-      setGoalAnim(true);
-      const t = setTimeout(() => setGoalAnim(false), 2500);
-      return () => clearTimeout(t);
+    const prev = goalCountsRef.current;
+    const homeCount = homeScorers.length;
+    const awayCount = awayScorers.length;
+    const deltaHome = homeCount - prev.home;
+    const deltaAway = awayCount - prev.away;
+
+    if (deltaHome > 0 || deltaAway > 0) {
+      const newLabels: string[] = [];
+      if (deltaHome > 0) {
+        newLabels.push(...homeScorers.slice(-deltaHome));
+      }
+      if (deltaAway > 0) {
+        newLabels.push(...awayScorers.slice(-deltaAway));
+      }
+      const hasPenalty =
+        newLabels.some((label) => /\((?:p|pen)\)/i.test(label)) ||
+        newLabels.some((label) => /penalty/i.test(label));
+
+      startGoalAnimation(hasPenalty ? "animate-penalty" : "animate-goal");
+
+      goalCountsRef.current = { home: homeCount, away: awayCount };
+      return;
     }
-    setLastGoalCount(totalGoals);
-  }, [homeScorers, awayScorers, lastGoalCount]);
+
+    if (prev.home !== homeCount || prev.away !== awayCount) {
+      goalCountsRef.current = { home: homeCount, away: awayCount };
+    }
+  }, [homeScorers, awayScorers, startGoalAnimation]);
+
+  const homeScore = (data as any)?.score?.home ?? null;
+  const awayScore = (data as any)?.score?.away ?? null;
+  const statusText = (data as any)?.statusText ?? null;
+
+  const homeRedCards = data?.home?.disciplineFouls?.redCards ?? 0;
+  const awayRedCards = data?.away?.disciplineFouls?.redCards ?? 0;
+  const homeYellowCards = data?.home?.disciplineFouls?.yellowCards ?? 0;
+  const awayYellowCards = data?.away?.disciplineFouls?.yellowCards ?? 0;
+  const homePenaltiesTaken =
+    data?.home?.shooting?.penaltyKicksTaken ??
+    data?.home?.shooting?.penaltyGoals ??
+    0;
+  const awayPenaltiesTaken =
+    data?.away?.shooting?.penaltyKicksTaken ??
+    data?.away?.shooting?.penaltyGoals ??
+    0;
+
+  const scoreboardWinner = useMemo<"home" | "away" | null>(() => {
+    if (homeScore == null || awayScore == null) return null;
+    if (homeScore === awayScore) return null;
+    const status = String(statusText ?? "").toLowerCase();
+    const finalKeywords = ["ft", "final", "full", "ended", "complete"];
+    const isFinal = finalKeywords.some((kw) => status.includes(kw));
+    if (!isFinal) return null;
+    return homeScore > awayScore ? "home" : "away";
+  }, [homeScore, awayScore, statusText]);
+
+  useEffect(() => {
+    if (redCardTrackerRef.current == null) {
+      redCardTrackerRef.current = { home: homeRedCards, away: awayRedCards };
+      return;
+    }
+    const prev = redCardTrackerRef.current;
+    if (homeRedCards > prev.home || awayRedCards > prev.away) {
+      triggerHighlight("animate-red-card", 2600);
+      activateOverlay("red-card", 2600);
+    }
+    if (homeRedCards !== prev.home || awayRedCards !== prev.away) {
+      redCardTrackerRef.current = { home: homeRedCards, away: awayRedCards };
+    }
+  }, [homeRedCards, awayRedCards, activateOverlay, triggerHighlight]);
+
+  useEffect(() => {
+    if (yellowCardTrackerRef.current == null) {
+      yellowCardTrackerRef.current = {
+        home: homeYellowCards,
+        away: awayYellowCards,
+      };
+      return;
+    }
+    const prev = yellowCardTrackerRef.current;
+    if (homeYellowCards > prev.home || awayYellowCards > prev.away) {
+      triggerHighlight("animate-penalty", 2200);
+      activateOverlay("yellow-card", 2600);
+    }
+    if (homeYellowCards !== prev.home || awayYellowCards !== prev.away) {
+      yellowCardTrackerRef.current = {
+        home: homeYellowCards,
+        away: awayYellowCards,
+      };
+    }
+  }, [
+    homeYellowCards,
+    awayYellowCards,
+    activateOverlay,
+    triggerHighlight,
+  ]);
+
+  useEffect(() => {
+    if (penaltyTrackerRef.current == null) {
+      penaltyTrackerRef.current = {
+        home: homePenaltiesTaken,
+        away: awayPenaltiesTaken,
+      };
+      return;
+    }
+    const prev = penaltyTrackerRef.current;
+    if (homePenaltiesTaken > prev.home || awayPenaltiesTaken > prev.away) {
+      triggerHighlight("animate-penalty", 2600);
+    }
+    if (
+      homePenaltiesTaken !== prev.home ||
+      awayPenaltiesTaken !== prev.away
+    ) {
+      penaltyTrackerRef.current = {
+        home: homePenaltiesTaken,
+        away: awayPenaltiesTaken,
+      };
+    }
+  }, [homePenaltiesTaken, awayPenaltiesTaken, triggerHighlight]);
+
+  useEffect(() => {
+    if (!scoreboardWinner) {
+      winnerHighlightRef.current = null;
+      return;
+    }
+    if (winnerHighlightRef.current === scoreboardWinner) return;
+    winnerHighlightRef.current = scoreboardWinner;
+    triggerHighlight("animate-winner", 3200);
+    activateOverlay("winner", 3200);
+  }, [activateOverlay, scoreboardWinner, triggerHighlight]);
+
+  useEffect(() => {
+    if (!scoreboardWinner) return;
+    if (winnerOverrideTimerRef.current) {
+      clearTimeout(winnerOverrideTimerRef.current);
+      winnerOverrideTimerRef.current = null;
+    }
+    setOverrideWinner(null);
+  }, [scoreboardWinner]);
+
+  const effectiveWinnerSide = overrideWinner ?? scoreboardWinner ?? null;
+
+  const overlayElement = useMemo(() => {
+    if (!overlayState) return undefined;
+    const { kind, key } = overlayState;
+    const baseClass = "fixed inset-0 pointer-events-none overflow-hidden z-50";
+
+    if (kind === "goal") {
+      const palette = [
+        "#f87171",
+        "#34d399",
+        "#60a5fa",
+        "#fbbf24",
+        "#ec4899",
+      ];
+      return (
+        <div
+          key={`overlay-${key}`}
+          className={`${baseClass} flex items-start justify-center`}
+        >
+          {Array.from({ length: 30 }).map((_, i) => {
+            const style: CSSProperties = {
+              left: `${Math.random() * 100}%`,
+              backgroundColor:
+                palette[Math.floor(Math.random() * palette.length)],
+              animationDelay: `${Math.random() * 0.5}s`,
+            };
+            return (
+              <div
+                key={`goal-${key}-${i}`}
+                className="animate-confetti absolute h-2 w-2 rounded-full"
+                style={style}
+              />
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (kind === "red-card" || kind === "yellow-card") {
+      const color = kind === "red-card" ? "#dc2626" : "#facc15";
+      const count = kind === "red-card" ? 42 : 36;
+      return (
+        <div key={`overlay-${key}`} className={baseClass}>
+          {Array.from({ length: count }).map((_, i) => {
+            const style: CSSProperties = {
+              left: `${Math.random() * 100}%`,
+              width: `${12 + Math.random() * 14}px`,
+              height: `${18 + Math.random() * 22}px`,
+              backgroundColor: color,
+              opacity: kind === "yellow-card" ? 0.92 : 0.9,
+              animationDelay: `${Math.random() * 0.4}s`,
+              animationDuration: `${1.6 + Math.random() * 0.9}s`,
+              transform: `rotate(${Math.random() * 60 - 30}deg)`,
+            };
+            return (
+              <div
+                key={`card-${key}-${i}`}
+                className="falling-card"
+                style={style}
+              />
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (kind === "winner") {
+      const colors = [
+        "#facc15",
+        "#38bdf8",
+        "#f97316",
+        "#a855f7",
+        "#f472b6",
+      ];
+      return (
+        <div key={`overlay-${key}`} className={baseClass}>
+          {Array.from({ length: 12 }).map((_, i) => {
+            const style: CSSProperties = {
+              left: `${10 + Math.random() * 80}%`,
+              top: `${15 + Math.random() * 55}%`,
+              color: colors[i % colors.length],
+              animationDelay: `${Math.random() * 0.6}s`,
+              animationDuration: `${1.6 + Math.random() * 0.7}s`,
+            };
+            return (
+              <div
+                key={`firework-${key}-${i}`}
+                className="firework"
+                style={style}
+              />
+            );
+          })}
+        </div>
+      );
+    }
+
+    return undefined;
+  }, [overlayState]);
+
+  const handleTestAnimation = useCallback(
+    (
+      kind:
+        | "goal"
+        | "penalty"
+        | "red"
+        | "yellow"
+        | "winner-home"
+        | "winner-away"
+        | "reset"
+    ) => {
+      switch (kind) {
+        case "goal":
+          startGoalAnimation("animate-goal");
+          break;
+        case "penalty":
+          startGoalAnimation("animate-penalty");
+          break;
+        case "red":
+          triggerHighlight("animate-red-card", 2600);
+          activateOverlay("red-card", 2600);
+          break;
+        case "yellow":
+          triggerHighlight("animate-penalty", 2200);
+          activateOverlay("yellow-card", 2600);
+          break;
+        case "winner-home":
+        case "winner-away": {
+          const side = kind === "winner-home" ? "home" : "away";
+          if (winnerOverrideTimerRef.current) {
+            clearTimeout(winnerOverrideTimerRef.current);
+          }
+          setOverrideWinner(side);
+          triggerHighlight("animate-winner", 3200);
+          activateOverlay("winner", 3200);
+          winnerOverrideTimerRef.current = setTimeout(() => {
+            setOverrideWinner(null);
+            winnerOverrideTimerRef.current = null;
+          }, 3200);
+          break;
+        }
+        case "reset":
+          if (goalAnimTimerRef.current) {
+            clearTimeout(goalAnimTimerRef.current);
+            goalAnimTimerRef.current = null;
+          }
+          setGoalAnim(false);
+          if (highlightTimerRef.current) {
+            clearTimeout(highlightTimerRef.current);
+            highlightTimerRef.current = null;
+          }
+          setSummaryHighlight(null);
+          if (overlayTimerRef.current) {
+            clearTimeout(overlayTimerRef.current);
+            overlayTimerRef.current = null;
+          }
+          setOverlayState(null);
+          if (winnerOverrideTimerRef.current) {
+            clearTimeout(winnerOverrideTimerRef.current);
+            winnerOverrideTimerRef.current = null;
+          }
+          setOverrideWinner(null);
+          break;
+        default:
+          break;
+      }
+    },
+    [activateOverlay, startGoalAnimation, triggerHighlight]
+  );
 
   /* early returns */
   if (!eventId) {
@@ -241,9 +634,6 @@ export default function MatchViewer() {
 
   // safe destructuring
   const { home: H, away: A } = data;
-  const homeScore = (data as any)?.score?.home ?? null;
-  const awayScore = (data as any)?.score?.away ?? null;
-  const statusText = (data as any)?.statusText ?? null;
 
   const fmt = (n?: number | null, suffix = "") =>
     n == null ? "—" : `${n}${suffix}`;
@@ -414,30 +804,62 @@ export default function MatchViewer() {
         awayScorers={awayScorers}
         sections={sections}
         goalHighlight={goalAnim}
-        overlay={
-          goalAnim ? (
-            <div className="fixed inset-0 pointer-events-none flex justify-center items-start z-50">
-              {Array.from({ length: 30 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="animate-confetti absolute w-2 h-2 rounded-full"
-                  style={{
-                    left: `${Math.random() * 100}%`,
-                    backgroundColor: [
-                      "#f87171",
-                      "#34d399",
-                      "#60a5fa",
-                      "#fbbf24",
-                      "#ec4899",
-                    ][Math.floor(Math.random() * 5)],
-                    animationDelay: `${Math.random() * 0.5}s`,
-                  }}
-                />
-              ))}
-            </div>
-          ) : undefined
-        }
+        summaryHighlightClassName={summaryHighlight ?? undefined}
+        winnerSide={effectiveWinnerSide}
+        overlay={overlayElement}
       />
+
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-2 px-4">
+        <button
+          type="button"
+          className="rounded-md border border-emerald-600 px-3 py-1 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
+          onClick={() => handleTestAnimation("goal")}
+        >
+          Test Goal
+        </button>
+        <button
+          type="button"
+          className="rounded-md border border-amber-500 px-3 py-1 text-sm font-semibold text-amber-600 transition hover:bg-amber-50"
+          onClick={() => handleTestAnimation("penalty")}
+        >
+          Test Penalty
+        </button>
+        <button
+          type="button"
+          className="rounded-md border border-red-500 px-3 py-1 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+          onClick={() => handleTestAnimation("red")}
+        >
+          Test Red Card
+        </button>
+        <button
+          type="button"
+          className="rounded-md border border-yellow-500 px-3 py-1 text-sm font-semibold text-yellow-600 transition hover:bg-yellow-50"
+          onClick={() => handleTestAnimation("yellow")}
+        >
+          Test Yellow Card
+        </button>
+        <button
+          type="button"
+          className="rounded-md border border-yellow-500 px-3 py-1 text-sm font-semibold text-yellow-600 transition hover:bg-yellow-50"
+          onClick={() => handleTestAnimation("winner-home")}
+        >
+          Test Winner (Home)
+        </button>
+        <button
+          type="button"
+          className="rounded-md border border-blue-500 px-3 py-1 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+          onClick={() => handleTestAnimation("winner-away")}
+        >
+          Test Winner (Away)
+        </button>
+        <button
+          type="button"
+          className="rounded-md border border-slate-400 px-3 py-1 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+          onClick={() => handleTestAnimation("reset")}
+        >
+          Reset Animations
+        </button>
+      </div>
     </>
   );
 }

@@ -31,6 +31,23 @@
   justify-self: end;
 }
 
+.teamWrapper {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.teamInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.teamInfoRight {
+  justify-content: flex-end;
+}
+
 .teamName {
   font-weight: 700;
   font-size: 1.125rem;

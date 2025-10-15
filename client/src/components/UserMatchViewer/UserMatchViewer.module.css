@@ -47,6 +47,36 @@
   border: 1px solid #e5e7eb;
 }
 
+.timelineItemGoal {
+  border-left: 4px solid #16a34a;
+  background: rgba(134, 239, 172, 0.2);
+  animation: timelineGoalPulse 1.1s ease-in-out;
+}
+
+.timelineItemPenalty {
+  border-left: 4px solid #f97316;
+  background: rgba(251, 191, 36, 0.16);
+  animation: timelinePenaltyBounce 1.2s ease-in-out;
+}
+
+.timelineItemRedCard {
+  border-left: 4px solid #dc2626;
+  background: rgba(254, 226, 226, 0.32);
+  animation: timelineRedCardFlash 1.25s ease-in-out;
+}
+
+.timelineItemWinnerHome,
+.timelineItemWinnerAway {
+  border-left: 4px solid #f59e0b;
+  background: rgba(253, 224, 71, 0.18);
+  animation: timelineWinnerGlow 2s ease-in-out;
+}
+
+.timelineItemWinnerAway {
+  border-left-color: #3b82f6;
+  background: rgba(191, 219, 254, 0.24);
+}
+
 .timelineMinute {
   font-weight: 700;
   color: #047857;
@@ -104,6 +134,58 @@
 
 .chipEmpty {
   color: #6b7280;
+}
+
+@keyframes timelineGoalPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(34, 197, 94, 0);
+  }
+  45% {
+    transform: scale(1.03);
+    box-shadow: 0 0 18px rgba(34, 197, 94, 0.45);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+@keyframes timelinePenaltyBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-6px);
+  }
+  70% {
+    transform: translateY(3px);
+  }
+}
+
+@keyframes timelineRedCardFlash {
+  0% {
+    background-color: rgba(254, 202, 202, 0.32);
+  }
+  40% {
+    background-color: rgba(248, 113, 113, 0.4);
+  }
+  100% {
+    background-color: rgba(254, 226, 226, 0.32);
+  }
+}
+
+@keyframes timelineWinnerGlow {
+  0% {
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0.2);
+  }
+  45% {
+    box-shadow: 0 0 26px rgba(245, 158, 11, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0.15);
+  }
 }
 
 @media (max-width: 640px) {

@@ -20,7 +20,9 @@
 .button:hover {
   transform: translateY(-1px);
   box-shadow: 0 16px 28px rgba(4, 47, 40, 0.18);
-  border-color: rgba(6, 78, 59, 0.32);
+  border-color: rgba(6, 78, 59, 0.178);
+  color: white;
+  background-color: #053d2e;
 }
 
 .button:active {
