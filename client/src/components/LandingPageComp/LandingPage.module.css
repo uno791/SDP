@@ -2,7 +2,6 @@
   min-height: 100vh;
   font-family: "Inter", sans-serif;
   background: linear-gradient(to bottom, #5ea85e, #559755, #4b864b);
-  padding-top: 4.12rem;
 }
 
 /* Loader */
@@ -34,11 +33,6 @@
   justify-content: flex-start;
   overflow: hidden;
   padding: 0 1.5rem;
-  min-height: 100vh;
-  padding-top: 30rem;
-
-  /* ✅ New solid background color from your image */
-  background-color: #568f56; /* sampled from your uploaded green */
 }
 
 /* FOOTBOOK heading */
@@ -55,7 +49,6 @@
   transform-origin: center top;
   pointer-events: none;
   user-select: none;
-  margin-top: 2rem;
 }
 
 .heroContent {
