@@ -1147,7 +1147,7 @@ router.delete("/matches/:id/events/:eventId", async (req, res) => {
       }
     }
 
-    return res.json({ ok: true });
+    return res.json({ success: true });
   } catch (e: any) {
     console.error("DELETE /matches/:id/events/:eventId error", e);
     return res.status(500).json({ error: e.message });
@@ -1172,7 +1172,7 @@ router.delete("/matches/:id/events/:eventId", async (req, res) => {
       .eq("match_id", matchId);
 
     if (error) return res.status(500).json({ error: error.message });
-    return res.json({ ok: true });
+    return res.json({ success: true });
   } catch (e: any) {
     console.error("DELETE /matches/:id/events/:eventId error", e);
     return res.status(500).json({ error: e.message });
@@ -1663,8 +1663,10 @@ router.get("/watchalongs", async (req, res) => {
 });
 
 /* --------------- Start server --------------- */
-app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`Server listening on http://localhost:${PORT}`);
+  });
+}
 
-export default router;
+export default app;

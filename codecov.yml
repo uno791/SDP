@@ -1,0 +1,26 @@
+codecov:
+  require_ci_to_pass: yes
+
+coverage:
+  status:
+    project:
+      client:
+        flags: [client]
+        target: auto
+        threshold: 1%
+      server:
+        flags: [server]
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+
+flags:
+  client:
+    paths:
+      - client/
+  server:
+    paths:
+      - server/
