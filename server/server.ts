@@ -5,10 +5,31 @@ import cors from "cors";
 import "dotenv/config";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const router = express.Router();
 
-app.use(cors());
+//app.use(cors());
+const allowedOrigins = [
+  "https://sdp-sooty.vercel.app", // your Vercel frontend
+  "http://localhost:5173", // local dev (Vite)
+  "http://localhost:3000", // local Next.js (optional)
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn("❌ Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json());
 app.use(router);
 
@@ -1661,6 +1682,86 @@ router.get("/watchalongs", async (req, res) => {
       .json({ error: "Unexpected error fetching watchalongs" });
   }
 });
+
+// ----------------------
+// FPL API proxy routes
+// ----------------------
+const BASE_URL = "https://fantasy.premierleague.com/api";
+
+async function safeFetch(url: string, res: Response) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    const data = await r.json();
+    res.json(data);
+  } catch (err: any) {
+    console.error("FPL API error:", err.message);
+    res.status(500).json({ error: "Failed to fetch FPL data" });
+  }
+}
+
+app.get("/api/fpl/bootstrap-static", (req, res) =>
+  safeFetch(`${BASE_URL}/bootstrap-static/`, res)
+);
+
+app.get("/api/fpl/entry/:id", (req, res) =>
+  safeFetch(`${BASE_URL}/entry/${req.params.id}/`, res)
+);
+
+app.get("/api/fpl/entry/:id/history", (req, res) =>
+  safeFetch(`${BASE_URL}/entry/${req.params.id}/history/`, res)
+);
+
+app.get("/api/fpl/entry/:id/event/:gw/picks", (req, res) =>
+  safeFetch(
+    `${BASE_URL}/entry/${req.params.id}/event/${req.params.gw}/picks/`,
+    res
+  )
+);
+
+app.get("/api/fpl/event/:gw/live", (req, res) =>
+  safeFetch(`${BASE_URL}/event/${req.params.gw}/live/`, res)
+);
+
+app.get("/api/fpl/fixtures", (req, res) =>
+  safeFetch(`${BASE_URL}/fixtures/`, res)
+);
+
+app.get("/api/fpl/teams", (req, res) => safeFetch(`${BASE_URL}/teams/`, res));
+
+app.get("/api/fpl/player/:id", (req, res) =>
+  safeFetch(`${BASE_URL}/element-summary/${req.params.id}/`, res)
+);
+
+// ✅ Fetch all transfers made by a user (entry ID)
+app.get("/api/fpl/entry/:id/transfers", (req, res) =>
+  safeFetch(`${BASE_URL}/entry/${req.params.id}/transfers/`, res)
+);
+
+// ✅ Fetch classic league standings
+app.get("/api/fpl/leagues-classic/:id/standings", (req, res) =>
+  safeFetch(`${BASE_URL}/leagues-classic/${req.params.id}/standings/`, res)
+);
+
+// ✅ Fetch head-to-head (H2H) league standings
+app.get("/api/fpl/leagues-h2h/:id/standings", (req, res) =>
+  safeFetch(`${BASE_URL}/leagues-h2h/${req.params.id}/standings/`, res)
+);
+
+// ✅ Classic League Standings
+app.get("/api/fpl/leagues-classic/:id/standings", (req, res) =>
+  safeFetch(`${BASE_URL}/leagues-classic/${req.params.id}/standings/`, res)
+);
+
+// ✅ Head-to-Head League Standings
+app.get("/api/fpl/leagues-h2h/:id/standings", (req, res) =>
+  safeFetch(`${BASE_URL}/leagues-h2h/${req.params.id}/standings/`, res)
+);
+
+// ✅ Player Element Summary (Detailed stats, fixture history)
+app.get("/api/fpl/element-summary/:id", (req, res) =>
+  safeFetch(`${BASE_URL}/element-summary/${req.params.id}/`, res)
+);
 
 /* --------------- Start server --------------- */
 if (process.env.NODE_ENV !== "test") {
