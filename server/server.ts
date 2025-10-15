@@ -8,31 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const router = express.Router();
 
-// ✅ Configure CORS properly
-const allowedOrigins = [
-  "https://sdp-sooty.vercel.app", // your live frontend on Vercel
-  "http://localhost:5173", // local dev (optional)
-];
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn("❌ Blocked by CORS:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-// Handle preflight requests
-app.options("*", cors());
-
-// ✅ Continue with the rest of middleware
+app.use(cors());
 app.use(express.json());
 app.use(router);
 
