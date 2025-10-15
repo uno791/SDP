@@ -12,6 +12,7 @@ import BurgerMenu from "../components/LandingPageComp/Layout/BurgerMenu";
 import LeagueTable from "../components/LandingPageComp/LeagueTable";
 import LiveMatchCard from "../components/LandingPageComp/LiveMatchCard";
 import PastMatchCard from "../components/LandingPageComp/PastMatchCard";
+import FavouriteLandingMatchesCard from "../components/LandingPageComp/FavouriteLandingMatchesCard";
 import NewsCard from "../components/LandingPageComp/NewsCard";
 import MarqueeWide from "../components/LandingPageComp/MarqueeWide";
 import ThreeFootball from "../components/LandingPageComp/ThreeFootball";
@@ -624,6 +625,13 @@ export default function LandingPage() {
         {/* TEAM TICKER */}
         <section className={styles.ticker}>
           <MarqueeWide words={marqueeWords} />
+        </section>
+
+        {/* FAVOURITE TEAM MATCHES */}
+        <section className={styles.sectionGray}>
+          <div className={styles.stack}>
+            <FavouriteLandingMatchesCard league={league} />
+          </div>
         </section>
 
         {/* LIVE MATCHES — RENDER EXACTLY ONE GRID */}

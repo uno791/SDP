@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom"; // 👈 NEW
 import styles from "./PastMatchCard.module.css";
 
@@ -13,6 +13,9 @@ type Event = ScoreboardResponse["events"][number];
 
 type PastMatchCardProps = {
   league?: LeagueId;
+  title?: string;
+  teamNames?: string[];
+  emptyMessage?: string;
 };
 
 /* ─────────────────────────  SAST helpers  ───────────────────────── */
@@ -77,6 +80,9 @@ function addDaysLocal(ymd: string, delta: number): string {
 function labelLong(ymd: string) {
   return formatDateSAST(dateFromYMD(ymd));
 }
+
+const normalizeName = (value: string | undefined | null) =>
+  value?.toLowerCase().trim() ?? "";
 
 /* ───────────── Utilities ───────────── */
 function uniqueEvents(events: Event[] = []) {
@@ -321,12 +327,53 @@ function Card({
 }
 
 /* ───────────── Grid with date controls ───────────── */
-export default function PastMatchCard({ league = "eng1" }: PastMatchCardProps) {
+export default function PastMatchCard({
+  league = "eng1",
+  title = "Matches",
+  teamNames,
+  emptyMessage = "No matches on this date.",
+}: PastMatchCardProps) {
   const [ymd, setYmd] = useState<string | null>(null);
   const [data, setData] = useState<ScoreboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+
+  const teamNameSet = useMemo(() => {
+    if (teamNames === undefined) return null;
+    const normalized = (teamNames ?? [])
+      .map((name) => normalizeName(name))
+      .filter(Boolean);
+    return new Set(normalized);
+  }, [teamNames]);
+
+  const matchesTeamFilter = useCallback(
+    (ev: Event) => {
+      if (!teamNameSet) return true;
+      if (teamNameSet.size === 0) return false;
+      const comp = ev.competitions?.[0];
+      const competitors = comp?.competitors ?? [];
+      return competitors.some((competitor) => {
+        const team = competitor?.team;
+        const namesToCheck = [
+          team?.displayName,
+          team?.shortDisplayName,
+          team?.name,
+          team?.abbreviation,
+          team?.nickName,
+        ];
+        return namesToCheck.some((name) =>
+          teamNameSet.has(normalizeName(name))
+        );
+      });
+    },
+    [teamNameSet]
+  );
+
+  const filterEvents = useCallback(
+    (events: Event[] = []) => events.filter((ev) => matchesTeamFilter(ev)),
+    [matchesTeamFilter]
+  );
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -345,7 +392,8 @@ export default function PastMatchCard({ league = "eng1" }: PastMatchCardProps) {
       const today = ymdInSAST(new Date());
       try {
         const res = await fetchScoreboard(dateFromYMD(today), league);
-        if ((res?.events?.length ?? 0) > 0) {
+        const filteredToday = filterEvents(uniqueEvents(res?.events ?? []));
+        if (filteredToday.length > 0) {
           if (alive) setYmd(today);
           return;
         }
@@ -354,7 +402,7 @@ export default function PastMatchCard({ league = "eng1" }: PastMatchCardProps) {
       for (let i = 0; i < 30; i++) {
         try {
           const res = await fetchScoreboard(dateFromYMD(probe), league);
-          const evs = uniqueEvents(res?.events ?? []);
+          const evs = filterEvents(uniqueEvents(res?.events ?? []));
           const allPost =
             evs.length > 0 &&
             evs.every(
@@ -374,7 +422,7 @@ export default function PastMatchCard({ league = "eng1" }: PastMatchCardProps) {
     return () => {
       alive = false;
     };
-  }, [ymd, league]);
+  }, [ymd, league, filterEvents]);
 
   // Fetch all matches (pre/in/post) for the selected SAST date
   useEffect(() => {
@@ -400,10 +448,10 @@ export default function PastMatchCard({ league = "eng1" }: PastMatchCardProps) {
 
   const events = useMemo(
     () =>
-      uniqueEvents(data?.events ?? []).sort(
+      filterEvents(uniqueEvents(data?.events ?? [])).sort(
         (a, b) => +new Date(a.date) - +new Date(b.date)
       ),
-    [data]
+    [data, filterEvents]
   );
 
   const prev = () => ymd && setYmd(addDaysLocal(ymd, -1));
@@ -422,7 +470,7 @@ export default function PastMatchCard({ league = "eng1" }: PastMatchCardProps) {
     <>
       {/* Title + date controls */}
       <div className={styles.headerRow}>
-        <h3 className={styles.headerTitle}>Matches</h3>
+        <h3 className={styles.headerTitle}>{title}</h3>
 
         <div className={styles.dateControls}>
           <button
@@ -469,7 +517,7 @@ export default function PastMatchCard({ league = "eng1" }: PastMatchCardProps) {
       {loading && <div className={styles.state}>Loading matches…</div>}
       {err && <div className={`${styles.state} ${styles.error}`}>{err}</div>}
       {!loading && !err && events.length === 0 && (
-        <div className={styles.state}>No matches on this date.</div>
+        <div className={styles.state}>{emptyMessage}</div>
       )}
 
       {!loading &&
