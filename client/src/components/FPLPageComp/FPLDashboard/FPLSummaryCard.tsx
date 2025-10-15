@@ -1,6 +1,15 @@
 import styles from "./FPLSummaryCard.module.css";
 
 export default function FPLSummaryCard({ data }: { data: any }) {
+  // ✅ Handle missing or empty data safely
+  if (!data?.current || data.current.length === 0) {
+    return (
+      <div className={styles.card}>
+        <h2 className={styles.heading}>No data available</h2>
+      </div>
+    );
+  }
+
   const latest = data.current[data.current.length - 1];
   const totalPoints = data.current.reduce(
     (acc: number, gw: any) => acc + gw.points,

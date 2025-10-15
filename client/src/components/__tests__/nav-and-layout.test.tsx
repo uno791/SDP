@@ -60,6 +60,7 @@ describe("navigation components", () => {
       "/watchalongs",
       "/user-games",
       "/mymatches",
+      "/fpl", // ✅ Added this route to match your current app
       "/signup",
     ]);
 
@@ -81,12 +82,11 @@ describe("navigation components", () => {
     const signOut = screen.getByRole("button", { name: /sign out/i });
     expect(signOut).toBeInTheDocument();
 
-    // With a logged-in user the SignUp link should be hidden
-    expect(
-      screen
-        .getAllByRole("link")
-        .map((link) => link.getAttribute("href"))
-    ).not.toContain("/signup");
+    // With a logged-in user, the SignUp link should be hidden
+    const linkHrefs = screen
+      .getAllByRole("link")
+      .map((link) => link.getAttribute("href"));
+    expect(linkHrefs).not.toContain("/signup");
 
     await user.click(signOut);
     expect(onClose).toHaveBeenCalled();
