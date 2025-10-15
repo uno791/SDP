@@ -1,13 +1,14 @@
 # SDP 
-| Artifact                  | Link                                                                                                                                   |
-|---------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| Static Website      | [Static Site](https://sdp-sooty.vercel.app/)                                       |
-| Web Server | [Web Server](https://sdp-webserver.onrender.com/)                                    |
-| Documentation | [Document](https://kamallalloo.github.io/SDP-Documentation/)                                    |
+| Artifact       | Link                                                                                         |
+|----------------|----------------------------------------------------------------------------------------------|
+| Static Website | [Static Site](https://sdp-sooty.vercel.app/)                                                 |
+| Web Server     | [Web Server](https://sdp-webserver.onrender.com/)                                            |
+| Documentation  | [Document](https://kamallalloo.github.io/SDP-Documentation/)                                 |
 
-[![codecov](https://codecov.io/gh/uno791/SDP/branch/main/graph/badge.svg)](https://codecov.io/gh/uno791/SDP)
-[![client coverage](https://codecov.io/gh/uno791/SDP/branch/main/graph/badge.svg?flag=client)](https://codecov.io/gh/uno791/SDP)
-[![server coverage](https://codecov.io/gh/uno791/SDP/branch/main/graph/badge.svg?flag=server)](https://codecov.io/gh/uno791/SDP)
+| Coverage Target | Badge                                                                                                                                                   |
+|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Client UI       | [![Client coverage](https://codecov.io/gh/uno791/SDP/branch/main/graph/badge.svg?flag=client)](https://app.codecov.io/gh/uno791/SDP/tree/main/client)   |
+| Server API      | [![Server coverage](https://codecov.io/gh/uno791/SDP/branch/main/graph/badge.svg?flag=server)](https://app.codecov.io/gh/uno791/SDP/tree/main/server)   |
 
 ## Local Setup
 ### Client
