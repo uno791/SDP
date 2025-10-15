@@ -5,10 +5,15 @@ import styles from "./PastMatchCard.module.css";
 import {
   fetchScoreboard,
   extractStatsFromScoreboardEvent,
+  type LeagueId,
   type ScoreboardResponse,
 } from "../../api/espn";
 
 type Event = ScoreboardResponse["events"][number];
+
+type PastMatchCardProps = {
+  league?: LeagueId;
+};
 
 /* ─────────────────────────  SAST helpers  ───────────────────────── */
 const SAST_TZ = "Africa/Johannesburg";
@@ -316,7 +321,7 @@ function Card({
 }
 
 /* ───────────── Grid with date controls ───────────── */
-export default function PastMatchCard() {
+export default function PastMatchCard({ league = "eng1" }: PastMatchCardProps) {
   const [ymd, setYmd] = useState<string | null>(null);
   const [data, setData] = useState<ScoreboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -324,6 +329,12 @@ export default function PastMatchCard() {
   const [openId, setOpenId] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setYmd(null);
+    setData(null);
+    setOpenId(null);
+  }, [league]);
 
   // First day to show: prefer “today” (SAST) if there are any games,
   // otherwise step back until we find a completed day.
@@ -333,7 +344,7 @@ export default function PastMatchCard() {
     (async () => {
       const today = ymdInSAST(new Date());
       try {
-        const res = await fetchScoreboard(dateFromYMD(today));
+        const res = await fetchScoreboard(dateFromYMD(today), league);
         if ((res?.events?.length ?? 0) > 0) {
           if (alive) setYmd(today);
           return;
@@ -342,7 +353,7 @@ export default function PastMatchCard() {
       let probe = today;
       for (let i = 0; i < 30; i++) {
         try {
-          const res = await fetchScoreboard(dateFromYMD(probe));
+          const res = await fetchScoreboard(dateFromYMD(probe), league);
           const evs = uniqueEvents(res?.events ?? []);
           const allPost =
             evs.length > 0 &&
@@ -363,7 +374,7 @@ export default function PastMatchCard() {
     return () => {
       alive = false;
     };
-  }, [ymd]);
+  }, [ymd, league]);
 
   // Fetch all matches (pre/in/post) for the selected SAST date
   useEffect(() => {
@@ -373,7 +384,7 @@ export default function PastMatchCard() {
       setLoading(true);
       setErr(null);
       try {
-        const res = await fetchScoreboard(dateFromYMD(ymd));
+        const res = await fetchScoreboard(dateFromYMD(ymd), league);
         const evs = uniqueEvents(res?.events ?? []);
         if (alive) setData({ ...res, events: evs });
       } catch (e: any) {
@@ -385,7 +396,7 @@ export default function PastMatchCard() {
     return () => {
       alive = false;
     };
-  }, [ymd]);
+  }, [ymd, league]);
 
   const events = useMemo(
     () =>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import LeagueTable from "./LeagueTable"; // <-- your presentational table
-import { fetchEplStandings } from "../../api/espn"; // <-- adjust path if your espn.ts is elsewhere
+import { fetchEplStandings, type LeagueId } from "../../api/espn"; // <-- adjust path if your espn.ts is elsewhere
 
 type LeagueRow = {
   pos: number;
@@ -18,8 +18,10 @@ const withSign = (n: number) => (n > 0 ? `+${n}` : String(n));
 
 export default function PremierLeagueTable({
   season = CURRENT_YEAR,
+  league = "eng1",
 }: {
   season?: number;
+  league?: LeagueId;
 }) {
   const [rows, setRows] = useState<LeagueRow[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ export default function PremierLeagueTable({
         setErr(null);
 
         // Fetch live EPL standings (top division = level 3 in your helper)
-        const raw = await fetchEplStandings({ season, level: 3 });
+        const raw = await fetchEplStandings({ season, level: 3, league });
 
         // Map API rows to the shape your presentational table expects
         const mapped: LeagueRow[] = (raw ?? []).map((r: any) => {
@@ -75,7 +77,7 @@ export default function PremierLeagueTable({
     return () => {
       alive = false;
     };
-  }, [season]);
+  }, [season, league]);
 
   if (loading) return <div style={{ padding: "0.75rem" }}>Loading…</div>;
   if (err)

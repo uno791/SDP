@@ -156,7 +156,7 @@ describe("Landing page components", () => {
     await waitFor(() =>
       expect(screen.getAllByRole("table")).not.toHaveLength(0)
     );
-    expect(mockFetchStandings).toHaveBeenCalledWith({ season: 2024, level: 3 });
+    expect(mockFetchStandings).toHaveBeenCalledWith({ season: 2024, level: 3, league: "eng1" });
   });
 
   test("PremierLeagueTable shows error message", async () => {
@@ -164,6 +164,11 @@ describe("Landing page components", () => {
     render(<PremierLeagueTable />);
 
     await waitFor(() => expect(screen.getByText("bad")).toBeInTheDocument());
+    expect(mockFetchStandings).toHaveBeenCalledWith({
+      season: new Date().getFullYear(),
+      level: 3,
+      league: "eng1",
+    });
   });
 
   test("NewsCard shows articles and error state", async () => {
@@ -171,11 +176,13 @@ describe("Landing page components", () => {
 
     await waitFor(() => screen.getByText("Big win"));
     expect(screen.getByText("Reporter")).toBeInTheDocument();
+    expect(mockFetchNews).toHaveBeenCalledWith("eng1");
 
     mockFetchNews.mockRejectedValueOnce(new Error("boom"));
-    rerender(<NewsCard key="err" />);
+    rerender(<NewsCard key="err" league="esp1" />);
 
     await waitFor(() => screen.getByText("boom"));
+    expect(mockFetchNews).toHaveBeenLastCalledWith("esp1");
   });
 
   test("LiveMatchCard renders fetched scoreboard", async () => {
@@ -188,11 +195,28 @@ describe("Landing page components", () => {
     await waitFor(() => screen.getByText(/Match Statistics/));
     expect(screen.getByText("Foot")).toBeInTheDocument();
     expect(screen.getByText(/Hero/)).toBeInTheDocument();
+    expect(mockFetchScoreboard).toHaveBeenCalled();
+    const firstCall = mockFetchScoreboard.mock.calls[0];
+    expect(firstCall[0]).toBeInstanceOf(Date);
+    expect(firstCall[1]).toBe("eng1");
 
     const matchViewerLink = screen.getByRole("link", {
       name: /open match viewer/i,
     });
     expect(matchViewerLink).toHaveAttribute("href", "/matchviewer?id=evt-1");
+  });
+
+  test("LiveMatchCard forwards league prop to fetchScoreboard", async () => {
+    mockFetchScoreboard.mockClear();
+
+    render(
+      <MemoryRouter>
+        <LiveMatchCard showLabel league="esp1" />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(mockFetchScoreboard).toHaveBeenCalled());
+    expect(mockFetchScoreboard.mock.calls[0][1]).toBe("esp1");
   });
 
   test("PastMatchCard lists past results and supports navigation", async () => {
@@ -210,6 +234,22 @@ describe("Landing page components", () => {
 
     await user.click(screen.getByRole("button", { name: "Previous day" }));
     expect(mockFetchScoreboard).toHaveBeenCalled();
+    expect(mockFetchScoreboard.mock.calls.some(([, league]) => league === "eng1")).toBe(true);
+  });
+
+  test("PastMatchCard forwards league prop to scoreboard fetch", async () => {
+    mockFetchScoreboard.mockClear();
+
+    render(
+      <MemoryRouter>
+        <PastMatchCard league="ita1" />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(mockFetchScoreboard).toHaveBeenCalled());
+    for (const [, league] of mockFetchScoreboard.mock.calls) {
+      expect(league).toBe("ita1");
+    }
   });
 
   test("PastMatchCard expands completed matches but blocks upcoming fixtures", async () => {

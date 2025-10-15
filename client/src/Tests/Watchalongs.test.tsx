@@ -75,6 +75,8 @@ describe("Watchalongs page", () => {
     jest.setSystemTime(new Date("2025-01-01T12:00:00Z"));
     mockFetchScoreboard.mockReset();
     mockFetchWatchalongContent.mockReset();
+    localStorage.clear();
+    window.history.replaceState({}, "", "/");
   });
 
   afterEach(() => {
@@ -101,30 +103,52 @@ describe("Watchalongs page", () => {
 
     render(<Watchalongs />);
 
-    await waitFor(() =>
+    await waitFor(() => {
       expect(
         screen.queryByText(/Fetching today\'s fixtures/i)
-      ).not.toBeInTheDocument()
-    );
+      ).not.toBeInTheDocument();
+    });
 
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: /Arsenal vs Chelsea/i })).toBeInTheDocument()
-    );
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Arsenal vs Chelsea/i })).toBeInTheDocument();
+    });
 
-    await waitFor(() =>
-      expect(screen.getAllByText(/Watchalong Stream/i)[0]).toBeInTheDocument()
-    );
+    await waitFor(() => {
+      expect(screen.getAllByText(/Watchalong Stream/i)[0]).toBeInTheDocument();
+    });
     expect(screen.getAllByText(/Reaction Clip/i)[0]).toBeInTheDocument();
     expect(mockFetchWatchalongContent).toHaveBeenCalledTimes(2);
+    expect(mockFetchScoreboard).toHaveBeenCalled();
+    for (const [, league] of mockFetchScoreboard.mock.calls) {
+      expect(league).toBe("eng1");
+    }
 
-    // Switch to the completed match and ensure selection updates
-    fireEvent.click(
-      screen.getByRole("button", { name: /Liverpool vs Spurs/i })
+    const leagueSelect = screen.getByLabelText(/League/i);
+    const initialCalls = mockFetchScoreboard.mock.calls.length;
+
+    mockFetchScoreboard.mockResolvedValue({ events: [liveEvent, finalEvent] });
+
+    fireEvent.change(leagueSelect, { target: { value: "esp1" } });
+
+    await waitFor(() =>
+      expect(mockFetchScoreboard.mock.calls.length).toBeGreaterThan(initialCalls)
     );
 
     await waitFor(() =>
       expect(mockFetchWatchalongContent).toHaveBeenCalledTimes(4)
     );
+
+    const subsequentCalls = mockFetchScoreboard.mock.calls.slice(initialCalls);
+    for (const [, league] of subsequentCalls) {
+      expect(league).toBe("esp1");
+    }
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Liverpool vs Spurs/i })).toBeInTheDocument()
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Liverpool vs Spurs/i }));
+
+    await waitFor(() => expect(mockFetchWatchalongContent).toHaveBeenCalledTimes(6));
   });
 
   test("renders empty state when no fixtures are returned", async () => {
@@ -138,5 +162,9 @@ describe("Watchalongs page", () => {
         screen.getByText(/No fixtures found for this window/i)
       ).toBeInTheDocument()
     );
+    expect(mockFetchScoreboard).toHaveBeenCalled();
+    for (const [, league] of mockFetchScoreboard.mock.calls) {
+      expect(league).toBe("eng1");
+    }
   });
 });
