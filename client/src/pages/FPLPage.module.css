@@ -8,7 +8,8 @@
   justify-content: flex-start;
   min-height: 100vh;
   padding: 2rem;
-  background: #0f1117;
+  background: linear-gradient(180deg, #f9fef9 0%, #dcfce7 100%);
+
   color: #f8f8f8;
   font-family: "Poppins", sans-serif;
 }

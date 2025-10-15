@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "./FPLDashboard.module.css";
 import { getEntryHistory, getUserPicks, getBootstrap } from "../../../api/fpl";
-
 import FPLSummaryCard from "./FPLSummaryCard";
 import FPLTeamLineup from "./FPLTeamLineup";
 import FPLTransferAnalysis from "./FPLTransferAnalysis";
@@ -54,6 +53,7 @@ interface Props {
 // --------------------
 // Component
 // --------------------
+
 export default function FPLDashboard({ teamId, onBack }: Props) {
   const [summary, setSummary] = useState<FPLHistory | null>(null);
   const [players, setPlayers] = useState<Record<number, FPLPlayer>>({});
@@ -123,16 +123,16 @@ export default function FPLDashboard({ teamId, onBack }: Props) {
       {/* Transfer Analysis */}
       <FPLTransferAnalysis teamId={teamId} players={players} />
 
+      {/* Recommended Transfers */}
+      {currentGW && (
+        <FPLRecommendedTransfers teamId={teamId} currentGW={currentGW} />
+      )}
+
       {/* League Insights */}
       {currentGW && <FPLLeagueInsights teamId={teamId} currentGW={currentGW} />}
 
       {/* Best Performing Players */}
       <FPLBestPlayers />
-
-      {/* Recommended Transfers */}
-      {currentGW && (
-        <FPLRecommendedTransfers teamId={teamId} currentGW={currentGW} />
-      )}
     </div>
   );
 }

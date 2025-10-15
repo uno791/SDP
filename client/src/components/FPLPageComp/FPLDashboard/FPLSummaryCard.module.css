@@ -1,56 +1,161 @@
 .card {
-  background: #181828;
-  padding: 1.5rem;
-  border-radius: 15px;
-  box-shadow: 0 0 15px rgba(0, 255, 150, 0.1);
-  margin: 1rem auto;
-  max-width: 600px;
+  background: #ffffff;
+  padding: 1.8rem;
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(22, 101, 52, 0.1);
+  margin: 1.5rem auto;
+  max-width: 650px;
   text-align: center;
+  border: 1px solid #bbf7d0;
+  transition: all 0.3s ease;
 }
 
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 22px rgba(22, 101, 52, 0.15);
+}
+
+/* ---------- Heading ---------- */
 .heading {
-  color: #00ff9d;
-  font-size: 1.4rem;
+  color: #14532d;
+  font-size: 1.6rem;
+  font-weight: 700;
   margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
 }
 
+/* ---------- Summary Row ---------- */
 .summaryRow {
   display: flex;
   justify-content: space-around;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
+/* ---------- Stat Box ---------- */
 .statBox {
-  background: #202032;
-  border-radius: 10px;
+  background: linear-gradient(180deg, #f9fef9 0%, #e6f9e6 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
   padding: 1rem;
   flex: 1;
-  min-width: 120px;
-  margin: 0.3rem;
+  min-width: 130px;
+  max-width: 180px;
+  margin: 0.4rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(22, 101, 52, 0.08);
 }
 
+.statBox:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 14px rgba(22, 101, 52, 0.15);
+}
+
+/* Stat Value */
 .statBox h3 {
-  font-size: 1.6rem;
-  color: #00e0ff;
+  font-size: 1.8rem;
+  color: #15803d;
   margin: 0;
+  font-weight: 700;
 }
 
+/* Stat Label */
 .statBox p {
-  color: #aaa;
-  margin-top: 0.3rem;
-  font-size: 0.9rem;
+  color: #166534;
+  margin-top: 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
+/* ---------- Extra Stats Row ---------- */
 .extraRow {
   display: flex;
   justify-content: center;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1.2rem;
   margin-top: 1rem;
-  color: #ccc;
+  color: #166534;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
+/* Small Stats (e.g., percentage or secondary info) */
 .statSmall span {
-  color: #00ff9d;
-  font-weight: 600;
+  color: #16a34a;
+  font-weight: 700;
+}
+
+/* ---------- Responsive Layout ---------- */
+@media (max-width: 768px) {
+  .card {
+    padding: 1.2rem;
+    border-radius: 16px;
+  }
+
+  .heading {
+    font-size: 1.4rem;
+  }
+
+  .summaryRow {
+    justify-content: center; /* ✅ Center on tablets */
+    gap: 0.8rem;
+  }
+
+  .statBox {
+    padding: 0.8rem;
+    min-width: 120px;
+  }
+
+  .statBox h3 {
+    font-size: 1.5rem;
+  }
+
+  .extraRow {
+    justify-content: center; /* ✅ Center on tablets */
+    gap: 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 1rem;
+  }
+
+  .heading {
+    font-size: 1.25rem;
+  }
+
+  .summaryRow {
+    justify-content: center; /* Center all boxes on mobile */
+  }
+
+  .statBox {
+    min-width: 100px;
+    padding: 0.7rem;
+
+    /* ✅ Center number + label */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .statBox h3 {
+    font-size: 1.3rem;
+    text-align: center;
+  }
+
+  .statBox p {
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  .extraRow {
+    justify-content: center;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+  }
 }
