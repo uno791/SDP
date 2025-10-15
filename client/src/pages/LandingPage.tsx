@@ -231,7 +231,11 @@ export default function LandingPage() {
                   value={league}
                   onChange={handleLeagueChange}
                   aria-label="Select league"
-                  style={{ padding: "0.25rem 0.5rem", borderRadius: "4px" }}
+                  style={{
+                    padding: "0.25rem 0.5rem",
+                    borderRadius: "4px",
+                    color: "#000",
+                  }}
                 >
                   {LEAGUE_OPTIONS.map((option) => (
                     <option key={option.id} value={option.id}>
@@ -287,13 +291,13 @@ export default function LandingPage() {
         {/* LEAGUE TABLE */}
         <section id="table" className={styles.sectionWhite}>
           <h3 className={styles.sectionHeading}>League Table</h3>
-          <PremierLeagueTable />
+          <PremierLeagueTable league={league} />
         </section>
 
         {/* NEWS */}
         <section id="news" className={styles.sectionGray}>
           <h3 className={styles.sectionHeading}>Latest News</h3>
-          <NewsCard />
+          <NewsCard league={league} />
         </section>
 
         {/* FOOTER */}

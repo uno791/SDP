@@ -1,7 +1,7 @@
 // components/LandingPageComp/NewsCard.tsx
 import { useEffect, useState } from "react";
 import styles from "./NewsCard.module.css";
-import { fetchEplNews } from "../../api/espn";
+import { fetchEplNews, type LeagueId } from "../../api/espn";
 // If your espn.ts exports a type, you can import it too:
 // import type { EspnNewsResponse } from "../../api/espn";
 
@@ -15,7 +15,7 @@ type UiNews = {
   tag?: string; // e.g. Analysis, Report
 };
 
-export default function NewsCard() {
+export default function NewsCard({ league = "eng1" }: { league?: LeagueId }) {
   const [items, setItems] = useState<UiNews[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -27,7 +27,7 @@ export default function NewsCard() {
       try {
         setLoading(true);
         // Expecting fetchEplNews() in api/espn.ts to return ESPN-like news payload
-        const data: any = await fetchEplNews();
+        const data: any = await fetchEplNews(league);
 
         const mapped: UiNews[] = (data?.articles ?? []).map((a: any) => {
           const when = a.published || a.lastModified || a.updated || "";
@@ -76,7 +76,7 @@ export default function NewsCard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [league]);
 
   return (
     <aside className={styles.card}>

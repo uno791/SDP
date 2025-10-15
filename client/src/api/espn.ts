@@ -154,6 +154,7 @@ const LEAGUE_TO_PATH: Record<LeagueId, string> = {
 };
 
 const ESPN_API_ROOT = "https://site.api.espn.com/apis/site/v2/sports/";
+const ESPN_SITE_WEB_ROOT = "https://site.web.api.espn.com/apis/v2/sports/";
 
 /** Format YYYYMMDD for ESPN’s `?dates=` */
 export function formatEspnDate(d: Date) {
@@ -217,10 +218,9 @@ export type EspnNewsResponse = {
   }>;
 };
 
-const NEWS_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news";
-
-export async function fetchEplNews(): Promise<EspnNewsResponse> {
-  const res = await fetch(NEWS_URL);
+export async function fetchEplNews(league: LeagueId = "eng1"): Promise<EspnNewsResponse> {
+  const path = LEAGUE_TO_PATH[league] ?? LEAGUE_TO_PATH.eng1;
+  const res = await fetch(`${ESPN_API_ROOT}${path}/news`);
   if (!res.ok) throw new Error(`ESPN news fetch failed: ${res.status}`);
   return res.json();
 }
@@ -235,9 +235,6 @@ export type StandingsWire = {
   standings?: Array<{ entries: StandingsEntry[] }>;
   children?: Array<{ name?: string; standings: { entries: StandingsEntry[] } }>;
 };
-const STANDINGS_BASE =
-  "https://site.web.api.espn.com/apis/v2/sports/soccer/eng.1/standings";
-
 function extractEntries(data: StandingsWire): StandingsEntry[] {
   const direct = (data.standings ?? []).flatMap((s) => s?.entries ?? []);
   const fromChildren = (data.children ?? []).flatMap((c) => c?.standings?.entries ?? []);
@@ -263,14 +260,17 @@ export async function fetchEplStandings(opts?: {
   season?: number;
   seasontype?: 1 | 2 | 3;
   level?: number;
+  league?: LeagueId;
 }) {
   const season = opts?.season;
   const level = String(opts?.level ?? 3);
+  const league = opts?.league ?? "eng1";
+  const path = LEAGUE_TO_PATH[league] ?? LEAGUE_TO_PATH.eng1;
   const seasonTypeCandidates = opts?.seasontype
     ? [opts.seasontype]
     : ([undefined, 2, 1, 3] as Array<1 | 2 | 3 | undefined>);
   for (const st of seasonTypeCandidates) {
-    const url = new URL(STANDINGS_BASE);
+    const url = new URL(`${ESPN_SITE_WEB_ROOT}${path}/standings`);
     if (season) url.searchParams.set("season", String(season));
     url.searchParams.set("level", level);
     if (st !== undefined) url.searchParams.set("seasontype", String(st));

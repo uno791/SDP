@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { PlayCircle } from "lucide-react";
 
 import styles from "../components/LandingPageComp/WatchalongHub.module.css";
-import type { ScoreboardResponse } from "../api/espn";
-import { fetchScoreboard } from "../api/espn";
+import { fetchScoreboard, type LeagueId, type ScoreboardResponse } from "../api/espn";
 import {
   fetchWatchalongContent,
   type WatchalongItem,
@@ -52,6 +51,21 @@ const FontImports = () => (
 type ScoreboardEvent = ScoreboardResponse["events"][number];
 type Competition = ScoreboardEvent["competitions"][number];
 type Competitor = Competition["competitors"][number];
+
+const LEAGUE_STORAGE_KEY = "league";
+const LEAGUE_OPTIONS: Array<{ id: LeagueId; label: string }> = [
+  { id: "eng1", label: "Premier League" },
+  { id: "esp1", label: "LaLiga" },
+  { id: "ita1", label: "Serie A" },
+  { id: "ger1", label: "Bundesliga" },
+  { id: "fra1", label: "Ligue 1" },
+  { id: "ucl", label: "UEFA Champions League" },
+  { id: "uel", label: "UEFA Europa League" },
+  { id: "uecl", label: "UEFA Europa Conference League" },
+];
+
+const isLeagueId = (value: string | null): value is LeagueId =>
+  value != null && LEAGUE_OPTIONS.some((option) => option.id === value);
 
 function addDays(base: Date, delta: number) {
   const copy = new Date(base);
@@ -133,7 +147,7 @@ function orderByKickoffDesc(a: MatchOption, b: MatchOption) {
   );
 }
 
-async function fetchMatchesWindow(): Promise<{
+async function fetchMatchesWindow(league: LeagueId): Promise<{
   liveUpcoming: MatchOption[];
   completed: MatchOption[];
 }> {
@@ -150,7 +164,7 @@ async function fetchMatchesWindow(): Promise<{
 
     let response: ScoreboardResponse;
     try {
-      response = await fetchScoreboard(addDays(now, offset));
+      response = await fetchScoreboard(addDays(now, offset), league);
     } catch (error) {
       console.warn("Failed to fetch scoreboard", error);
       continue;
@@ -213,6 +227,23 @@ const initialContentState: ContentState = {
 };
 
 export default function Watchalongs() {
+  const [league, setLeague] = useState<LeagueId>(() => {
+    if (typeof window === "undefined") return "eng1";
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get("league");
+      if (isLeagueId(query)) {
+        localStorage.setItem(LEAGUE_STORAGE_KEY, query);
+        return query;
+      }
+      const stored = localStorage.getItem(LEAGUE_STORAGE_KEY);
+      if (isLeagueId(stored)) return stored;
+    } catch {
+      /* ignore */
+    }
+    return "eng1";
+  });
+
   const [liveMatches, setLiveMatches] = useState<MatchOption[]>([]);
   const [recentMatches, setRecentMatches] = useState<MatchOption[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(true);
@@ -225,12 +256,41 @@ export default function Watchalongs() {
   const [reactionsState, setReactionsState] =
     useState<ContentState>(initialContentState);
 
+  const leagueLabel = useMemo(
+    () => LEAGUE_OPTIONS.find((option) => option.id === league)?.label ?? "Selected league",
+    [league]
+  );
+
+  const handleLeagueChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setLeague(event.target.value as LeagueId);
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(LEAGUE_STORAGE_KEY, league);
+    } catch {
+      /* ignore */
+    }
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("league", league);
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    } catch {
+      /* ignore */
+    }
+  }, [league]);
+
   useEffect(() => {
     let cancelled = false;
     setMatchesLoading(true);
     setMatchesError(null);
 
-    fetchMatchesWindow()
+    setLiveMatches([]);
+    setRecentMatches([]);
+    setSelectedMatchId(null);
+
+    fetchMatchesWindow(league)
       .then(({ liveUpcoming, completed }) => {
         if (cancelled) return;
         setLiveMatches(liveUpcoming);
@@ -259,7 +319,7 @@ export default function Watchalongs() {
         setMatchesError(
           error instanceof Error
             ? error.message
-            : "Failed to load Premier League fixtures."
+            : `Failed to load ${leagueLabel} fixtures.`
         );
       })
       .finally(() => {
@@ -269,7 +329,7 @@ export default function Watchalongs() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [league, leagueLabel]);
 
   const selectedMatch = useMemo(() => {
     return (
@@ -479,10 +539,39 @@ export default function Watchalongs() {
             {/* <span className={styles.heroBadge}>Premier League Companion</span> */}
             <h1 className={styles.heroTitle}>Watchalong</h1>
             <p className={styles.heroSubtitle}>
-              Pick a Premier League fixture, jump into trusted creator
+              Pick a {leagueLabel} fixture, jump into trusted creator
               watchalongs, and catch the latest fan reaction clips while the
               action unfolds.
             </p>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginTop: "1rem",
+              }}
+            >
+              <label htmlFor="watchalongs-league-select" style={{ fontWeight: 600 }}>
+                League
+              </label>
+              <select
+                id="watchalongs-league-select"
+                value={league}
+                onChange={handleLeagueChange}
+                aria-label="Select league"
+                style={{
+                  padding: "0.25rem 0.5rem",
+                  borderRadius: "4px",
+                  color: "#000",
+                }}
+              >
+                {LEAGUE_OPTIONS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className={styles.heroStats}>
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>Live now</span>
