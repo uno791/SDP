@@ -1717,6 +1717,16 @@ app.get("/api/fpl/entry/:id/transfers", (req, res) =>
   safeFetch(`${BASE_URL}/entry/${req.params.id}/transfers/`, res)
 );
 
+// ✅ Fetch classic league standings
+app.get("/api/fpl/leagues-classic/:id/standings", (req, res) =>
+  safeFetch(`${BASE_URL}/leagues-classic/${req.params.id}/standings/`, res)
+);
+
+// ✅ Fetch head-to-head (H2H) league standings
+app.get("/api/fpl/leagues-h2h/:id/standings", (req, res) =>
+  safeFetch(`${BASE_URL}/leagues-h2h/${req.params.id}/standings/`, res)
+);
+
 /* --------------- Start server --------------- */
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);

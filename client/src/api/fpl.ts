@@ -21,87 +21,119 @@ export async function safeGet<T>(url: string): Promise<T | null> {
  */
 const isLocalhost = window.location.hostname === "localhost";
 const BASE_PROXY_URL = isLocalhost
-  ? "http://localhost:3000/api/fpl" // ✅ FIXED — removed extra /api
-  : "https://your-app-name.vercel.app/api/fpl"; // ← replace with your actual Vercel app domain
+  ? "http://localhost:3000/api/fpl"
+  : "https://your-app-name.vercel.app/api/fpl"; // Replace with your real Vercel URL
 
 /**
- * Fetch general static data:
- * players, teams, events, and game settings.
+ * Interfaces for FPL endpoints
+ */
+export interface FPLEntry {
+  id: number;
+  name: string;
+  player_first_name: string;
+  player_last_name: string;
+  summary_overall_points: number;
+  summary_overall_rank: number;
+  leagues?: {
+    classic?: {
+      id: number;
+      name: string;
+      entry_rank: number;
+    }[];
+  };
+}
+
+export interface UserPicksResponse {
+  picks: {
+    element: number;
+    is_captain: boolean;
+  }[];
+}
+
+export interface LeagueStandingsResponse {
+  standings: {
+    results: {
+      entry: number;
+      entry_name: string;
+      player_name: string;
+      rank: number;
+      last_rank: number;
+      total: number;
+    }[];
+  };
+}
+
+/**
+ * Fetch general static data (players, teams, events, settings)
  */
 export const getBootstrap = () => safeGet(`${BASE_PROXY_URL}/bootstrap-static`);
 
 /**
- * Fetch a specific user's (team manager’s) information.
- * Includes their name, team name, region, favourite team, etc.
- *
- * @param entryId - the manager’s team ID
+ * Fetch a specific user's (team manager’s) info
  */
 export const getEntry = (entryId: number) =>
-  safeGet(`${BASE_PROXY_URL}/entry/${entryId}`);
+  safeGet<FPLEntry>(`${BASE_PROXY_URL}/entry/${entryId}`);
 
 /**
- * Fetch historical and current performance data for a user.
- * Contains total points, ranks, and transfers per gameweek.
- *
- * @param entryId - the manager’s team ID
+ * Fetch user's entry history
  */
 export const getEntryHistory = (entryId: number) =>
   safeGet(`${BASE_PROXY_URL}/entry/${entryId}/history`);
 
 /**
- * Fetch the user's picks (players selected) for a given gameweek.
- *
- * @param entryId - the manager’s team ID
- * @param event - the gameweek number
+ * Fetch user's picks for a specific gameweek
  */
 export const getUserPicks = (entryId: number, event: number) =>
-  safeGet(`${BASE_PROXY_URL}/entry/${entryId}/event/${event}/picks`);
+  safeGet<UserPicksResponse>(
+    `${BASE_PROXY_URL}/entry/${entryId}/event/${event}/picks`
+  );
 
 /**
- * Fetch real-time live data for a specific gameweek:
- * includes player performance and bonus points.
- *
- * @param event - the gameweek number
+ * Fetch real-time live data for a specific gameweek
  */
 export const getLiveGWData = (event: number) =>
   safeGet(`${BASE_PROXY_URL}/event/${event}/live`);
 
 /**
- * Fetch standings for a classic league.
- *
- * @param leagueId - FPL classic league ID
+ * Fetch standings for a classic league
  */
 export const getLeagueStandings = (leagueId: number) =>
-  safeGet(`${BASE_PROXY_URL}/leagues-classic/${leagueId}/standings`);
+  safeGet<LeagueStandingsResponse>(
+    `${BASE_PROXY_URL}/leagues-classic/${leagueId}/standings`
+  );
 
 /**
- * Fetch data for head-to-head league standings.
- *
- * @param leagueId - H2H league ID
+ * Fetch data for head-to-head league standings
  */
 export const getH2HLeagueStandings = (leagueId: number) =>
   safeGet(`${BASE_PROXY_URL}/leagues-h2h/${leagueId}/standings`);
 
 /**
- * Fetch a list of fixtures for a given gameweek or season.
+ * Fetch all fixtures
  */
 export const getFixtures = () => safeGet(`${BASE_PROXY_URL}/fixtures`);
 
 /**
- * Fetch all teams and their metadata (names, codes, short names, etc.)
+ * Fetch all teams
  */
 export const getTeams = () => safeGet(`${BASE_PROXY_URL}/teams`);
 
 /**
- * Fetch all transfers made by a given user (entry ID)
+ * Fetch transfers made by a given user
  */
 export const getTransfers = (entryId: number) =>
   safeGet(`${BASE_PROXY_URL}/entry/${entryId}/transfers`);
 
 /**
- * Fetch detailed player (element) data by ID.
- *
- * @param elementId - Player’s unique ID in FPL
+ * Fetch detailed player (element) data by ID
  */
 export const getPlayerSummary = (elementId: number) =>
   safeGet(`${BASE_PROXY_URL}/element-summary/${elementId}`);
+
+/**
+ * Fetch all leagues the user is part of
+ */
+export const getUserLeagues = async (entryId: number) => {
+  const entryData = await getEntry(entryId);
+  return entryData?.leagues?.classic || [];
+};

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import styles from "./FPLTransferAnalysis.module.css";
-import { getTransfers, getLiveGWData } from "../../../api/fpl";
+import { getTransfers, getLiveGWData, getUserPicks } from "../../../api/fpl";
 
 interface Transfer {
   element_in: number;
@@ -44,6 +44,9 @@ export default function FPLTransferAnalysis({ teamId, players }: Props) {
   >([]);
   const [selectedGW, setSelectedGW] = useState<number | "all">("all");
   const [loading, setLoading] = useState(true);
+  const [captainEfficiency, setCaptainEfficiency] = useState<number | null>(
+    null
+  );
 
   // Fetch transfer + live data
   useEffect(() => {
@@ -62,12 +65,23 @@ export default function FPLTransferAnalysis({ teamId, players }: Props) {
           diff: number;
         }[] = [];
 
+        const capEffValues: number[] = [];
+
         for (const t of transferData) {
-          const live = (await getLiveGWData(t.event)) as LiveGWData | null;
-          if (!live?.elements) continue;
+          // ✅ Fetch both live data and user picks in parallel
+          const [liveRaw, picksData] = await Promise.all([
+            getLiveGWData(t.event),
+            getUserPicks(teamId, t.event),
+          ]);
+
+          const live = liveRaw as LiveGWData | null;
+          if (!live || !Array.isArray(live.elements)) continue;
 
           const livePoints = Object.fromEntries(
-            live.elements.map((p) => [p.id, p.stats.total_points])
+            (live.elements as LivePlayer[]).map((p: LivePlayer) => [
+              p.id,
+              p.stats.total_points,
+            ])
           );
 
           const inPts = livePoints[t.element_in] ?? 0;
@@ -82,6 +96,28 @@ export default function FPLTransferAnalysis({ teamId, players }: Props) {
             outPts,
             diff,
           });
+
+          // ✅ Captaincy Efficiency Calculation
+          const captainId = picksData?.picks?.find(
+            (p: any) => p.is_captain
+          )?.element;
+          if (captainId) {
+            const captainPts = livePoints[captainId] ?? 0;
+            const bestPts = Math.max(
+              ...picksData.picks.map((p: any) => livePoints[p.element] ?? 0)
+            );
+            if (bestPts > 0) {
+              const efficiency = (captainPts / bestPts) * 100;
+              capEffValues.push(efficiency);
+            }
+          }
+        }
+
+        // ✅ Compute average Captaincy Efficiency
+        if (capEffValues.length > 0) {
+          const avgCapEff =
+            capEffValues.reduce((a, b) => a + b, 0) / capEffValues.length;
+          setCaptainEfficiency(avgCapEff);
         }
 
         results.sort((a, b) => a.event - b.event);
@@ -166,6 +202,12 @@ export default function FPLTransferAnalysis({ teamId, players }: Props) {
             {summary.avgEfficiency >= 0 ? "+" : ""}
             {summary.avgEfficiency.toFixed(2)} pts/transfer
           </div>
+          {captainEfficiency !== null && (
+            <div>
+              <span className={styles.summaryLabel}>Captaincy Efficiency:</span>{" "}
+              {captainEfficiency.toFixed(1)}%
+            </div>
+          )}
           <div>
             <span className={styles.summaryLabel}>Best Transfer:</span>{" "}
             <span className={styles.gain}>
