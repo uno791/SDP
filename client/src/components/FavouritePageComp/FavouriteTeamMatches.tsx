@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   fetchScoreboard,
+  type LeagueId,
   type ScoreboardResponse,
   extractStatsFromScoreboardEvent,
 } from "../../api/espn";
+import { DEFAULT_LEAGUE, LEAGUE_OPTIONS } from "./leagues";
 import MatchCard from "../HomePageComp/MatchCard/MatchCard";
 import styles from "./FavouriteTeamMatches.module.css";
 
@@ -23,6 +25,7 @@ const normalizeName = (value: string | undefined | null) =>
 export default function FavouriteTeamMatches({
   teamNames,
 }: FavouriteTeamMatchesProps) {
+  const [league, setLeague] = useState<LeagueId>(DEFAULT_LEAGUE);
   const [date, setDate] = useState<Date>(() => new Date());
   const [data, setData] = useState<ScoreboardResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -100,7 +103,7 @@ export default function FavouriteTeamMatches({
     }
 
     try {
-      const sb = await fetchScoreboard(date);
+      const sb = await fetchScoreboard(date, league);
       setData(sb);
       setErr(null);
     } catch (e: any) {
@@ -108,7 +111,7 @@ export default function FavouriteTeamMatches({
     } finally {
       setLoading(false);
     }
-  }, [date, teamKey]);
+  }, [date, teamKey, league]);
 
   const skipNextFetchRef = useRef<boolean>(false);
 
@@ -116,6 +119,7 @@ export default function FavouriteTeamMatches({
     let cancelled = false;
 
     if (!teamKey) {
+      skipNextFetchRef.current = false;
       setData(null);
       setErr(null);
       setLoading(false);
@@ -125,15 +129,17 @@ export default function FavouriteTeamMatches({
 
     setHasInitialised(false);
     setLoading(true);
+    setErr(null);
+    setData(null);
+
+    const baseToday = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    const lookbackDays = 60;
 
     const findLatestFavouriteDate = async () => {
-      const baseToday = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate()
-      );
-      const lookbackDays = 60;
-
       for (let offset = 0; offset < lookbackDays; offset += 1) {
         const candidate = new Date(
           baseToday.getFullYear(),
@@ -142,7 +148,7 @@ export default function FavouriteTeamMatches({
         );
 
         try {
-          const sb = await fetchScoreboard(candidate);
+          const sb = await fetchScoreboard(candidate, league);
           if (cancelled) return;
 
           const filtered = selectEvents(sb, compareDay(candidate, today));
@@ -166,6 +172,8 @@ export default function FavouriteTeamMatches({
 
       if (!cancelled) {
         skipNextFetchRef.current = true;
+        setData(null);
+        setErr(null);
         setHasInitialised(true);
         setLoading(false);
         setDate(baseToday);
@@ -177,11 +185,12 @@ export default function FavouriteTeamMatches({
     return () => {
       cancelled = true;
     };
-  }, [teamKey, today, selectEvents]);
+  }, [teamKey, league, today, selectEvents]);
 
   useEffect(() => {
     if (!hasInitialised) return;
     if (!teamKey) {
+      skipNextFetchRef.current = false;
       setData(null);
       setErr(null);
       setLoading(false);
@@ -259,11 +268,9 @@ export default function FavouriteTeamMatches({
 
       const details = extractStatsFromScoreboardEvent(ev);
 
-      
       return (
-        <div className={styles.matchCard}>
+        <div className={styles.matchCard} key={ev.id}>
           <MatchCard
-            key={ev.id}
             id={ev.id}
             home={mkTeam(home)}
             away={mkTeam(away)}
@@ -275,7 +282,6 @@ export default function FavouriteTeamMatches({
           />
         </div>
       );
-
     });
   }, [data, date, today, teamKey, selectEvents]);
 
@@ -283,64 +289,102 @@ export default function FavouriteTeamMatches({
     if (!teamKey) {
       return "Follow teams to see their fixtures here.";
     }
-
     return "No favourite team matches.";
+  };
+
+  const handleLeagueChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setLeague(event.target.value as LeagueId);
   };
 
   return (
     <section className={styles.wrapper}>
       <div className={styles.headerRow}>
         <h2 className={styles.title}>Favourite Team Matches</h2>
-        <div className={styles.dateNav}>
-          <button
-            className={styles.navButton}
-            onClick={() =>
-              setDate(
-                (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1)
-              )
-            }
-            aria-label="Previous day"
-          >
-            {"<"}
-          </button>
+        <div className={styles.headerControls}>
+          {/* Competition Selector */}
+          <div className={styles.selectWrap}>
+            <label
+              htmlFor="favouriteLeagueSelect"
+              className={styles.selectLabel}
+            >
+              Competition
+            </label>
+            <select
+              id="favouriteLeagueSelect"
+              className={styles.leagueSelect}
+              value={league}
+              onChange={handleLeagueChange}
+            >
+              {LEAGUE_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <button
-            type="button"
-            className={styles.dateLabel}
-            onClick={() => {
-              const input = document.getElementById(
-                "favouriteLeagueDateInput"
-              ) as HTMLInputElement;
-              input?.showPicker?.();
-              input?.click();
-            }}
-          >
-            {date.toLocaleDateString(undefined, {
-              weekday: "long",
-              day: "2-digit",
-              month: "long",
-            })}
-          </button>
+          {/* ✅ Date Selector (Label only over date box) */}
+          <div className={styles.selectWrap}>
+            <label className={styles.selectLabel}>Date</label>
+            <div className={styles.dateNav}>
+              <button
+                className={styles.navButton}
+                onClick={() =>
+                  setDate(
+                    (d) =>
+                      new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1)
+                  )
+                }
+                aria-label="Previous day"
+              >
+                {"<"}
+              </button>
 
-          <input
-            id="favouriteLeagueDateInput"
-            type="date"
-            className={styles.hiddenDateInput}
-            value={date.toISOString().split("T")[0]}
-            onChange={(e) => setDate(new Date(e.target.value))}
-          />
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <button
+                  type="button"
+                  className={styles.dateLabel}
+                  onClick={() => {
+                    const input = document.getElementById(
+                      "favouriteLeagueDateInput"
+                    ) as HTMLInputElement;
+                    input?.showPicker?.();
+                    input?.click();
+                  }}
+                >
+                  {date.toLocaleDateString(undefined, {
+                    weekday: "long",
+                    day: "2-digit",
+                    month: "long",
+                  })}
+                </button>
 
-          <button
-            className={styles.navButton}
-            onClick={() =>
-              setDate(
-                (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)
-              )
-            }
-            aria-label="Next day"
-          >
-            {">"}
-          </button>
+                <input
+                  id="favouriteLeagueDateInput"
+                  type="date"
+                  className={styles.hiddenDateInput}
+                  value={date.toISOString().split("T")[0]}
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    setDate(new Date(e.target.value));
+                  }}
+                />
+              </div>
+
+              <button
+                className={styles.navButton}
+                onClick={() =>
+                  setDate(
+                    (d) =>
+                      new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)
+                  )
+                }
+                aria-label="Next day"
+              >
+                {">"}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
