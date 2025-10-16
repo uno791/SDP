@@ -29,6 +29,13 @@
   gap: 1rem;
 }
 
+.brandText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
 .logo {
   width: 2.5rem;
   height: 2.5rem;
@@ -46,6 +53,51 @@
   font-weight: 700;
   font-size: 1.125rem;
   letter-spacing: 0.05em;
+}
+
+.highlightRow {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #d1fae5;
+  font-size: 0.82rem;
+  min-height: 1.1rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.highlightTeam {
+  font-weight: 600;
+  color: #a7f3d0;
+  white-space: nowrap;
+}
+
+.highlightDivider {
+  opacity: 0.6;
+}
+
+.highlightLabel {
+  font-weight: 600;
+  color: #fefce8;
+  white-space: nowrap;
+}
+
+.highlightText {
+  font-size: 0.82rem;
+  color: #f0fdfa;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(42vw, 22rem);
+}
+
+.highlightPlaceholder {
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(42vw, 22rem);
 }
 
 .menuButton {
@@ -66,4 +118,19 @@
   display: flex;
   align-items: center;
   margin-right: 0rem !important;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0.5rem 1rem;
+  }
+
+  .highlightText,
+  .highlightPlaceholder {
+    max-width: min(56vw, 16rem);
+  }
+
+  .highlightRow {
+    gap: 0.25rem;
+  }
 }

@@ -35,7 +35,11 @@ describe("navigation components", () => {
     const open = jest.fn();
     const user = userEvent.setup();
 
-    render(<Header onOpenMenu={open} />);
+    render(
+      <UserProvider storage={null}>
+        <Header onOpenMenu={open} />
+      </UserProvider>
+    );
 
     const menuButton = screen.getByRole("button", { name: /open menu/i });
     await user.click(menuButton);
