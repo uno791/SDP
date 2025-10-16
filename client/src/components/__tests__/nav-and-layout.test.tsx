@@ -83,9 +83,7 @@ describe("navigation components", () => {
 
     // With a logged-in user the SignUp link should be hidden
     expect(
-      screen
-        .getAllByRole("link")
-        .map((link) => link.getAttribute("href"))
+      screen.getAllByRole("link").map((link) => link.getAttribute("href"))
     ).not.toContain("/signup");
 
     await user.click(signOut);
