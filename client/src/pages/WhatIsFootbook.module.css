@@ -1,0 +1,239 @@
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 5rem;
+  color: #0f172a;
+}
+
+.hero {
+  background: linear-gradient(135deg, #065f46, #047857);
+  color: #f8fafc;
+  padding: 3rem;
+  border-radius: 28px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.tagline {
+  font-size: 0.95rem;
+  letter-spacing: 0.24rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.heroTitle {
+  font-size: clamp(2.25rem, 3vw, 3rem);
+  font-weight: 700;
+  margin: 0;
+}
+
+.heroLead {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 44rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.primaryAction,
+.secondaryAction {
+  border-radius: 999px;
+  padding: 0.75rem 1.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primaryAction {
+  background: #ffffff;
+  color: #047857;
+  border: 1px solid rgba(4, 120, 87, 0.4);
+  box-shadow: 0 10px 24px rgba(4, 120, 87, 0.22);
+}
+
+.primaryAction:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 32px rgba(4, 120, 87, 0.28);
+}
+
+.secondaryAction {
+  background: rgba(15, 118, 110, 0.2);
+  color: #ecfdf5;
+  border: 1px solid rgba(236, 253, 245, 0.4);
+}
+
+.secondaryAction:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.section {
+  margin-top: 3.5rem;
+}
+
+.sectionTitle {
+  font-size: clamp(1.8rem, 2.5vw, 2.3rem);
+  margin-bottom: 1rem;
+  color: #0f172a;
+}
+
+.sectionLead {
+  max-width: 48rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0;
+}
+
+.featureGrid {
+  display: grid;
+  gap: 1.75rem;
+  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.featureCard {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 1.75rem;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(4, 120, 87, 0.15);
+  border-top: 6px solid rgba(4, 120, 87, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  margin: 0;
+  color: #1e293b;
+}
+
+.cardSummary {
+  margin: 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.cardList {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: #1f2937;
+  display: grid;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+}
+
+.cardListItem {
+  list-style: disc;
+}
+
+.stepsGrid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.stepCard {
+  background: linear-gradient(135deg, #dcfce7, #f0fdf4);
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: inset 0 0 0 1px rgba(4, 120, 87, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stepTitle {
+  margin: 0;
+  font-weight: 600;
+  color: #064e3b;
+}
+
+.stepCopy {
+  margin: 0;
+  color: #047857;
+  line-height: 1.5;
+}
+
+.columns {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.columnHeading {
+  margin: 0 0 0.5rem 0;
+  color: #064e3b;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.columnCopy {
+  margin: 0;
+  color: #14532d;
+  line-height: 1.6;
+}
+
+.ctaSection {
+  margin-top: 4rem;
+  display: flex;
+  justify-content: center;
+}
+
+.ctaCard {
+  background: linear-gradient(135deg, #047857, #065f46);
+  color: #f8fafc;
+  border-radius: 24px;
+  padding: 2.75rem 3rem;
+  max-width: 720px;
+  text-align: center;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ctaTitle {
+  margin: 0;
+  font-size: clamp(2rem, 2.5vw, 2.4rem);
+}
+
+.ctaCopy {
+  margin: 0;
+  color: rgba(236, 253, 245, 0.9);
+  line-height: 1.6;
+}
+
+.ctaActions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 2.5rem;
+  }
+
+  .page {
+    padding: 3rem 1.25rem 4rem;
+  }
+}

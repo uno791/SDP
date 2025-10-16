@@ -22,6 +22,7 @@ import PlayerStats from "./pages/PlayerStats";
 import Commentary from "./pages/Commentary";
 import Watchalongs from "./pages/Watchalongs";
 import FPLPage from "./pages/FPLPage";
+import WhatIsFootbook from "./pages/WhatIsFootbook";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
               {/* New Profile route */}
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/watchalongs" element={<Watchalongs />} />
+              <Route path="/what-is-footbook" element={<WhatIsFootbook />} />
             </Route>
             <Route path="/" element={<LandingPage />} />
             <Route path="/signup" element={<SignupPage />} />

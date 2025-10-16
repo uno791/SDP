@@ -606,14 +606,14 @@ export default function LandingPage() {
                 <a href="#live" className={styles.primaryBtn}>
                   View Live Matches
                 </a>
-                <a href="#news" className={styles.secondaryBtn}>
-                  Latest News
-                </a>
-                <Link to="/signup" className={styles.secondaryBtn}>
-                  Sign Up / Log In
-                </Link>
-              </div>
+              <a href="#news" className={styles.secondaryBtn}>
+                Latest News
+              </a>
+              <Link to="/what-is-footbook" className={styles.secondaryBtn}>
+                What is Footbook?
+              </Link>
             </div>
+          </div>
 
             {/* Ball (flex sibling; moved left & down via CSS; parallax via yFootball) */}
             <motion.div style={{ y: yFootball }} className={styles.heroBall}>
