@@ -50,7 +50,10 @@ export default function FavouriteLandingMatchesCard({ league }: Props) {
               row.name ||
               (row as any)?.team?.name
           )
-          .filter((name): name is string => typeof name === "string" && name)
+          .filter((name): name is string => {
+            if (typeof name !== "string") return false;
+            return name.trim().length > 0;
+          })
           .map((name) => name.trim());
 
         setTeamNames(Array.from(new Set(names)));

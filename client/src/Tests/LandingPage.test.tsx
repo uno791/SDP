@@ -4,6 +4,7 @@ import "@testing-library/jest-dom";
 
 import { MemoryRouter } from "react-router-dom";
 import LandingPage from "../pages/LandingPage";
+import { UserContext } from "../Users/UserContext";
 
 // Mock framer-motion hooks + components
 jest.mock("framer-motion", () => ({
@@ -72,6 +73,22 @@ jest.mock("../components/LandingPageComp/PremierLeagueTable", () => () => (
 ));
 
 describe("LandingPage", () => {
+  const getUserContextValue = () => ({
+    user: null,
+    setUser: jest.fn(),
+    username: "",
+    setUsername: jest.fn(),
+  });
+
+  const renderWithProviders = () =>
+    render(
+      <UserContext.Provider value={getUserContextValue()}>
+        <MemoryRouter>
+          <LandingPage />
+        </MemoryRouter>
+      </UserContext.Provider>
+    );
+
   beforeEach(() => {
     headerPropsSpy.length = 0;
     burgerPropsSpy.length = 0;
@@ -83,11 +100,7 @@ describe("LandingPage", () => {
 
   test("shows loader initially and hides after timeout", async () => {
     jest.useFakeTimers();
-    render(
-      <MemoryRouter>
-        <LandingPage />
-      </MemoryRouter>
-    );
+    renderWithProviders();
 
     expect(screen.getByTestId("landing-loader")).toBeInTheDocument();
 
@@ -102,11 +115,7 @@ describe("LandingPage", () => {
 
   test("opens and closes burger menu via header callback and renders sections", async () => {
     jest.useFakeTimers();
-    render(
-      <MemoryRouter>
-        <LandingPage />
-      </MemoryRouter>
-    );
+    renderWithProviders();
 
     act(() => {
       jest.runAllTimers();
@@ -125,7 +134,7 @@ describe("LandingPage", () => {
     );
 
     expect(screen.getByTestId("LiveMatchCard")).toBeInTheDocument();
-    expect(screen.getByTestId("PastMatchCard")).toBeInTheDocument();
+    expect(screen.getAllByTestId("PastMatchCard").length).toBeGreaterThan(0);
     expect(screen.getByTestId("NewsCard")).toBeInTheDocument();
     expect(screen.getByTestId("ThreeFootball")).toBeInTheDocument();
     expect(screen.getByTestId("PremierLeagueTable")).toBeInTheDocument();

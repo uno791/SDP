@@ -104,6 +104,8 @@ export type ScoreboardResponse = {
           id?: string;
           displayName?: string;
           name?: string;
+          nickname?: string;
+          nickName?: string;
         };
         statistics?: Array<{
           name?: string;

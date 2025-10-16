@@ -66,6 +66,7 @@ export default function FavouriteTeamMatches({
             team?.shortDisplayName,
             team?.name,
             team?.abbreviation,
+            team?.nickname,
             team?.nickName,
           ];
 

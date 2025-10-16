@@ -360,6 +360,7 @@ export default function PastMatchCard({
           team?.shortDisplayName,
           team?.name,
           team?.abbreviation,
+          team?.nickname,
           team?.nickName,
         ];
         return namesToCheck.some((name) =>
