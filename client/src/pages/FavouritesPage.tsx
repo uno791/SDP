@@ -1,10 +1,12 @@
 // src/pages/FavouritesPage.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styles from "../components/FavouritePageComp/FavouritesPage.module.css";
 import { useUser } from "../Users/UserContext";
 import axios from "axios";
 import { baseURL } from "../config";
 import { fetchEplStandings } from "../api/espn"; // ✅ import ESPN helper
+
+import FavouriteTeamMatches from "../components/FavouritePageComp/FavouriteTeamMatches";
 
 type Team = {
   id: number;
@@ -143,9 +145,15 @@ const FavouritesPage: React.FC = () => {
   // Partition
   const followingIds = new Set(favourites.map((f) => f.id));
   const notFollowing = filteredTeams.filter((t) => !followingIds.has(t.id));
+  const favouriteTeamNames = useMemo(
+    () => favourites.map((team) => team.name),
+    [favourites]
+  );
+
 
   return (
     <div className={styles.container}>
+      <FavouriteTeamMatches teamNames={favouriteTeamNames} />
       {/* Favourites stay as square cards WITH position + points */}
       <h2>Your Favourite Teams</h2>
       <div className={styles.section}>
@@ -208,7 +216,7 @@ export default FavouritesPage;
 
 
 // src/pages/FavouritesPage.tsx
-/*import React, { useEffect, useState } from "react";
+/*import React, { useEffect, useMemo, useState } from "react";
 import styles from "../components/FavouritePageComp/FavouritesPage.module.css";
 import { useUser } from "../Users/UserContext";
 import axios from "axios";
@@ -382,7 +390,7 @@ export default FavouritesPage;*/
 
 
 // src/pages/FavouritesPage.tsx
-/*import React, { useEffect, useState } from "react";
+/*import React, { useEffect, useMemo, useState } from "react";
 import styles from "../components/FavouritePageComp/FavouritesPage.module.css";
 import { useUser } from "../Users/UserContext";
 import axios from "axios";
