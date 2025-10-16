@@ -22,7 +22,7 @@ export async function safeGet<T>(url: string): Promise<T | null> {
 const isLocalhost = window.location.hostname === "localhost";
 const BASE_PROXY_URL = isLocalhost
   ? "http://localhost:3000/api/fpl"
-  : "https://your-app-name.vercel.app/api/fpl"; // Replace with your real Vercel URL
+  : "https://sdp-webserver.onrender.com/api/fpl"; // ✅ Your real backend (Render) URL
 
 /**
  * Interfaces for FPL endpoints
