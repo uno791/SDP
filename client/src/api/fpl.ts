@@ -21,7 +21,7 @@ export async function safeGet<T>(url: string): Promise<T | null> {
  */
 const isLocalhost = window.location.hostname === "localhost";
 const BASE_PROXY_URL = isLocalhost
-  ? "http://localhost:5000/api/fpl"
+  ? "http://localhost:3000/api/fpl"
   : "https://your-app-name.vercel.app/api/fpl"; // Replace with your real Vercel URL
 
 /**
