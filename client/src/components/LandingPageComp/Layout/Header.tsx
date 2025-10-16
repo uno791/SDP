@@ -291,6 +291,16 @@ export default function Header({ onOpenMenu }: HeaderProps) {
     return fromUser || fromContext || "FootBook";
   }, [user?.username, username]);
 
+  const initials = useMemo(() => {
+    const source = displayName.trim();
+    if (!source) return "FB";
+    const words = source.split(/\s+/).filter(Boolean);
+    if (words.length === 1) {
+      return words[0]!.slice(0, 2).toUpperCase();
+    }
+    return (words[0]![0] + words[words.length - 1]![0]).toUpperCase();
+  }, [displayName]);
+
   useEffect(() => {
     let alive = true;
     const isTestEnv =
@@ -379,11 +389,12 @@ export default function Header({ onOpenMenu }: HeaderProps) {
     <header className={styles.header}>
       <div className={styles.container}>
         <div className={styles.brand}>
-          <div className={styles.logo}>FB</div>
+          <div className={styles.logo}>{initials}</div>
           <div className={styles.brandText}>
             <div className={styles.title}>{displayName}</div>
             {user ? (
               <div className={styles.highlightRow}>
+                <span className={styles.highlightDivider}>•</span>
                 {loadingHighlights ? (
                   <span className={styles.highlightPlaceholder}>
                     Syncing favourites…
@@ -395,8 +406,9 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                     </span>
                     <span className={styles.highlightDivider}>•</span>
                     <span className={styles.highlightLabel}>
-                      {activeHighlight.label}:
+                      {activeHighlight.label}
                     </span>
+                    <span className={styles.highlightDivider}>:</span>
                     <span className={styles.highlightText}>
                       {activeHighlight.text}
                     </span>

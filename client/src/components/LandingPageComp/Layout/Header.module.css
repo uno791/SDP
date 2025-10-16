@@ -14,7 +14,7 @@
 }
 
 .container {
-  max-width: 80rem;
+  max-width: 100rem;
   margin: 0 auto;
   padding: 0.75rem 1.5rem;
   display: flex;
@@ -26,13 +26,14 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
+  margin-left: -0.7rem;
 }
 
 .brandText {
   display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
+  align-items: baseline;
+  gap: 0.5rem;
   min-width: 0;
 }
 
@@ -61,7 +62,6 @@
   gap: 0.35rem;
   color: #d1fae5;
   font-size: 0.82rem;
-  min-height: 1.1rem;
   min-width: 0;
   overflow: hidden;
 }
@@ -117,7 +117,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  margin-right: 0rem !important;
+  margin-right: -0.25rem !important;
 }
 
 @media (max-width: 640px) {
