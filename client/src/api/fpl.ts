@@ -22,7 +22,7 @@ export async function safeGet<T>(url: string): Promise<T | null> {
 const isLocalhost = window.location.hostname === "localhost";
 const BASE_PROXY_URL = isLocalhost
   ? "http://localhost:3000/api/fpl"
-  : "https://sdp-webserver.onrender.com/api/fpl"; // ✅ Your real backend (Render) URL
+  : "/api/fpl";
 
 /**
  * Interfaces for FPL endpoints
