@@ -1688,6 +1688,34 @@ router.get("/watchalongs", async (req, res) => {
 // ----------------------
 const BASE_URL = "https://fantasy.premierleague.com/api";
 
+// ✅ Add this helper function just above your routes
+function withCors(handler: (req: Request, res: Response) => void) {
+  return (req: Request, res: Response) => {
+    // Allow your frontend domain in production
+    res.setHeader(
+      "Access-Control-Allow-Origin",
+      "https://sdp-sooty.vercel.app"
+    );
+
+    // Optionally, allow localhost in development
+    // if (process.env.NODE_ENV !== "production") {
+    //   res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+    // }
+
+    res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization"
+    );
+
+    if (req.method === "OPTIONS") {
+      return res.status(200).end(); // handle preflight
+    }
+
+    return handler(req, res);
+  };
+}
+
 async function safeFetch(url: string, res: Response) {
   try {
     const r = await fetch(url);
@@ -1700,67 +1728,105 @@ async function safeFetch(url: string, res: Response) {
   }
 }
 
-app.get("/api/fpl/bootstrap-static", (req, res) =>
-  safeFetch(`${BASE_URL}/bootstrap-static/`, res)
+// ✅ Wrap each route with `withCors(...)`
+
+app.get(
+  "/api/fpl/bootstrap-static",
+  withCors((req, res) => safeFetch(`${BASE_URL}/bootstrap-static/`, res))
 );
 
-app.get("/api/fpl/entry/:id", (req, res) =>
-  safeFetch(`${BASE_URL}/entry/${req.params.id}/`, res)
+app.get(
+  "/api/fpl/entry/:id",
+  withCors((req, res) => safeFetch(`${BASE_URL}/entry/${req.params.id}/`, res))
 );
 
-app.get("/api/fpl/entry/:id/history", (req, res) =>
-  safeFetch(`${BASE_URL}/entry/${req.params.id}/history/`, res)
-);
-
-app.get("/api/fpl/entry/:id/event/:gw/picks", (req, res) =>
-  safeFetch(
-    `${BASE_URL}/entry/${req.params.id}/event/${req.params.gw}/picks/`,
-    res
+app.get(
+  "/api/fpl/entry/:id/history",
+  withCors((req, res) =>
+    safeFetch(`${BASE_URL}/entry/${req.params.id}/history/`, res)
   )
 );
 
-app.get("/api/fpl/event/:gw/live", (req, res) =>
-  safeFetch(`${BASE_URL}/event/${req.params.gw}/live/`, res)
+app.get(
+  "/api/fpl/entry/:id/event/:gw/picks",
+  withCors((req, res) =>
+    safeFetch(
+      `${BASE_URL}/entry/${req.params.id}/event/${req.params.gw}/picks/`,
+      res
+    )
+  )
 );
 
-app.get("/api/fpl/fixtures", (req, res) =>
-  safeFetch(`${BASE_URL}/fixtures/`, res)
+app.get(
+  "/api/fpl/event/:gw/live",
+  withCors((req, res) =>
+    safeFetch(`${BASE_URL}/event/${req.params.gw}/live/`, res)
+  )
 );
 
-app.get("/api/fpl/teams", (req, res) => safeFetch(`${BASE_URL}/teams/`, res));
+app.get(
+  "/api/fpl/fixtures",
+  withCors((req, res) => safeFetch(`${BASE_URL}/fixtures/`, res))
+);
 
-app.get("/api/fpl/player/:id", (req, res) =>
-  safeFetch(`${BASE_URL}/element-summary/${req.params.id}/`, res)
+app.get(
+  "/api/fpl/teams",
+  withCors((req, res) => safeFetch(`${BASE_URL}/teams/`, res))
+);
+
+app.get(
+  "/api/fpl/player/:id",
+  withCors((req, res) =>
+    safeFetch(`${BASE_URL}/element-summary/${req.params.id}/`, res)
+  )
 );
 
 // ✅ Fetch all transfers made by a user (entry ID)
-app.get("/api/fpl/entry/:id/transfers", (req, res) =>
-  safeFetch(`${BASE_URL}/entry/${req.params.id}/transfers/`, res)
+app.get(
+  "/api/fpl/entry/:id/transfers",
+  withCors((req, res) =>
+    safeFetch(`${BASE_URL}/entry/${req.params.id}/transfers/`, res)
+  )
 );
 
 // ✅ Fetch classic league standings
-app.get("/api/fpl/leagues-classic/:id/standings", (req, res) =>
-  safeFetch(`${BASE_URL}/leagues-classic/${req.params.id}/standings/`, res)
+app.get(
+  "/api/fpl/leagues-classic/:id/standings",
+  withCors((req, res) =>
+    safeFetch(`${BASE_URL}/leagues-classic/${req.params.id}/standings/`, res)
+  )
 );
 
 // ✅ Fetch head-to-head (H2H) league standings
-app.get("/api/fpl/leagues-h2h/:id/standings", (req, res) =>
-  safeFetch(`${BASE_URL}/leagues-h2h/${req.params.id}/standings/`, res)
+app.get(
+  "/api/fpl/leagues-h2h/:id/standings",
+  withCors((req, res) =>
+    safeFetch(`${BASE_URL}/leagues-h2h/${req.params.id}/standings/`, res)
+  )
 );
 
-// ✅ Classic League Standings
-app.get("/api/fpl/leagues-classic/:id/standings", (req, res) =>
-  safeFetch(`${BASE_URL}/leagues-classic/${req.params.id}/standings/`, res)
+// ✅ Classic League Standings (duplicate, kept identical)
+app.get(
+  "/api/fpl/leagues-classic/:id/standings",
+  withCors((req, res) =>
+    safeFetch(`${BASE_URL}/leagues-classic/${req.params.id}/standings/`, res)
+  )
 );
 
-// ✅ Head-to-Head League Standings
-app.get("/api/fpl/leagues-h2h/:id/standings", (req, res) =>
-  safeFetch(`${BASE_URL}/leagues-h2h/${req.params.id}/standings/`, res)
+// ✅ Head-to-Head League Standings (duplicate, kept identical)
+app.get(
+  "/api/fpl/leagues-h2h/:id/standings",
+  withCors((req, res) =>
+    safeFetch(`${BASE_URL}/leagues-h2h/${req.params.id}/standings/`, res)
+  )
 );
 
 // ✅ Player Element Summary (Detailed stats, fixture history)
-app.get("/api/fpl/element-summary/:id", (req, res) =>
-  safeFetch(`${BASE_URL}/element-summary/${req.params.id}/`, res)
+app.get(
+  "/api/fpl/element-summary/:id",
+  withCors((req, res) =>
+    safeFetch(`${BASE_URL}/element-summary/${req.params.id}/`, res)
+  )
 );
 
 /* --------------- Start server --------------- */
