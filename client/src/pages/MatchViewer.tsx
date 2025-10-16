@@ -127,7 +127,7 @@ function buildDisplayScorers(
   };
 }
 
-type OverlayKind = "goal" | "red-card" | "yellow-card" | "winner";
+type OverlayKind = "goal" | "penalty" | "red-card" | "yellow-card" | "winner";
 type OverlayState = { kind: OverlayKind; key: number } | null;
 
 /* ───────── Component ───────── */
@@ -163,42 +163,41 @@ export default function MatchViewer() {
     null
   );
   const winnerHighlightRef = useRef<"home" | "away" | null>(null);
-  const winnerOverrideTimerRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const triggerHighlight = useCallback(
-    (className: string, duration = 2500) => {
-      setSummaryHighlight(className);
-      if (highlightTimerRef.current) {
-        clearTimeout(highlightTimerRef.current);
-      }
-      highlightTimerRef.current = setTimeout(() => {
-        setSummaryHighlight(null);
-        highlightTimerRef.current = null;
-      }, duration);
-    },
-    []
+  const winnerOverrideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
   );
 
-  const activateOverlay = useCallback(
-    (kind: OverlayKind, duration = 2500) => {
-      const key = Date.now();
-      setOverlayState({ kind, key });
-      if (overlayTimerRef.current) {
-        clearTimeout(overlayTimerRef.current);
-      }
-      overlayTimerRef.current = setTimeout(() => {
-        setOverlayState(null);
-        overlayTimerRef.current = null;
-      }, duration);
-    },
-    []
-  );
+  const triggerHighlight = useCallback((className: string, duration = 2500) => {
+    setSummaryHighlight(className);
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current);
+    }
+    highlightTimerRef.current = setTimeout(() => {
+      setSummaryHighlight(null);
+      highlightTimerRef.current = null;
+    }, duration);
+  }, []);
+
+  const activateOverlay = useCallback((kind: OverlayKind, duration = 2500) => {
+    const key = Date.now();
+    setOverlayState({ kind, key });
+    if (overlayTimerRef.current) {
+      clearTimeout(overlayTimerRef.current);
+    }
+    overlayTimerRef.current = setTimeout(() => {
+      setOverlayState(null);
+      overlayTimerRef.current = null;
+    }, duration);
+  }, []);
 
   const startGoalAnimation = useCallback(
-    (highlightClass: string, duration = 2500) => {
+    (
+      highlightClass: string,
+      overlayKind: OverlayKind = "goal",
+      duration = 2500
+    ) => {
       triggerHighlight(highlightClass, duration);
-      activateOverlay("goal", duration);
+      activateOverlay(overlayKind, duration);
       setGoalAnim(true);
       if (goalAnimTimerRef.current) {
         clearTimeout(goalAnimTimerRef.current);
@@ -315,7 +314,10 @@ export default function MatchViewer() {
         newLabels.some((label) => /\((?:p|pen)\)/i.test(label)) ||
         newLabels.some((label) => /penalty/i.test(label));
 
-      startGoalAnimation(hasPenalty ? "animate-penalty" : "animate-goal");
+      startGoalAnimation(
+        hasPenalty ? "animate-penalty" : "animate-goal",
+        hasPenalty ? "penalty" : "goal"
+      );
 
       goalCountsRef.current = { home: homeCount, away: awayCount };
       return;
@@ -387,12 +389,7 @@ export default function MatchViewer() {
         away: awayYellowCards,
       };
     }
-  }, [
-    homeYellowCards,
-    awayYellowCards,
-    activateOverlay,
-    triggerHighlight,
-  ]);
+  }, [homeYellowCards, awayYellowCards, activateOverlay, triggerHighlight]);
 
   useEffect(() => {
     if (penaltyTrackerRef.current == null) {
@@ -406,10 +403,7 @@ export default function MatchViewer() {
     if (homePenaltiesTaken > prev.home || awayPenaltiesTaken > prev.away) {
       triggerHighlight("animate-penalty", 2600);
     }
-    if (
-      homePenaltiesTaken !== prev.home ||
-      awayPenaltiesTaken !== prev.away
-    ) {
+    if (homePenaltiesTaken !== prev.home || awayPenaltiesTaken !== prev.away) {
       penaltyTrackerRef.current = {
         home: homePenaltiesTaken,
         away: awayPenaltiesTaken,
@@ -444,19 +438,33 @@ export default function MatchViewer() {
     const { kind, key } = overlayState;
     const baseClass = "fixed inset-0 pointer-events-none overflow-hidden z-50";
 
-    if (kind === "goal") {
-      const palette = [
-        "#f87171",
-        "#34d399",
-        "#60a5fa",
-        "#fbbf24",
-        "#ec4899",
-      ];
+    if (kind === "goal" || kind === "penalty") {
+      const isPenalty = kind === "penalty";
+      const palette = isPenalty
+        ? ["#fde68a", "#facc15", "#f97316", "#fbbf24"]
+        : ["#f87171", "#34d399", "#60a5fa", "#fbbf24", "#ec4899"];
+      const bannerStyle: CSSProperties = {
+        position: "absolute",
+        top: "12%",
+        left: "50%",
+        transform: "translateX(-50%)",
+        fontSize: "clamp(2.5rem, 9vw, 5.5rem)",
+        fontWeight: 900,
+        letterSpacing: "0.12em",
+        color: isPenalty ? "#facc15" : "#0cad27ff",
+        textShadow: isPenalty
+          ? "0 0 24px rgba(250, 204, 21, 0.85), 0 0 12px rgba(255, 255, 255, 0.75)"
+          : "0 0 28px rgba(30, 255, 0, 1), 0 0 16px rgba(255, 255, 255, 0.85)",
+        animation: "overlayShoutPulse 1.4s ease-in-out infinite alternate",
+        textTransform: "uppercase",
+        pointerEvents: "none",
+      };
       return (
         <div
           key={`overlay-${key}`}
           className={`${baseClass} flex items-start justify-center`}
         >
+          <div style={bannerStyle}>{isPenalty ? "Penalty!" : "Goal!"}</div>
           {Array.from({ length: 30 }).map((_, i) => {
             const style: CSSProperties = {
               left: `${Math.random() * 100}%`,
@@ -505,13 +513,7 @@ export default function MatchViewer() {
     }
 
     if (kind === "winner") {
-      const colors = [
-        "#facc15",
-        "#38bdf8",
-        "#f97316",
-        "#a855f7",
-        "#f472b6",
-      ];
+      const colors = ["#facc15", "#38bdf8", "#f97316", "#a855f7", "#f472b6"];
       return (
         <div key={`overlay-${key}`} className={baseClass}>
           {Array.from({ length: 12 }).map((_, i) => {
@@ -550,10 +552,10 @@ export default function MatchViewer() {
     ) => {
       switch (kind) {
         case "goal":
-          startGoalAnimation("animate-goal");
+          startGoalAnimation("animate-goal", "goal");
           break;
         case "penalty":
-          startGoalAnimation("animate-penalty");
+          startGoalAnimation("animate-penalty", "penalty");
           break;
         case "red":
           triggerHighlight("animate-red-card", 2600);
