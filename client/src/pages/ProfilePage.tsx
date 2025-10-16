@@ -7,6 +7,7 @@ import { useUser } from "../Users/UserContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { baseURL } from "../config";
+import { notifyFavouritesUpdated } from "../utils/favouritesCache";
 
 type FavouriteTeam = {
   team_id: number;
@@ -99,6 +100,7 @@ const ProfilePage: React.FC = () => {
         logo: f.logo,
       }));
       setFavouriteTeams(formatted);
+      notifyFavouritesUpdated(user.id, "profile-update");
     } catch (err) {
       console.error("❌ Failed to update favourites:", err);
     }

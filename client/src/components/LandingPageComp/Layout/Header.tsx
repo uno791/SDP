@@ -1,5 +1,5 @@
 import { Menu } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
 import styles from "./Header.module.css";
@@ -11,6 +11,12 @@ import {
   type ScoreboardResponse,
 } from "../../../api/espn";
 import { LEAGUE_OPTIONS } from "../../FavouritePageComp/leagues";
+import {
+  getCachedHighlights,
+  setCachedHighlights,
+  subscribeToFavouritesUpdates,
+  type FavouriteHighlight,
+} from "../../../utils/favouritesCache";
 
 type HeaderProps = {
   onOpenMenu: () => void;
@@ -21,13 +27,6 @@ type FavouriteTeamRecord = {
   team_name?: string | null;
   teamName?: string | null;
   name?: string | null;
-};
-
-type HighlightItem = {
-  key: string;
-  teamName: string;
-  label: string;
-  text: string;
 };
 
 type ScoreboardEvent = ScoreboardResponse["events"][number];
@@ -140,7 +139,7 @@ function formatPastHighlight(
   event: ScoreboardEvent,
   teamComp: any,
   opponentComp: any
-): HighlightItem {
+): FavouriteHighlight {
   const teamScore = toScore(teamComp?.score);
   const opponentScore = toScore(opponentComp?.score);
   const opponentLabel = opponentName(opponentComp);
@@ -177,7 +176,7 @@ function formatFutureHighlight(
   teamName: string,
   event: ScoreboardEvent,
   opponentComp: any
-): HighlightItem {
+): FavouriteHighlight {
   const opponentLabel = opponentName(opponentComp);
   const kickoff = new Date(event.date);
   const dateLabel = kickoff.toLocaleDateString(undefined, {
@@ -244,10 +243,12 @@ async function seekTeamEvent(
   return null;
 }
 
-async function buildTeamHighlights(teamName: string): Promise<HighlightItem[]> {
+async function buildTeamHighlights(
+  teamName: string
+): Promise<FavouriteHighlight[]> {
   if (!teamName) return [];
 
-  const items: HighlightItem[] = [];
+  const items: FavouriteHighlight[] = [];
 
   try {
     const lastMatch = await seekTeamEvent(teamName, PAST_OFFSETS, "past");
@@ -281,9 +282,19 @@ async function buildTeamHighlights(teamName: string): Promise<HighlightItem[]> {
 
 export default function Header({ onOpenMenu }: HeaderProps) {
   const { user, username } = useUser();
-  const [highlights, setHighlights] = useState<HighlightItem[]>([]);
+  const initialCache =
+    user?.id !== undefined && user?.id !== null
+      ? getCachedHighlights(user.id)
+      : undefined;
+  const [highlights, setHighlights] = useState<FavouriteHighlight[]>(() =>
+    initialCache?.highlights ?? []
+  );
   const [highlightIndex, setHighlightIndex] = useState(0);
-  const [loadingHighlights, setLoadingHighlights] = useState(false);
+  const [loadingHighlights, setLoadingHighlights] = useState(() => {
+    if (!user?.id) return false;
+    return !initialCache;
+  });
+  const fetchTokenRef = useRef(0);
 
   const displayName = useMemo(() => {
     const fromUser = user?.username?.trim();
@@ -305,23 +316,41 @@ export default function Header({ onOpenMenu }: HeaderProps) {
     let alive = true;
     const isTestEnv =
       typeof process !== "undefined" && process.env.NODE_ENV === "test";
+    const userId = user?.id;
 
-    if (!user?.id || isTestEnv) {
+    if (!userId || isTestEnv) {
       setHighlights([]);
       setHighlightIndex(0);
       setLoadingHighlights(false);
       return;
     }
 
-    setLoadingHighlights(true);
+    const applyCachedHighlights = (
+      entry?: ReturnType<typeof getCachedHighlights>
+    ) => {
+      if (!entry) return false;
+      setHighlights(entry.highlights);
+      setHighlightIndex(0);
+      setLoadingHighlights(false);
+      return true;
+    };
 
-    (async () => {
+    const fetchHighlights = async (force?: boolean) => {
+      if (!alive) return;
+
+      if (!force && applyCachedHighlights(getCachedHighlights(userId))) {
+        return;
+      }
+
+      const requestId = ++fetchTokenRef.current;
+      setLoadingHighlights(true);
+
       try {
         const { data } = await axios.get<FavouriteTeamRecord[]>(
-          `${baseURL}/favourite-teams/${user.id}`
+          `${baseURL}/favourite-teams/${userId}`
         );
 
-        if (!alive) return;
+        if (!alive || fetchTokenRef.current !== requestId) return;
 
         const teamNames = Array.from(
           new Set(
@@ -337,6 +366,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
         );
 
         if (!teamNames.length) {
+          setCachedHighlights(userId, { highlights: [], teamNames: [] });
           setHighlights([]);
           setHighlightIndex(0);
           return;
@@ -346,23 +376,36 @@ export default function Header({ onOpenMenu }: HeaderProps) {
           teamNames.map((team) => buildTeamHighlights(team))
         );
 
-        if (!alive) return;
+        if (!alive || fetchTokenRef.current !== requestId) return;
 
-        const flattened = results.flat().filter(Boolean);
+        const flattened = results.flat().filter(Boolean) as FavouriteHighlight[];
+        setCachedHighlights(userId, { highlights: flattened, teamNames });
         setHighlights(flattened);
         setHighlightIndex(0);
       } catch (error) {
-        if (!alive) return;
+        if (!alive || fetchTokenRef.current !== requestId) return;
         console.error("[Header] Failed to load favourite highlights", error);
         setHighlights([]);
         setHighlightIndex(0);
       } finally {
-        if (alive) setLoadingHighlights(false);
+        if (!alive || fetchTokenRef.current !== requestId) return;
+        setLoadingHighlights(false);
       }
-    })();
+    };
+
+    if (!applyCachedHighlights(getCachedHighlights(userId))) {
+      void fetchHighlights();
+    }
+
+    const unsubscribe = subscribeToFavouritesUpdates((detail) => {
+      if (!alive) return;
+      if (detail.userId && detail.userId !== userId) return;
+      void fetchHighlights(true);
+    });
 
     return () => {
       alive = false;
+      unsubscribe();
     };
   }, [user?.id]);
 
