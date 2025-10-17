@@ -98,77 +98,257 @@
   margin: 0;
 }
 
-.featureGrid {
-  display: grid;
-  gap: 1.75rem;
-  margin-top: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-}
-
-.featureCard {
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 1.75rem;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(4, 120, 87, 0.15);
-  border-top: 6px solid rgba(4, 120, 87, 0.45);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.cardTitle {
-  font-size: 1.25rem;
-  margin: 0;
-  color: #1e293b;
-}
-
-.cardSummary {
-  margin: 0;
-  color: #475569;
-  line-height: 1.5;
-}
-
-.cardList {
-  margin: 0;
-  padding-left: 1.15rem;
-  color: #1f2937;
-  display: grid;
-  gap: 0.6rem;
-  font-size: 0.95rem;
-}
-
-.cardListItem {
-  list-style: disc;
-}
-
-.stepsGrid {
-  display: grid;
-  gap: 1.5rem;
-  margin-top: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.stepCard {
-  background: linear-gradient(135deg, #dcfce7, #f0fdf4);
-  border-radius: 18px;
-  padding: 1.5rem;
-  box-shadow: inset 0 0 0 1px rgba(4, 120, 87, 0.15);
+.sectionIntro {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.stepTitle {
-  margin: 0;
+.sectionSup {
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #064e3b;
+  text-transform: uppercase;
+  letter-spacing: 0.22rem;
+  color: rgba(4, 120, 87, 0.85);
 }
 
-.stepCopy {
+.sectionNav {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.sectionNavButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 999px;
+  border: 1px solid rgba(4, 120, 87, 0.3);
+  background: rgba(236, 253, 245, 0.8);
+  color: #065f46;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.sectionNavButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(4, 120, 87, 0.15);
+  background: rgba(236, 253, 245, 1);
+}
+
+.sectionNavDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #047857;
+}
+
+.overviewGrid {
+  display: grid;
+  gap: 1.75rem;
+  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.overviewCard {
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 1.75rem;
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(4, 120, 87, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.overviewCard::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(135deg, rgba(4, 120, 87, 0.7), rgba(13, 148, 136, 0.4));
+}
+
+.overviewTitle {
   margin: 0;
-  color: #047857;
-  line-height: 1.5;
+  font-size: 1.15rem;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.overviewBlurb {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.overviewStat {
+  align-self: flex-start;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(4, 120, 87, 0.12);
+  color: #065f46;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.anchorSection {
+  scroll-margin-top: 110px;
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.35), rgba(255, 255, 255, 0.9));
+  border: 1px solid rgba(4, 120, 87, 0.12);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+}
+
+.anchorHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.anchorPill {
+  align-self: flex-start;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(4, 120, 87, 0.15);
+  color: #065f46;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+}
+
+.anchorTitle {
+  margin: 0;
+  font-size: clamp(1.8rem, 2.4vw, 2.2rem);
+  color: #0f172a;
+}
+
+.anchorLead {
+  margin: 1rem 0 1.5rem 0;
+  color: #134e4a;
+  max-width: 48rem;
+  line-height: 1.7;
+  font-size: 1.05rem;
+}
+
+.highlightList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.highlightItem {
+  position: relative;
+  padding-left: 1.75rem;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+.highlightItem::before {
+  content: "";
+  position: absolute;
+  top: 0.55rem;
+  left: 0.25rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #047857, #0ea5e9);
+  box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.12);
+}
+
+.anchorCta {
+  margin-top: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  background: #047857;
+  color: #ecfdf5;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 14px 28px rgba(4, 120, 87, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.anchorCta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px rgba(4, 120, 87, 0.28);
+}
+
+.timelineSection {
+  margin-top: 4rem;
+}
+
+.timeline {
+  position: relative;
+  margin-top: 2.5rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 1.3rem;
+  background: linear-gradient(180deg, rgba(4, 120, 87, 0.25), rgba(4, 120, 87, 0));
+  width: 2px;
+}
+
+.timelineItem {
+  position: relative;
+  display: flex;
+  gap: 1.25rem;
+  padding-left: 2.75rem;
+}
+
+.timelineNumber {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: #047857;
+  color: #ecfdf5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: 0 10px 22px rgba(4, 120, 87, 0.25);
+}
+
+.timelineBody {
+  background: rgba(236, 253, 245, 0.75);
+  border-radius: 18px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid rgba(4, 120, 87, 0.18);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+}
+
+.timelineTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #064e3b;
+  font-weight: 700;
+}
+
+.timelineCopy {
+  margin: 0.5rem 0 0 0;
+  color: #0f172a;
+  line-height: 1.6;
 }
 
 .columns {
@@ -235,5 +415,35 @@
 
   .page {
     padding: 3rem 1.25rem 4rem;
+  }
+
+  .sectionNav {
+    gap: 0.5rem;
+  }
+
+  .sectionNavButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .overviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .anchorSection {
+    padding: 1.75rem;
+  }
+
+  .timeline::before {
+    left: 0.9rem;
+  }
+
+  .timelineItem {
+    padding-left: 2.3rem;
+  }
+
+  .timelineNumber {
+    width: 2.2rem;
+    height: 2.2rem;
   }
 }

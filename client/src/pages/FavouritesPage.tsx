@@ -7,6 +7,7 @@ import { baseURL } from "../config";
 import { fetchEplStandings } from "../api/espn"; // ✅ import ESPN helper
 
 import FavouriteTeamMatches from "../components/FavouritePageComp/FavouriteTeamMatches";
+import { notifyFavouritesUpdated } from "../utils/favouritesCache";
 
 type Team = {
   id: number;
@@ -115,6 +116,7 @@ const FavouritesPage: React.FC = () => {
         logo_url: f.logo,
       }));
       setFavourites(normalized);
+      notifyFavouritesUpdated(user.id, "follow");
     } catch (err) {
       console.error("❌ Failed to follow:", err);
     }
@@ -132,6 +134,7 @@ const FavouritesPage: React.FC = () => {
         logo_url: f.logo,
       }));
       setFavourites(normalized);
+      notifyFavouritesUpdated(user.id, "unfollow");
     } catch (err) {
       console.error("❌ Failed to unfollow:", err);
     }
