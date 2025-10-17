@@ -1,7 +1,7 @@
 // __tests__/MatchViewer.test.tsx
 import '@testing-library/jest-dom';
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 // SUT
@@ -410,5 +410,143 @@ describe('MatchViewer', () => {
 
     expect(screen.getByText('Blocked shots')).toBeInTheDocument();
     expect(screen.getByText('Penalty goals')).toBeInTheDocument();
+  });
+
+  test('triggers red-card overlay when discipline totals increase', async () => {
+    const summary = makeSummary({
+      homeScore: 1,
+      awayScore: 1,
+      statusText: 'HT',
+      scorers: [],
+    });
+    summary.home.disciplineFouls.redCards = 2;
+    summary.away.disciplineFouls.redCards = 1;
+    summary.home.disciplineFouls.yellowCards = 0;
+    summary.away.disciplineFouls.yellowCards = 0;
+    summary.home.shooting.penaltyKicksTaken = 0;
+    summary.home.shooting.penaltyGoals = 0;
+    summary.away.shooting.penaltyKicksTaken = 0;
+    summary.away.shooting.penaltyGoals = 0;
+
+    mockFetchSummaryNormalized.mockResolvedValueOnce(summary);
+    mockFetchScoreboard.mockResolvedValueOnce({ events: [makeScoreboardEvent({ id: 'rc' })] });
+    mockExtractStatsFromScoreboardEvent.mockReturnValueOnce({ scorers: [] });
+
+    const actualUseRef = React.useRef;
+    let matchViewerRefCalls = 0;
+    const redCardRef = { current: { home: 1, away: 0 } };
+    const useRefSpy = jest.spyOn(React, 'useRef').mockImplementation((initial: any) => {
+      const stack = new Error().stack ?? '';
+      if (stack.includes('MatchViewer.tsx:153')) {
+        matchViewerRefCalls = 0;
+      }
+      if (stack.includes('MatchViewer.tsx')) {
+        const index = matchViewerRefCalls;
+        matchViewerRefCalls += 1;
+        if (index === 4) {
+          return redCardRef as unknown as React.MutableRefObject<any>;
+        }
+      }
+      return actualUseRef.call(React, initial);
+    });
+
+    try {
+      const { container } = renderWithId('rc');
+
+      await waitFor(() => expect(screen.getByTestId('GameSummaryCard')).toBeInTheDocument());
+      await waitFor(() =>
+        expect(container.querySelectorAll('.falling-card').length).toBeGreaterThan(0)
+      );
+
+      expect(redCardRef.current).toEqual({ home: 2, away: 1 });
+      const lastProps = getLastSummaryProps();
+      expect(lastProps.className).toContain('animate-red-card');
+      const cardColors = Array.from(container.querySelectorAll('.falling-card')).map(
+        (node) => (node as HTMLElement).style.backgroundColor
+      );
+      expect(cardColors.some((c) => c === 'rgb(220, 38, 38)')).toBe(true);
+    } finally {
+      useRefSpy.mockRestore();
+    }
+  });
+
+  test('test animation buttons render overlays and reset state', async () => {
+    const summary = makeSummary({
+      homeScore: 1,
+      awayScore: 1,
+      statusText: 'HT',
+      scorers: [],
+    });
+    mockFetchSummaryNormalized.mockResolvedValueOnce(summary);
+    mockFetchScoreboard.mockResolvedValueOnce({ events: [makeScoreboardEvent({ id: 'btn' })] });
+    mockExtractStatsFromScoreboardEvent.mockReturnValueOnce({ scorers: [] });
+
+    const utils = renderWithId('btn');
+
+    await waitFor(() => expect(screen.getByTestId('GameSummaryCard')).toBeInTheDocument());
+
+    const goalBtn = screen.getByRole('button', { name: /Test Goal/i });
+    const penaltyBtn = screen.getByRole('button', { name: /Test Penalty/i });
+    const redBtn = screen.getByRole('button', { name: /Test Red Card/i });
+    const yellowBtn = screen.getByRole('button', { name: /Test Yellow Card/i });
+    const winnerHomeBtn = screen.getByRole('button', { name: /Test Winner \(Home\)/i });
+    const winnerAwayBtn = screen.getByRole('button', { name: /Test Winner \(Away\)/i });
+    const resetBtn = screen.getByRole('button', { name: /Reset Animations/i });
+
+    fireEvent.click(goalBtn);
+    await waitFor(() => expect(screen.getByText('Goal!')).toBeInTheDocument());
+    expect(utils.container.querySelectorAll('.animate-confetti')).toHaveLength(30);
+    expect(getLastSummaryProps().className).toContain('animate-goal');
+
+    fireEvent.click(resetBtn);
+    await waitFor(() => expect(screen.queryByText('Goal!')).not.toBeInTheDocument());
+    expect(getLastSummaryProps().className).toBeUndefined();
+
+    fireEvent.click(penaltyBtn);
+    await waitFor(() => expect(screen.getByText('Penalty!')).toBeInTheDocument());
+    expect(utils.container.querySelectorAll('.animate-confetti')).toHaveLength(30);
+    expect(getLastSummaryProps().className).toContain('animate-penalty');
+
+    fireEvent.click(resetBtn);
+    await waitFor(() => expect(screen.queryByText('Penalty!')).not.toBeInTheDocument());
+    expect(getLastSummaryProps().className).toBeUndefined();
+
+    fireEvent.click(redBtn);
+    await waitFor(() =>
+      expect(utils.container.querySelectorAll('.falling-card').length).toBeGreaterThan(0)
+    );
+    expect(
+      Array.from(utils.container.querySelectorAll('.falling-card')).some(
+        (node) => (node as HTMLElement).style.backgroundColor === 'rgb(220, 38, 38)'
+      )
+    ).toBe(true);
+    expect(getLastSummaryProps().className).toContain('animate-red-card');
+
+    fireEvent.click(resetBtn);
+    await waitFor(() => expect(utils.container.querySelector('.falling-card')).toBeNull());
+    expect(getLastSummaryProps().className).toBeUndefined();
+
+    fireEvent.click(yellowBtn);
+    await waitFor(() => expect(utils.container.querySelectorAll('.falling-card').length).toBe(36));
+    expect(getLastSummaryProps().className).toContain('animate-penalty');
+
+    fireEvent.click(resetBtn);
+    await waitFor(() => expect(utils.container.querySelector('.falling-card')).toBeNull());
+    expect(getLastSummaryProps().className).toBeUndefined();
+
+    fireEvent.click(winnerHomeBtn);
+    await waitFor(() => expect(utils.container.querySelectorAll('.firework').length).toBe(12));
+    expect(getLastSummaryProps().className).toContain('animate-winner');
+    expect(getLastSummaryProps().winnerSide).toBe('home');
+
+    fireEvent.click(winnerAwayBtn);
+    await waitFor(() => expect(getLastSummaryProps().winnerSide).toBe('away'));
+
+    fireEvent.click(resetBtn);
+    await waitFor(() => {
+      expect(utils.container.querySelector('.firework')).toBeNull();
+      expect(getLastSummaryProps().winnerSide).toBeNull();
+      expect(getLastSummaryProps().className).toBeUndefined();
+    });
   });
 });
