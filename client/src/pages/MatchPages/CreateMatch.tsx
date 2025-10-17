@@ -30,7 +30,6 @@ const CreateMatch = () => {
 
     async function fetchMatch() {
       try {
-        //const res = await fetch(`${baseURL}/matches/${id}`);
         const url = new URL(`${baseURL}/matches/${id}`);
         if (user?.id) url.searchParams.set("user_id", user.id);
         if (user?.username) url.searchParams.set("username", user.username);
@@ -78,6 +77,7 @@ const CreateMatch = () => {
     fileInputRef.current?.click();
   };
 
+  // ✅ Updated to handle key:value format (fixes time parsing)
   const handleCsvUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -86,33 +86,50 @@ const CreateMatch = () => {
       header: false,
       skipEmptyLines: true,
       complete: (results: ParseResult<string[]>) => {
-        if (results.data && results.data.length > 0) {
-          const row = results.data[0] ?? [];
-          const mapped: CsvFormData = {
-            team1: row[0] ?? "",
-            team2: row[1] ?? "",
-            date: row[2] ?? "",
-            time: row[3] ?? "",
-            duration: row[4] ?? "",
-            lineupTeam1: row[5] ?? "",
-            lineupTeam2: row[6] ?? "",
-          };
-          setCsvData(mapped);
-        }
+        if (!results.data?.length) return;
+        const row = results.data[0];
+
+        // Convert "Key: Value" → { key, value }
+        const keyValuePairs = row.map((entry) => {
+          const [keyPart, ...valueParts] = entry.split(":");
+          const key = keyPart?.trim().toLowerCase() || "";
+          const value = valueParts.join(":").trim(); // handles Time: 22:24
+          return { key, value };
+        });
+
+        const map = Object.fromEntries(
+          keyValuePairs.map(({ key, value }) => [key, value])
+        );
+
+        const mapped: CsvFormData = {
+          team1: map.team1 || "",
+          team2: map.team2 || "",
+          date: map.date || "",
+          time: map.time || "",
+          duration: map.duration || "",
+          lineupTeam1: map.lineupteam1 || "",
+          lineupTeam2: map.lineupteam2 || "",
+        };
+
+        setCsvData(mapped);
       },
     });
   };
 
+  // ✅ Updated template for key:value format
   const handleDownloadTemplate = () => {
     const template =
-      "Team1,Team2,YYYY-MM-DD,HH:MM,Duration_in_minutes,Player1;Player2;Player3,Player1;Player2;Player3\n";
+      "Team1: TeamA,Team2: TeamB,Date: YYYY-MM-DD,Time: HH:MM,Duration: Minutes,LineupTeam1: Player1;Player2;Player3,LineupTeam2: Player1;Player2;Player3\n";
 
     const blob = new Blob([template], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", "match_template.csv");
+    document.body.appendChild(link);
     link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -151,7 +168,7 @@ const CreateMatch = () => {
 
       {/* Pass CSV or loaded data into form */}
       <MatchForm
-        onCancel={() => navigate("/my-matches")}
+        onCancel={() => navigate("/mymatches")}
         csvData={csvData}
         matchId={id ? Number(id) : undefined} // ✅ editing mode passes matchId
       />

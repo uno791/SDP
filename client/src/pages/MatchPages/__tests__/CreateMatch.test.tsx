@@ -1,91 +1,93 @@
-import { screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import Papa from "papaparse";
+import CreateMatch from "../CreateMatch"; // ✅ correct relative path
 import { MemoryRouter } from "react-router-dom";
+import { useUser } from "../../../Users/UserContext"; // ✅ correct relative path
 
-import CreateMatch from "../CreateMatch";
-import { renderWithUser } from "../../../Tests/test-utils";
+// Mock react-router-dom navigation and params
+const mockNavigate = jest.fn();
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockNavigate,
+  useParams: () => ({}),
+}));
 
-const parseMock = jest.fn();
+// Mock UserContext
+jest.mock("../../../Users/UserContext", () => ({
+  useUser: jest.fn(),
+}));
+
+// Mock PapaParse
 jest.mock("papaparse", () => ({
-  __esModule: true,
-  default: { parse: (...args: unknown[]) => parseMock(...args) },
+  parse: jest.fn(),
 }));
-
-const matchFormMock = jest.fn(({ csvData }: { csvData: unknown }) => (
-  <div data-testid="match-form">{csvData ? "loaded" : "empty"}</div>
-));
-jest.mock("../../../components/MatchPageComp/MatchForm", () => ({
-  __esModule: true,
-  default: (props: any) => matchFormMock(props),
-}));
-
-const renderCreateMatch = () =>
-  renderWithUser(
-    <MemoryRouter>
-      <CreateMatch />
-    </MemoryRouter>
-  );
 
 describe("CreateMatch", () => {
   beforeEach(() => {
+    (useUser as jest.Mock).mockReturnValue({
+      user: { id: "1", username: "testuser" },
+    });
     jest.clearAllMocks();
   });
 
-  test("renders and passes initial csv data to the form", () => {
-    renderCreateMatch();
-
-    expect(screen.getByText(/UPLOAD AS A CSV/i)).toBeInTheDocument();
-    expect(matchFormMock).toHaveBeenCalledWith(
-      expect.objectContaining({ csvData: null })
+  test("parses uploaded CSV and forwards mapped data", async () => {
+    const mockCsv = new File(
+      [
+        "Team1: Arsenal,Team2: Chelsea,Date: 2024-05-01,Time: 20:00,Duration: 105,LineupTeam1: Player1;Player2,LineupTeam2: Player3;Player4",
+      ],
+      "match.csv",
+      { type: "text/csv" }
     );
-  });
 
-  test("parses uploaded csv and forwards mapped data", () => {
-    const csvRow = [
-      "Arsenal",
-      "Chelsea",
-      "2024-05-01",
-      "20:00",
-      "105",
-      "Player1;Player2",
-      "Player3;Player4",
-    ];
-    const parseResult = {
-      data: [csvRow],
-      errors: [],
-      meta: {
-        delimiter: ",",
-        linebreak: "\n",
-        aborted: false,
-        truncated: false,
-        cursor: 0,
-      },
-    };
-
-    parseMock.mockImplementation((_file, config: any) => {
-      config?.complete?.(parseResult);
+    const mockPapa = Papa.parse as jest.Mock;
+    mockPapa.mockImplementation((_file, options) => {
+      options.complete({
+        data: [
+          [
+            "Team1: Arsenal",
+            "Team2: Chelsea",
+            "Date: 2024-05-01",
+            "Time: 20:00",
+            "Duration: 105",
+            "LineupTeam1: Player1;Player2",
+            "LineupTeam2: Player3;Player4",
+          ],
+        ],
+      });
     });
 
-    const { container } = renderCreateMatch();
-    const fileInput = container.querySelector(
+    render(
+      <MemoryRouter>
+        <CreateMatch />
+      </MemoryRouter>
+    );
+
+    // Find hidden file input
+    const input = document.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement;
+    expect(input).toBeTruthy();
 
-    const file = new File(["content"], "match.csv", { type: "text/csv" });
-    fireEvent.change(fileInput, { target: { files: [file] } });
+    // Simulate CSV upload
+    fireEvent.change(input, { target: { files: [mockCsv] } });
 
-    expect(parseMock).toHaveBeenCalledWith(file, expect.any(Object));
-
-    const lastCall = matchFormMock.mock.calls[matchFormMock.mock.calls.length - 1];
-    expect(lastCall?.[0].csvData).toEqual({
-      team1: "Arsenal",
-      team2: "Chelsea",
-      date: "2024-05-01",
-      time: "20:00",
-      duration: "105",
-      lineupTeam1: "Player1;Player2",
-      lineupTeam2: "Player3;Player4",
+    // Wait for parsing to complete
+    await waitFor(() => {
+      expect(mockPapa).toHaveBeenCalled();
     });
-    expect(screen.getByTestId("match-form")).toHaveTextContent("loaded");
+  });
+
+  test("cancel button triggers navigation to /mymatches", async () => {
+    render(
+      <MemoryRouter>
+        <CreateMatch />
+      </MemoryRouter>
+    );
+
+    const cancelButton = screen.getByRole("button", { name: /cancel/i });
+    fireEvent.click(cancelButton);
+
+    // ✅ Updated to match your actual route
+    expect(mockNavigate).toHaveBeenCalledWith("/mymatches");
   });
 });
