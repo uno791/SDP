@@ -132,4 +132,54 @@ describe("Commentary page", () => {
       expect(screen.getByText(/Failed to load: no feed/i)).toBeInTheDocument()
     );
   });
+
+  test("normalizes minute badges and kind labels", async () => {
+    mockFetchCommentaryNormalized.mockResolvedValueOnce([
+      {
+        sequence: 3,
+        kind: "ft" as const,
+        minute: 95,
+        side: "neutral" as const,
+        text: "Final whistle",
+      },
+      {
+        sequence: 2,
+        kind: "blocked" as const,
+        minute: 92,
+        side: "away" as const,
+        text: "Shot blocked",
+      },
+      {
+        sequence: 1,
+        kind: "goal" as const,
+        minute: 45,
+        minuteText: "45+2",
+        side: "home" as const,
+        text: "Goal for Home",
+        detail: "Assist by Midfielder",
+      },
+    ]);
+
+    const { container } = render(
+      <MemoryRouter initialEntries={["/commentary?id=999"]}>
+        <Routes>
+          <Route path="/commentary" element={<Commentary />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() =>
+      expect(screen.queryByText(/Loading commentary…/i)).not.toBeInTheDocument()
+    );
+
+    const minuteCells = Array.from(container.querySelectorAll(".minute")).map(
+      (el) => el.textContent?.trim()
+    );
+    expect(minuteCells).toEqual(["", "90+2’", "45+2"]);
+
+    expect(screen.getByText("Full-time")).toBeInTheDocument();
+    expect(screen.getByText("Blocked")).toBeInTheDocument();
+    expect(screen.getByText("Goal")).toBeInTheDocument();
+    expect(screen.getByText(/Assist by Midfielder/i)).toBeInTheDocument();
+  });
 });
