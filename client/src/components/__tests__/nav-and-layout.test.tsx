@@ -86,6 +86,9 @@ describe("navigation components", () => {
       name: /sign up to follow your teams/i,
     });
     expect(signupLink).toHaveAttribute("href", "/signup");
+
+    const homeLink = screen.getByRole("link", { name: /footbook/i });
+    expect(homeLink).toHaveAttribute("href", "/");
   });
 
   test("Header hides signup button when user is logged in", () => {
@@ -104,6 +107,9 @@ describe("navigation components", () => {
         name: /sign up to follow your teams/i,
       })
     ).not.toBeInTheDocument();
+
+    const homeLink = screen.getByRole("link", { name: /casey/i });
+    expect(homeLink).toHaveAttribute("href", "/");
   });
 
   test("BurgerMenu shows sign out button when user is logged in", async () => {

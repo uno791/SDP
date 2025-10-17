@@ -433,9 +433,17 @@ export default function Header({ onOpenMenu }: HeaderProps) {
     <header className={styles.header}>
       <div className={styles.container}>
         <div className={styles.brand}>
-          <div className={styles.logo}>{initials}</div>
+          <Link
+            to="/"
+            className={styles.logo}
+            aria-label="Go to home"
+          >
+            {initials}
+          </Link>
           <div className={styles.brandText}>
-            <div className={styles.title}>{displayName}</div>
+            <Link to="/" className={styles.title}>
+              {displayName}
+            </Link>
             {user ? (
               <div className={styles.highlightRow}>
                 <span className={styles.highlightDivider}>•</span>
