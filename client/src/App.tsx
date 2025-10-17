@@ -21,7 +21,6 @@ import FavouritesPage from "./pages/FavouritesPage";
 import PlayerStats from "./pages/PlayerStats";
 import Commentary from "./pages/Commentary";
 import Watchalongs from "./pages/Watchalongs";
-import FPLPage from "./pages/FPLPage";
 import WhatIsFootbook from "./pages/WhatIsFootbook";
 
 function App() {
@@ -54,7 +53,6 @@ function App() {
             <Route path="/matchviewer" element={<MatchViewer />} />
             <Route path="/playerstats" element={<PlayerStats />} />
             <Route path="/commentary" element={<Commentary />} />
-            <Route path="/fpl" element={<FPLPage />} />
           </Routes>
         </Router>
       </UserProvider>
