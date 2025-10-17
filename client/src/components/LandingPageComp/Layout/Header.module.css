@@ -100,6 +100,28 @@
   max-width: min(42vw, 22rem);
 }
 
+.signupButton {
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(52, 211, 153, 0.6);
+  background: rgba(16, 185, 129, 0.2);
+  color: #ecfdf5;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.signupButton:hover,
+.signupButton:focus-visible {
+  background: rgba(16, 185, 129, 0.35);
+  border-color: rgba(52, 211, 153, 0.8);
+  color: #ffffff;
+  outline: none;
+}
+
 .menuButton {
   /* height: 2.5rem;
   width: 2.5rem;

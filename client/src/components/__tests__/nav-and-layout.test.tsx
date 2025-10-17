@@ -36,9 +36,11 @@ describe("navigation components", () => {
     const user = userEvent.setup();
 
     render(
-      <UserProvider storage={null}>
-        <Header onOpenMenu={open} />
-      </UserProvider>
+      <MemoryRouter>
+        <UserProvider storage={null}>
+          <Header onOpenMenu={open} />
+        </UserProvider>
+      </MemoryRouter>
     );
 
     const menuButton = screen.getByRole("button", { name: /open menu/i });
@@ -69,6 +71,39 @@ describe("navigation components", () => {
 
     await user.click(links[0]!);
     expect(onClose).toHaveBeenCalled();
+  });
+
+  test("Header shows signup button when user is logged out", () => {
+    render(
+      <MemoryRouter>
+        <UserProvider storage={null}>
+          <Header onOpenMenu={() => undefined} />
+        </UserProvider>
+      </MemoryRouter>
+    );
+
+    const signupLink = screen.getByRole("link", {
+      name: /sign up to follow your teams/i,
+    });
+    expect(signupLink).toHaveAttribute("href", "/signup");
+  });
+
+  test("Header hides signup button when user is logged in", () => {
+    const initialUser = new User({ id: "abc-123", username: "Casey" });
+
+    render(
+      <MemoryRouter>
+        <UserProvider initialUser={initialUser} storage={null}>
+          <Header onOpenMenu={() => undefined} />
+        </UserProvider>
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.queryByRole("link", {
+        name: /sign up to follow your teams/i,
+      })
+    ).not.toBeInTheDocument();
   });
 
   test("BurgerMenu shows sign out button when user is logged in", async () => {

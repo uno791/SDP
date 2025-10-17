@@ -1,5 +1,6 @@
 import { Menu } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 
 import styles from "./Header.module.css";
@@ -462,7 +463,11 @@ export default function Header({ onOpenMenu }: HeaderProps) {
                   </span>
                 )}
               </div>
-            ) : null}
+            ) : (
+              <Link to="/signup" className={styles.signupButton}>
+                Sign up to follow your teams
+              </Link>
+            )}
           </div>
         </div>
         <button
