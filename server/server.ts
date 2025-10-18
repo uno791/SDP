@@ -70,19 +70,34 @@ router.get("/checkID", async (req, res) => {
   return res.status(200).json({ exists });
 });
 
-// 1) Get all teams
+// 1) Get all teams (multi-league aware)
 router.get("/teams", async (req, res) => {
-  const { data, error } = await supabase
-    .from("teams")
-    .select("id, name, display_name, logo_url");
+  try {
+    const league_code = req.query.league_code as string | undefined;
 
-  if (error) {
-    console.error("❌ Supabase error:", error.message);
-    return res.status(500).json({ error: error.message });
+    let query = supabase
+      .from("teams")
+      .select("id, name, display_name, logo_url, league_code")
+      .order("display_name", { ascending: true });
+
+    if (league_code) {
+      query = query.eq("league_code", league_code);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("❌ Supabase error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json(data);
+  } catch (e: any) {
+    console.error("❌ /teams error:", e);
+    return res.status(500).json({ error: e.message });
   }
-
-  return res.status(200).json(data);
 });
+
 
 // 2) Create a team (or return existing if same name)
 router.post("/teams", async (req, res) => {
@@ -123,47 +138,54 @@ router.post("/teams", async (req, res) => {
 
 // Get user’s favourite teams (join with teams for names/logos)
 
+// ✅ Multi-league-aware favourite teams
 router.get("/favourite-teams/:userId", async (req, res) => {
-  const { userId } = req.params;
+  try {
+    const { userId } = req.params;
+    const league_code = req.query.league_code as string | undefined;
 
-  const { data, error } = await supabase
-    .from("favourite_teams")
-    .select(
+    let query = supabase
+      .from("favourite_teams")
+      .select(
+        `
+        team_id,
+        teams (
+          id,
+          name,
+          display_name,
+          logo_url,
+          league_code
+        )
       `
-      team_id,
-      teams (
-        id,
-        name,
-        display_name,
-        logo_url
       )
-    `
-    )
-    .eq("user_id", userId);
+      .eq("user_id", userId);
 
-  console.log(
-    "🟡 Raw Supabase favourites response:",
-    JSON.stringify(data, null, 2)
-  );
+    const { data, error } = await query;
+    if (error) throw error;
 
-  if (error) {
-    console.error("❌ Supabase error:", error.message);
-    return res.status(500).json({ error: error.message });
+    let formatted = data.map((f: any) => ({
+      team_id: f.team_id,
+      team_name: f.teams.display_name || f.teams.name,
+      logo: f.teams.logo_url,
+      league_code: f.teams.league_code,
+    }));
+
+    if (league_code) {
+      formatted = formatted.filter((t) => t.league_code === league_code);
+    }
+
+    console.log(
+      "🟢 Favourite teams returned:",
+      JSON.stringify(formatted, null, 2)
+    );
+
+    return res.status(200).json(formatted);
+  } catch (e: any) {
+    console.error("❌ /favourite-teams error:", e);
+    return res.status(500).json({ error: e.message });
   }
-
-  const formatted = data.map((f: any) => ({
-    team_id: f.team_id,
-    team_name: f.teams.display_name || f.teams.name,
-    logo: f.teams.logo_url,
-  }));
-
-  console.log(
-    "🟢 Formatted favourites returned:",
-    JSON.stringify(formatted, null, 2)
-  );
-
-  return res.status(200).json(formatted);
 });
+
 
 // Add a favourite team
 router.post("/favourite-teams", async (req, res) => {
