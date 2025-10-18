@@ -100,7 +100,11 @@ const ProfilePage: React.FC = () => {
         logo: f.logo,
       }));
       setFavouriteTeams(formatted);
-      notifyFavouritesUpdated(user.id, "profile-update");
+      const numericUserId = Number(user.id);
+      notifyFavouritesUpdated(
+        Number.isFinite(numericUserId) ? numericUserId : undefined,
+        "profile-update"
+      );
     } catch (err) {
       console.error("❌ Failed to update favourites:", err);
     }

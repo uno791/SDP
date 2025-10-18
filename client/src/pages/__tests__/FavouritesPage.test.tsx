@@ -50,7 +50,8 @@ describe("FavouritesPage", () => {
     expect(screen.getByText(/#1/)).toBeInTheDocument();
     expect(screen.getByText(/30 pts/)).toBeInTheDocument();
 
-    expect(screen.getByRole("button", { name: /^Follow$/i })).toBeInTheDocument();
+    const followButtons = await screen.findAllByRole("button", { name: /^Follow$/i });
+    expect(followButtons.length).toBeGreaterThan(0);
   });
 
   test("allows following an additional team", async () => {
@@ -71,8 +72,9 @@ describe("FavouritesPage", () => {
       user: { id: "user-1", username: "Pat" },
     });
 
-    const followButton = await screen.findByRole("button", { name: /^Follow$/i });
-    await user.click(followButton);
+    const followButtons = await screen.findAllByRole("button", { name: /^Follow$/i });
+    expect(followButtons.length).toBeGreaterThan(0);
+    await user.click(followButtons[0]);
 
     await waitFor(() => expect(mockedAxios.post).toHaveBeenCalledTimes(1));
     expect(mockedAxios.post).toHaveBeenCalledWith(

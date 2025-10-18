@@ -37,6 +37,17 @@ const LEAGUE_IDS: LeagueId[] = LEAGUE_OPTIONS.map((option) => option.id);
 const PAST_OFFSETS = [0, 1, 2, 3, 4, 5, 6];
 const FUTURE_OFFSETS = [0, 1, 2, 3, 4, 5, 6];
 
+function toNumericUserId(
+  value: string | number | null | undefined
+): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return undefined;
+}
+
 function canonicalName(value: string | null | undefined): string {
   if (!value) return "";
   return value
@@ -283,10 +294,9 @@ async function buildTeamHighlights(
 
 export default function Header({ onOpenMenu }: HeaderProps) {
   const { user, username } = useUser();
+  const numericUserId = toNumericUserId(user?.id);
   const initialCache =
-    user?.id !== undefined && user?.id !== null
-      ? getCachedHighlights(user.id)
-      : undefined;
+    numericUserId !== undefined ? getCachedHighlights(numericUserId) : undefined;
   const [highlights, setHighlights] = useState<FavouriteHighlight[]>(() =>
     initialCache?.highlights ?? []
   );
@@ -318,6 +328,7 @@ export default function Header({ onOpenMenu }: HeaderProps) {
     const isTestEnv =
       typeof process !== "undefined" && process.env.NODE_ENV === "test";
     const userId = user?.id;
+    const cacheKey = toNumericUserId(userId);
 
     if (!userId || isTestEnv) {
       setHighlights([]);
@@ -339,8 +350,11 @@ export default function Header({ onOpenMenu }: HeaderProps) {
     const fetchHighlights = async (force?: boolean) => {
       if (!alive) return;
 
-      if (!force && applyCachedHighlights(getCachedHighlights(userId))) {
-        return;
+      if (!force && cacheKey !== undefined) {
+        const cached = getCachedHighlights(cacheKey);
+        if (applyCachedHighlights(cached)) {
+          return;
+        }
       }
 
       const requestId = ++fetchTokenRef.current;
@@ -367,7 +381,9 @@ export default function Header({ onOpenMenu }: HeaderProps) {
         );
 
         if (!teamNames.length) {
-          setCachedHighlights(userId, { highlights: [], teamNames: [] });
+          if (cacheKey !== undefined) {
+            setCachedHighlights(cacheKey, { highlights: [], teamNames: [] });
+          }
           setHighlights([]);
           setHighlightIndex(0);
           return;
@@ -380,7 +396,9 @@ export default function Header({ onOpenMenu }: HeaderProps) {
         if (!alive || fetchTokenRef.current !== requestId) return;
 
         const flattened = results.flat().filter(Boolean) as FavouriteHighlight[];
-        setCachedHighlights(userId, { highlights: flattened, teamNames });
+        if (cacheKey !== undefined) {
+          setCachedHighlights(cacheKey, { highlights: flattened, teamNames });
+        }
         setHighlights(flattened);
         setHighlightIndex(0);
       } catch (error) {
@@ -394,13 +412,19 @@ export default function Header({ onOpenMenu }: HeaderProps) {
       }
     };
 
-    if (!applyCachedHighlights(getCachedHighlights(userId))) {
+    const hasCache =
+      cacheKey !== undefined
+        ? applyCachedHighlights(getCachedHighlights(cacheKey))
+        : false;
+
+    if (!hasCache) {
       void fetchHighlights();
     }
 
     const unsubscribe = subscribeToFavouritesUpdates((detail) => {
       if (!alive) return;
-      if (detail.userId && detail.userId !== userId) return;
+      if (cacheKey !== undefined && detail.userId && detail.userId !== cacheKey)
+        return;
       void fetchHighlights(true);
     });
 
