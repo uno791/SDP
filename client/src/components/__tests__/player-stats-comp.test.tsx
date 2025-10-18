@@ -68,8 +68,15 @@ describe("PlayerStats components", () => {
   test("StatKey lists explanatory items", () => {
     render(<StatKey />);
     expect(screen.getByText("Stat Key")).toBeInTheDocument();
-    expect(screen.getByText(/Appearances/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Attacking Contributions" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Discipline & Defense" })
+    ).toBeInTheDocument();
     expect(screen.getByText(/Goals scored/)).toBeInTheDocument();
+    expect(screen.getByText(/Saves made/)).toBeInTheDocument();
+    expect(screen.queryByText(/Appearances/)).not.toBeInTheDocument();
   });
 
   test("MatchNavBar renders links when id present", async () => {
