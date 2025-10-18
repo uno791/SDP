@@ -15,6 +15,68 @@
   padding-left: 8px;
 }
 
+.sectionTitle {
+  color: #1a8e3a;
+  font-size: 20px;
+  margin: 32px 0 16px;
+  border-left: 4px solid #1a8e3a;
+  padding-left: 8px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 32px;
+  margin-bottom: 16px;
+}
+
+.sectionHeader .sectionTitle {
+  margin: 0;
+}
+
+.sectionControls {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.selectWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 200px;
+}
+
+.selectLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5f6368;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.leagueSelect {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #1a8e3a;
+  background: #f8fdf8;
+  color: #1a8e3a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.leagueSelect:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26, 142, 58, 0.2);
+  border-color: #146c2c;
+}
+
 .section {
   display: flex;
   flex-wrap: wrap;
@@ -86,11 +148,17 @@
   justify-content: space-between;
 }
 
+.listLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
 .listCard img {
   width: 32px;
   height: 32px;
   object-fit: contain;
-  margin-right: 12px;
 }
 
 .listCard span {
@@ -127,4 +195,24 @@ button.unfollow {
 
 button.unfollow:hover {
   background-color: #a71d2a;
+}
+
+.notFollowingEmpty {
+  flex: 1 0 100%;
+  background: #f8fdf8;
+  border: 1px solid #e6f2e6;
+  border-radius: 8px;
+  padding: 16px;
+  color: #5f6368;
+}
+
+@media (max-width: 768px) {
+  .sectionControls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .selectWrap {
+    min-width: 160px;
+  }
 }

@@ -1,5 +1,5 @@
 // src/pages/FavouritesPage.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "../components/FavouritePageComp/FavouritesPage.module.css";
 import { useUser } from "../Users/UserContext";
 import axios from "axios";
@@ -12,7 +12,9 @@ import { notifyFavouritesUpdated } from "../utils/favouritesCache";
 type Team = {
   id: number;
   name: string;
+  display_name?: string;
   logo_url?: string;
+  league_code?: string | null;
 };
 
 type LeagueRow = {
@@ -21,12 +23,21 @@ type LeagueRow = {
   pts: number;
 };
 type StandingsMap = Partial<Record<LeagueId, LeagueRow[]>>;
+type LeagueFilter = "all" | LeagueId;
 
 // Supported leagues from ESPN
 const SUPPORTED_LEAGUES: LeagueId[] = LEAGUE_OPTIONS.map((option) => option.id);
 const REMOVABLE_TOKENS = ["afc", "fc", "cf", "ac", "sc", "ssc", "club", "de", "the"];
 
-// ✅ Extended list of official main-league teams (EPL + LaLiga + Serie A + Bundesliga + Ligue 1)
+// ✅ Filter out UEFA competitions from dropdown
+const LEAGUE_FILTER_OPTIONS: Array<{ id: LeagueFilter; label: string }> = [
+  { id: "all", label: "All Leagues" },
+  ...LEAGUE_OPTIONS.filter(
+    (option) => !["ucl", "uel", "uecl"].includes(option.id)
+  ),
+];
+
+// ✅ Hard-coded list of official main-league teams
 const MAIN_LEAGUE_TEAMS = [
   // 🏴 Premier League
   "Arsenal","Aston Villa","Bournemouth","Brentford","Brighton & Hove Albion","Burnley",
@@ -84,24 +95,63 @@ function generateNameVariants(name: string): string[] {
   return Array.from(variants).filter(Boolean);
 }
 
+function mapLeagueCodeToId(code: string | null | undefined): LeagueId | undefined {
+  if (!code) return undefined;
+  const normalized = code.toLowerCase();
+  if (normalized.includes("premier")) return "eng1";
+  if (normalized.includes("liga") && normalized.includes("la")) return "esp1";
+  if (normalized.includes("serie") && normalized.includes("a")) return "ita1";
+  if (normalized.includes("bundes")) return "ger1";
+  if (normalized.includes("ligue")) return "fra1";
+  if (normalized.includes("champion")) return "ucl";
+  if (normalized.includes("conference")) return "uecl";
+  if (normalized.includes("europa")) {
+    return normalized.includes("conference") ? "uecl" : "uel";
+  }
+  return undefined;
+}
+
+function getTeamDisplayName(team: Team): string {
+  return team.display_name?.trim() || team.name;
+}
+
 const FavouritesPage: React.FC = () => {
   const { user } = useUser();
   const [allTeams, setAllTeams] = useState<Team[]>([]);
   const [favourites, setFavourites] = useState<Team[]>([]);
   const [standings, setStandings] = useState<StandingsMap>({});
+  const [notFollowingLeague, setNotFollowingLeague] = useState<LeagueFilter>("all");
 
   // Load all teams + favourites
   useEffect(() => {
     const fetchData = async () => {
       try {
         const teamsRes = await axios.get(`${baseURL}/teams`);
-        setAllTeams(teamsRes.data);
+        const teams: Team[] = (teamsRes.data ?? []).map((team: any) => ({
+          id: team.id,
+          name: team.name,
+          display_name: team.display_name ?? team.name,
+          logo_url: team.logo_url,
+          league_code: team.league_code ?? null,
+        }));
+
+        // ✅ Hard filter: only include official main-league teams
+        const officialTeams = teams.filter((t) =>
+          MAIN_LEAGUE_TEAMS.some(
+            (official) => official.toLowerCase() === t.name.toLowerCase().trim()
+          )
+        );
+
+        setAllTeams(officialTeams);
+
         if (user?.id) {
           const favRes = await axios.get(`${baseURL}/favourite-teams/${user.id}`);
-          const normalized = favRes.data.map((f: any) => ({
+          const normalized: Team[] = (favRes.data ?? []).map((f: any) => ({
             id: f.team_id,
             name: f.team_name,
+            display_name: f.team_name,
             logo_url: f.logo,
+            league_code: f.league_code ?? null,
           }));
           setFavourites(normalized);
         }
@@ -140,26 +190,50 @@ const FavouritesPage: React.FC = () => {
     fetchStandings();
   }, []);
 
-  // Build standings index
-  const standingsIndex = useMemo(() => {
-    const index: Record<string, { pos: number; pts: number }> = {};
-    Object.values(standings).forEach((rows) => {
-      rows.forEach(({ team, pos, pts }) => {
+  // Build standings + league indices
+  const { statsByVariant, leagueByVariant } = useMemo(() => {
+    const stats: Record<string, { pos: number; pts: number }> = {};
+    const leagues: Record<string, LeagueId> = {};
+    Object.entries(standings).forEach(([league, rows]) => {
+      (rows ?? []).forEach(({ team, pos, pts }) => {
         generateNameVariants(team).forEach((variant) => {
-          if (!index[variant]) index[variant] = { pos, pts };
+          if (!stats[variant]) {
+            stats[variant] = { pos, pts };
+          }
+          if (!leagues[variant]) {
+            leagues[variant] = league as LeagueId;
+          }
         });
       });
     });
-    return index;
+    return { statsByVariant: stats, leagueByVariant: leagues };
   }, [standings]);
 
   const getTeamStats = (teamName: string) => {
     for (const key of generateNameVariants(teamName)) {
-      const match = standingsIndex[key];
+      const match = statsByVariant[key];
       if (match) return match;
     }
     return { pos: "N/A", pts: "N/A" };
   };
+
+  const getTeamLeague = useCallback(
+    (team: Team): LeagueId | undefined => {
+      const fromCode = mapLeagueCodeToId(team.league_code ?? undefined);
+      if (fromCode) return fromCode;
+      const candidates = [team.name, team.display_name].filter(
+        (value): value is string => typeof value === "string"
+      );
+      for (const candidate of candidates) {
+        for (const variant of generateNameVariants(candidate)) {
+          const league = leagueByVariant[variant];
+          if (league) return league;
+        }
+      }
+      return undefined;
+    },
+    [leagueByVariant]
+  );
 
   const resolveNumericUserId = (): number | undefined => {
     if (!user?.id) return undefined;
@@ -173,10 +247,12 @@ const FavouritesPage: React.FC = () => {
     try {
       await axios.post(`${baseURL}/favourite-teams`, { userId: user.id, teamId });
       const favRes = await axios.get(`${baseURL}/favourite-teams/${user.id}`);
-      const normalized = favRes.data.map((f: any) => ({
+      const normalized: Team[] = (favRes.data ?? []).map((f: any) => ({
         id: f.team_id,
         name: f.team_name,
+        display_name: f.team_name,
         logo_url: f.logo,
+        league_code: f.league_code ?? null,
       }));
       setFavourites(normalized);
       notifyFavouritesUpdated(resolveNumericUserId(), "follow");
@@ -190,10 +266,12 @@ const FavouritesPage: React.FC = () => {
     try {
       await axios.delete(`${baseURL}/favourite-teams/${user.id}/${teamId}`);
       const favRes = await axios.get(`${baseURL}/favourite-teams/${user.id}`);
-      const normalized = favRes.data.map((f: any) => ({
+      const normalized: Team[] = (favRes.data ?? []).map((f: any) => ({
         id: f.team_id,
         name: f.team_name,
+        display_name: f.team_name,
         logo_url: f.logo,
+        league_code: f.league_code ?? null,
       }));
       setFavourites(normalized);
       notifyFavouritesUpdated(resolveNumericUserId(), "unfollow");
@@ -202,14 +280,19 @@ const FavouritesPage: React.FC = () => {
     }
   };
 
-  // ✅ Filter only main-league teams
-  const filteredTeams = allTeams.filter((team) =>
-    MAIN_LEAGUE_TEAMS.includes(team.name)
-  );
+  // Partition favourites vs available teams
+  const notFollowing = useMemo(() => {
+    const followingIds = new Set(favourites.map((f) => f.id));
+    return allTeams.filter((team) => !followingIds.has(team.id));
+  }, [allTeams, favourites]);
 
-  // Partition
-  const followingIds = new Set(favourites.map((f) => f.id));
-  const notFollowing = filteredTeams.filter((t) => !followingIds.has(t.id));
+  const filteredNotFollowing = useMemo(() => {
+    if (notFollowingLeague === "all") return notFollowing;
+    return notFollowing.filter(
+      (team) => getTeamLeague(team) === notFollowingLeague
+    );
+  }, [notFollowing, notFollowingLeague, getTeamLeague]);
+
   const favouriteTeamNames = useMemo(
     () => favourites.map((team) => team.name),
     [favourites]
@@ -218,17 +301,19 @@ const FavouritesPage: React.FC = () => {
   return (
     <div className={styles.container}>
       <FavouriteTeamMatches teamNames={favouriteTeamNames} />
-      <h2>Your Favourite Teams</h2>
+
+      <h2 className={styles.sectionTitle}>Your Favourite Teams</h2>
       <div className={styles.section}>
         {favourites.length === 0 ? (
           <p>No favourite teams yet</p>
         ) : (
           favourites.map((team) => {
             const { pos, pts } = getTeamStats(team.name);
+            const displayName = getTeamDisplayName(team);
             return (
               <div key={team.id} className={styles.teamCard}>
-                {team.logo_url && <img src={team.logo_url} alt={team.name} />}
-                <span>{team.name}</span>
+                {team.logo_url && <img src={team.logo_url} alt={displayName} />}
+                <span>{displayName}</span>
                 <div className={styles.statsRow}>
                   <span className={styles.positionBadge}>#{pos}</span>
                   <span className={styles.pointsBadge}>{pts} pts</span>
@@ -239,32 +324,68 @@ const FavouritesPage: React.FC = () => {
         )}
       </div>
 
-      <h2>Following</h2>
+      <h2 className={styles.sectionTitle}>Following</h2>
       <div className={styles.section}>
-        {favourites.map((team) => (
-          <div key={team.id} className={styles.listCard}>
-            <div className={styles.listLeft}>
-              {team.logo_url && <img src={team.logo_url} alt={team.name} />}
-              <span>{team.name}</span>
+        {favourites.map((team) => {
+          const displayName = getTeamDisplayName(team);
+          return (
+            <div key={team.id} className={styles.listCard}>
+              <div className={styles.listLeft}>
+                {team.logo_url && <img src={team.logo_url} alt={displayName} />}
+                <span>{displayName}</span>
+              </div>
+              <button className={styles.unfollow} onClick={() => handleUnfollow(team.id)}>
+                Unfollow
+              </button>
             </div>
-            <button className={styles.unfollow} onClick={() => handleUnfollow(team.id)}>
-              Unfollow
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      <h2>Not Following</h2>
-      <div className={styles.section}>
-        {notFollowing.map((team) => (
-          <div key={team.id} className={styles.listCard}>
-            <div className={styles.listLeft}>
-              {team.logo_url && <img src={team.logo_url} alt={team.name} />}
-              <span>{team.name}</span>
-            </div>
-            <button onClick={() => handleFollow(team.id)}>Follow</button>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>Not Following</h2>
+        <div className={styles.sectionControls}>
+          <div className={styles.selectWrap}>
+            <label className={styles.selectLabel} htmlFor="notFollowingLeague">
+              League
+            </label>
+            <select
+              id="notFollowingLeague"
+              className={styles.leagueSelect}
+              value={notFollowingLeague}
+              onChange={(event) =>
+                setNotFollowingLeague(event.target.value as LeagueFilter)
+              }
+            >
+              {LEAGUE_FILTER_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
-        ))}
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        {filteredNotFollowing.length === 0 ? (
+          <div className={styles.notFollowingEmpty}>
+            No teams available in this league.
+          </div>
+        ) : (
+          filteredNotFollowing.map((team) => {
+            const displayName = getTeamDisplayName(team);
+            return (
+              <div key={team.id} className={styles.listCard}>
+                <div className={styles.listLeft}>
+                  {team.logo_url && <img src={team.logo_url} alt={displayName} />}
+                  <span>{displayName}</span>
+                </div>
+                <button onClick={() => handleFollow(team.id)}>Follow</button>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
