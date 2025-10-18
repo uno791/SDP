@@ -34,7 +34,6 @@ describe("LiveMatchUpdate page", () => {
   };
 
   beforeEach(() => {
-    jest.useFakeTimers();
     axios.get = jest.fn((url: string) => {
       if (url.endsWith("/reports")) {
         return Promise.resolve({ data: { reports: [] } });
@@ -47,7 +46,6 @@ describe("LiveMatchUpdate page", () => {
   });
 
   afterEach(() => {
-    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
