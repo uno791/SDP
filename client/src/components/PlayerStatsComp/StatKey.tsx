@@ -4,39 +4,21 @@ import styles from "./StatKey.module.css";
 export default function StatKey() {
   const SECTIONS: { title: string; items: [string, string][] }[] = [
     {
-      title: "General Participation",
-      items: [
-        ["APP", "Appearances"],
-        ["SUBIN", "Times subbed on"],
-        ["IN/OUT", "Subbed in/out flags"],
-      ],
-    },
-    {
-      title: "Discipline",
-      items: [
-        ["FC", "Fouls committed"],
-        ["FA", "Fouls suffered"],
-        ["YC", "Yellow cards"],
-        ["RC", "Red cards"],
-        ["OG", "Own goals"],
-      ],
-    },
-    {
-      title: "Goalkeeping (GK only)",
-      items: [
-        ["GA", "Goals conceded"],
-        ["SV", "Saves made"],
-        ["SHF", "Shots on target faced"],
-      ],
-    },
-    {
       title: "Attacking Contributions",
       items: [
         ["G", "Goals scored"],
         ["A", "Assists"],
         ["SH", "Total shots"],
         ["ST", "Shots on target"],
-        ["OF", "Offsides"],
+      ],
+    },
+    {
+      title: "Discipline & Defense",
+      items: [
+        ["FC", "Fouls committed"],
+        ["YC", "Yellow cards"],
+        ["RC", "Red cards"],
+        ["SV", "Saves made (goalkeepers only)"],
       ],
     },
   ];

@@ -235,12 +235,17 @@ export default function MatchViewer() {
       setLoading(false);
       return;
     }
-    let cancelled = false;
 
-    (async () => {
+    let cancelled = false;
+    let intervalId: number | null = null;
+    let firstLoad = true;
+    let inFlight = false;
+
+    const load = async () => {
+      if (cancelled || inFlight) return;
+      inFlight = true;
       try {
-        setLoading(true);
-        setErr(null);
+        if (firstLoad) setLoading(true);
 
         const d = await fetchSummaryNormalized(eventId);
         if (cancelled) return;
@@ -263,6 +268,8 @@ export default function MatchViewer() {
           ? extractStatsFromScoreboardEvent(ev)
           : { scorers: [] as Scorer[] };
 
+        if (!cancelled) setErr(null);
+
         const hasGoodSummaryScorers =
           Array.isArray(d.scorers) &&
           d.scorers.length > 0 &&
@@ -275,12 +282,20 @@ export default function MatchViewer() {
       } catch (e: any) {
         if (!cancelled) setErr(e?.message ?? String(e));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled && firstLoad) {
+          setLoading(false);
+          firstLoad = false;
+        }
+        inFlight = false;
       }
-    })();
+    };
+
+    load();
+    intervalId = window.setInterval(load, 5000);
 
     return () => {
       cancelled = true;
+      if (intervalId != null) window.clearInterval(intervalId);
     };
   }, [eventId, today]);
 

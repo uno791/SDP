@@ -239,14 +239,24 @@ export default function PlayerStats() {
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!eventId) {
+      setLoading(false);
+      return;
+    }
+
     let alive = true;
-    (async () => {
+    let intervalId: number | null = null;
+    let firstLoad = true;
+    let inFlight = false;
+
+    const load = async () => {
+      if (!alive || inFlight) return;
+      inFlight = true;
       try {
-        if (!eventId) throw new Error("No event id in URL (?id=...)");
-        setLoading(true);
-        setErr(null);
+        if (firstLoad) setLoading(true);
 
         const summary = await fetchSummaryNormalized(eventId);
+        if (!alive) return;
 
         const homeId = String(summary.home?.teamId ?? "");
         const awayId = String(summary.away?.teamId ?? "");
@@ -296,16 +306,27 @@ export default function PlayerStats() {
           },
         };
 
-        if (alive) setData(next);
+        if (alive) {
+          setData(next);
+          setErr(null);
+        }
       } catch (e: any) {
         if (alive) setErr(e?.message ?? String(e));
       } finally {
-        if (alive) setLoading(false);
+        if (alive && firstLoad) {
+          setLoading(false);
+          firstLoad = false;
+        }
+        inFlight = false;
       }
-    })();
+    };
+
+    load();
+    intervalId = window.setInterval(load, 5000);
+
     return () => {
-      let _ = alive;
       alive = false;
+      if (intervalId != null) window.clearInterval(intervalId);
     };
   }, [eventId]);
 

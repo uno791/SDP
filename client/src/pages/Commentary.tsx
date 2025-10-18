@@ -67,25 +67,45 @@ export default function Commentary() {
   const [events, setEvents] = useState<CommentaryEvent[]>([]);
 
   useEffect(() => {
+    if (!eventId) {
+      setLoading(false);
+      setErr("Missing ?id in URL");
+      setEvents([]);
+      return;
+    }
+
     let alive = true;
-    (async () => {
+    let intervalId: number | null = null;
+    let firstLoad = true;
+    let inFlight = false;
+
+    const load = async () => {
+      if (!alive || inFlight) return;
+      inFlight = true;
       try {
-        if (!eventId) throw new Error("Missing ?id in URL");
-        setLoading(true);
-        setErr(null);
+        if (firstLoad) setLoading(true);
         const raw = await fetchCommentaryNormalized(eventId);
         if (!alive) return;
         setEvents(raw);
+        setErr(null);
       } catch (e: any) {
         if (!alive) return;
         setErr(e?.message ?? String(e));
       } finally {
-        if (!alive) return;
-        setLoading(false);
+        if (alive && firstLoad) {
+          setLoading(false);
+          firstLoad = false;
+        }
+        inFlight = false;
       }
-    })();
+    };
+
+    load();
+    intervalId = window.setInterval(load, 5000);
+
     return () => {
       alive = false;
+      if (intervalId != null) window.clearInterval(intervalId);
     };
   }, [eventId]);
 
