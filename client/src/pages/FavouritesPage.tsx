@@ -1,6 +1,11 @@
 // src/pages/FavouritesPage.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useInRouterContext,
+  useNavigate,
+  type NavigateFunction,
+  type To,
+} from "react-router-dom";
 import styles from "../components/FavouritePageComp/FavouritesPage.module.css";
 import { useUser } from "../Users/UserContext";
 import axios from "axios";
@@ -208,7 +213,36 @@ function getTeamDisplayName(team: Team): string {
 
 const FavouritesPage: React.FC = () => {
   const { user } = useUser();
-  const navigate = useNavigate();
+  const isInRouter = useInRouterContext();
+  const routerNavigate = isInRouter ? useNavigate() : null;
+  const navigate = useMemo<NavigateFunction>(() => {
+    if (routerNavigate) {
+      return routerNavigate;
+    }
+
+    const fallbackNavigate: NavigateFunction = (
+      to: To | number,
+      _options?
+    ) => {
+      if (typeof window === "undefined") return;
+
+      if (typeof to === "number") {
+        window.history.go(to);
+        return;
+      }
+
+      if (typeof to === "string") {
+        window.location.assign(to);
+        return;
+      }
+
+      const { pathname = "", search = "", hash = "" } = to ?? {};
+      const href = `${pathname}${search ?? ""}${hash ?? ""}` || "/";
+      window.location.assign(href);
+    };
+
+    return fallbackNavigate;
+  }, [routerNavigate]);
   const [allTeams, setAllTeams] = useState<Team[]>([]);
   const [favourites, setFavourites] = useState<Team[]>([]);
   const [standings, setStandings] = useState<StandingsMap>({});
