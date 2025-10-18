@@ -1,7 +1,7 @@
 // __tests__/MatchViewer.test.tsx
 import '@testing-library/jest-dom';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 // SUT
@@ -437,7 +437,7 @@ describe('MatchViewer', () => {
     const redCardRef = { current: { home: 1, away: 0 } };
     const useRefSpy = jest.spyOn(React, 'useRef').mockImplementation((initial: any) => {
       const stack = new Error().stack ?? '';
-      if (stack.includes('MatchViewer.tsx:153')) {
+      if (stack.includes('MatchViewer.tsx:159')) {
         matchViewerRefCalls = 0;
       }
       if (stack.includes('MatchViewer.tsx')) {
@@ -489,6 +489,7 @@ describe('MatchViewer', () => {
     const penaltyBtn = screen.getByRole('button', { name: /Test Penalty/i });
     const redBtn = screen.getByRole('button', { name: /Test Red Card/i });
     const yellowBtn = screen.getByRole('button', { name: /Test Yellow Card/i });
+    const drawBtn = screen.getByRole('button', { name: /Test Final Draw/i });
     const winnerHomeBtn = screen.getByRole('button', { name: /Test Winner \(Home\)/i });
     const winnerAwayBtn = screen.getByRole('button', { name: /Test Winner \(Away\)/i });
     const resetBtn = screen.getByRole('button', { name: /Reset Animations/i });
@@ -526,6 +527,20 @@ describe('MatchViewer', () => {
     await waitFor(() => expect(utils.container.querySelector('.falling-card')).toBeNull());
     expect(getLastSummaryProps().className).toBeUndefined();
 
+    fireEvent.click(drawBtn);
+    await waitFor(() =>
+      expect(utils.container.querySelectorAll('.draw-orb').length).toBeGreaterThan(0)
+    );
+    expect(utils.container.querySelector('.draw-ring')).toBeNull();
+    expect(getLastSummaryProps().className).toContain('animate-draw');
+    expect(getLastSummaryProps().winnerSide).toBeNull();
+
+    fireEvent.click(resetBtn);
+    await waitFor(() => {
+      expect(utils.container.querySelector('.draw-orb')).toBeNull();
+    });
+    expect(getLastSummaryProps().className).toBeUndefined();
+
     fireEvent.click(yellowBtn);
     await waitFor(() => expect(utils.container.querySelectorAll('.falling-card').length).toBe(36));
     expect(getLastSummaryProps().className).toContain('animate-penalty');
@@ -548,5 +563,91 @@ describe('MatchViewer', () => {
       expect(getLastSummaryProps().winnerSide).toBeNull();
       expect(getLastSummaryProps().className).toBeUndefined();
     });
+  });
+
+  test('activates draw animation at full time and blocks further event overlays', async () => {
+    jest.useFakeTimers();
+    try {
+      const activeSummary = makeSummary({
+        homeScore: 1,
+        awayScore: 1,
+        statusText: "88'",
+        scorers: [],
+      });
+      activeSummary.home.disciplineFouls.yellowCards = 1;
+      activeSummary.away.disciplineFouls.yellowCards = 2;
+
+      const finalDrawSummary = makeSummary({
+        homeScore: 1,
+        awayScore: 1,
+        statusText: 'FT',
+        scorers: [],
+      });
+      finalDrawSummary.home.disciplineFouls.yellowCards =
+        activeSummary.home.disciplineFouls.yellowCards;
+      finalDrawSummary.away.disciplineFouls.yellowCards =
+        activeSummary.away.disciplineFouls.yellowCards;
+
+      const finalWithExtraYellow = makeSummary({
+        homeScore: 1,
+        awayScore: 1,
+        statusText: 'FT',
+        scorers: [],
+      });
+      finalWithExtraYellow.home.disciplineFouls.yellowCards =
+        finalDrawSummary.home.disciplineFouls.yellowCards + 1;
+      finalWithExtraYellow.away.disciplineFouls.yellowCards =
+        finalDrawSummary.away.disciplineFouls.yellowCards;
+
+      mockFetchSummaryNormalized.mockResolvedValueOnce(activeSummary);
+      mockFetchSummaryNormalized.mockResolvedValueOnce(finalDrawSummary);
+      mockFetchSummaryNormalized.mockResolvedValueOnce(finalWithExtraYellow);
+
+      mockFetchScoreboard
+        .mockResolvedValueOnce({
+          events: [makeScoreboardEvent({ id: 'draw-full-time' })],
+        })
+        .mockResolvedValueOnce({
+          events: [makeScoreboardEvent({ id: 'draw-full-time' })],
+        })
+        .mockResolvedValueOnce({
+          events: [makeScoreboardEvent({ id: 'draw-full-time' })],
+        });
+      mockExtractStatsFromScoreboardEvent
+        .mockReturnValueOnce({ scorers: [] })
+        .mockReturnValueOnce({ scorers: [] })
+        .mockReturnValueOnce({ scorers: [] });
+
+      const { container } = renderWithId('draw-full-time');
+
+      await waitFor(() => expect(screen.getByTestId('GameSummaryCard')).toBeInTheDocument());
+
+      await act(async () => {
+        jest.advanceTimersByTime(5000);
+      });
+
+      await waitFor(() =>
+        expect(container.querySelectorAll('.draw-orb').length).toBeGreaterThan(0)
+      );
+      expect(container.querySelector('.draw-ring')).toBeNull();
+
+      await act(async () => {
+        jest.advanceTimersByTime(5000);
+      });
+
+      await waitFor(() => {
+        expect(container.querySelector('.falling-card')).toBeNull();
+        expect(screen.queryByText('Goal!')).toBeNull();
+        expect(screen.queryByText('Penalty!')).toBeNull();
+      });
+
+      const lastProps = getLastSummaryProps();
+      const className = lastProps?.className ?? '';
+      expect(className).not.toContain('animate-penalty');
+      expect(className).not.toContain('animate-red-card');
+      expect(className).not.toContain('animate-goal');
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

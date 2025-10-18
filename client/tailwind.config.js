@@ -63,6 +63,24 @@ export default {
             boxShadow: "0 0 0 rgba(234,179,8,0)",
           },
         },
+        draw: {
+          "0%": {
+            transform: "scale(1)",
+            boxShadow: "0 0 0 rgba(59,130,246,0)",
+          },
+          "35%": {
+            transform: "scale(1.035)",
+            boxShadow: "0 0 26px rgba(59,130,246,0.45)",
+          },
+          "70%": {
+            transform: "scale(0.995)",
+            boxShadow: "0 0 18px rgba(99,102,241,0.35)",
+          },
+          "100%": {
+            transform: "scale(1)",
+            boxShadow: "0 0 0 rgba(59,130,246,0)",
+          },
+        },
       },
       animation: {
         goal: "goal 1.2s ease-in-out",
@@ -70,6 +88,7 @@ export default {
         "red-card": "redCard 1.3s ease-in-out",
         penalty: "penalty 1.3s ease-in-out",
         winner: "winner 2.1s ease-in-out",
+        draw: "draw 2.4s ease-in-out",
       },
     },
   },

@@ -119,3 +119,38 @@ main {
     opacity: 0.92;
   }
 }
+
+
+.draw-orb {
+  position: absolute;
+  width: clamp(10px, 2.4vw, 26px);
+  height: clamp(10px, 2.4vw, 26px);
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, rgba(167, 139, 250, 0.9), rgba(59, 130, 246, 0.55));
+  filter: blur(0.4px);
+  opacity: 0;
+  animation-name: drawOrbFloat;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes drawOrbFloat {
+  0% {
+    transform: translateY(8px) scale(0.9);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(-8px) scale(1.05);
+    opacity: 0.7;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(8px) scale(0.92);
+    opacity: 0;
+  }
+}
