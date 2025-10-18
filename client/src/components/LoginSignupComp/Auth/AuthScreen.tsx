@@ -13,7 +13,8 @@ const copy = {
   signup: {
     eyebrow: "Create account",
     title: "Begin your Footbook journey",
-    subtitle: "Unlock live dashboards, real-time commentary, and community banter.",
+    subtitle:
+      "Unlock live dashboards, real-time commentary, and community banter.",
     googleLabel: "Sign up with Google",
     switchPrompt: "Already have an account?",
     switchLinkLabel: "Log in",
@@ -53,7 +54,7 @@ const AuthScreen = ({ mode }: AuthScreenProps) => {
       <header className={styles.header}>
         <div className={styles.brand}>FOOTBOOK</div>
         <Link to="/" className={styles.backLink}>
-          ← Back
+          ← Home
         </Link>
       </header>
 

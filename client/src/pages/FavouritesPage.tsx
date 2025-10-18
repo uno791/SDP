@@ -1,5 +1,6 @@
 // src/pages/FavouritesPage.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "../components/FavouritePageComp/FavouritesPage.module.css";
 import { useUser } from "../Users/UserContext";
 import axios from "axios";
@@ -27,7 +28,17 @@ type LeagueFilter = "all" | LeagueId;
 
 // Supported leagues from ESPN
 const SUPPORTED_LEAGUES: LeagueId[] = LEAGUE_OPTIONS.map((option) => option.id);
-const REMOVABLE_TOKENS = ["afc", "fc", "cf", "ac", "sc", "ssc", "club", "de", "the"];
+const REMOVABLE_TOKENS = [
+  "afc",
+  "fc",
+  "cf",
+  "ac",
+  "sc",
+  "ssc",
+  "club",
+  "de",
+  "the",
+];
 
 // ✅ Filter out UEFA competitions from dropdown
 const LEAGUE_FILTER_OPTIONS: Array<{ id: LeagueFilter; label: string }> = [
@@ -40,27 +51,105 @@ const LEAGUE_FILTER_OPTIONS: Array<{ id: LeagueFilter; label: string }> = [
 // ✅ Hard-coded list of official main-league teams
 const MAIN_LEAGUE_TEAMS = [
   // 🏴 Premier League
-  "Arsenal","Aston Villa","Bournemouth","Brentford","Brighton & Hove Albion","Burnley",
-  "Chelsea","Crystal Palace","Everton","Fulham","Leeds United","Liverpool",
-  "Manchester City","Manchester United","Newcastle United","Nottingham Forest",
-  "Sunderland","Tottenham Hotspur","West Ham United","Wolverhampton Wanderers",
+  "Arsenal",
+  "Aston Villa",
+  "Bournemouth",
+  "Brentford",
+  "Brighton & Hove Albion",
+  "Burnley",
+  "Chelsea",
+  "Crystal Palace",
+  "Everton",
+  "Fulham",
+  "Leeds United",
+  "Liverpool",
+  "Manchester City",
+  "Manchester United",
+  "Newcastle United",
+  "Nottingham Forest",
+  "Sunderland",
+  "Tottenham Hotspur",
+  "West Ham United",
+  "Wolverhampton Wanderers",
   // 🇪🇸 LaLiga
-  "Alavés","Athletic Club","Atlético Madrid","Barcelona","Celta Vigo","Elche","Espanyol",
-  "Getafe","Girona","Levante","Mallorca","Osasuna","Rayo Vallecano","Real Betis",
-  "Real Madrid","Real Sociedad","Sevilla","Valencia","Villarreal",
+  "Alavés",
+  "Athletic Club",
+  "Atlético Madrid",
+  "Barcelona",
+  "Celta Vigo",
+  "Elche",
+  "Espanyol",
+  "Getafe",
+  "Girona",
+  "Levante",
+  "Mallorca",
+  "Osasuna",
+  "Rayo Vallecano",
+  "Real Betis",
+  "Real Madrid",
+  "Real Sociedad",
+  "Sevilla",
+  "Valencia",
+  "Villarreal",
   // 🇮🇹 Serie A
-  "AC Milan","AS Roma","Atalanta","Bologna","Cagliari","Como","Cremonese","Fiorentina",
-  "Genoa","Hellas Verona","Internazionale","Juventus","Lazio","Lecce","Napoli","Parma",
-  "Pisa","Sassuolo","Torino","Udinese",
+  "AC Milan",
+  "AS Roma",
+  "Atalanta",
+  "Bologna",
+  "Cagliari",
+  "Como",
+  "Cremonese",
+  "Fiorentina",
+  "Genoa",
+  "Hellas Verona",
+  "Internazionale",
+  "Juventus",
+  "Lazio",
+  "Lecce",
+  "Napoli",
+  "Parma",
+  "Pisa",
+  "Sassuolo",
+  "Torino",
+  "Udinese",
   // 🇩🇪 Bundesliga
-  "1. FC Heidenheim 1846","1. FC Union Berlin","Bayer Leverkusen","Bayern Munich",
-  "Borussia Dortmund","Borussia Mönchengladbach","Eintracht Frankfurt","FC Augsburg",
-  "FC Cologne","Hamburg SV","Mainz","RB Leipzig","SC Freiburg","St. Pauli",
-  "TSG Hoffenheim","VfB Stuttgart","VfL Wolfsburg","Werder Bremen",
+  "1. FC Heidenheim 1846",
+  "1. FC Union Berlin",
+  "Bayer Leverkusen",
+  "Bayern Munich",
+  "Borussia Dortmund",
+  "Borussia Mönchengladbach",
+  "Eintracht Frankfurt",
+  "FC Augsburg",
+  "FC Cologne",
+  "Hamburg SV",
+  "Mainz",
+  "RB Leipzig",
+  "SC Freiburg",
+  "St. Pauli",
+  "TSG Hoffenheim",
+  "VfB Stuttgart",
+  "VfL Wolfsburg",
+  "Werder Bremen",
   // 🇫🇷 Ligue 1
-  "AJ Auxerre","Angers","AS Monaco","Brest","Le Havre AC","Lens","Lille","Lorient",
-  "Lyon","Marseille","Metz","Nantes","Nice","Paris FC","Paris Saint-Germain",
-  "Stade Rennais","Strasbourg","Toulouse",
+  "AJ Auxerre",
+  "Angers",
+  "AS Monaco",
+  "Brest",
+  "Le Havre AC",
+  "Lens",
+  "Lille",
+  "Lorient",
+  "Lyon",
+  "Marseille",
+  "Metz",
+  "Nantes",
+  "Nice",
+  "Paris FC",
+  "Paris Saint-Germain",
+  "Stade Rennais",
+  "Strasbourg",
+  "Toulouse",
 ];
 
 function normalizeName(name: string): string {
@@ -95,7 +184,9 @@ function generateNameVariants(name: string): string[] {
   return Array.from(variants).filter(Boolean);
 }
 
-function mapLeagueCodeToId(code: string | null | undefined): LeagueId | undefined {
+function mapLeagueCodeToId(
+  code: string | null | undefined
+): LeagueId | undefined {
   if (!code) return undefined;
   const normalized = code.toLowerCase();
   if (normalized.includes("premier")) return "eng1";
@@ -117,10 +208,26 @@ function getTeamDisplayName(team: Team): string {
 
 const FavouritesPage: React.FC = () => {
   const { user } = useUser();
+  const navigate = useNavigate();
   const [allTeams, setAllTeams] = useState<Team[]>([]);
   const [favourites, setFavourites] = useState<Team[]>([]);
   const [standings, setStandings] = useState<StandingsMap>({});
-  const [notFollowingLeague, setNotFollowingLeague] = useState<LeagueFilter>("all");
+  const [notFollowingLeague, setNotFollowingLeague] =
+    useState<LeagueFilter>("all");
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(() => !user?.id);
+
+  useEffect(() => {
+    setShowAuthModal(!user?.id);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!showAuthModal) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [showAuthModal]);
 
   // Load all teams + favourites
   useEffect(() => {
@@ -145,7 +252,9 @@ const FavouritesPage: React.FC = () => {
         setAllTeams(officialTeams);
 
         if (user?.id) {
-          const favRes = await axios.get(`${baseURL}/favourite-teams/${user.id}`);
+          const favRes = await axios.get(
+            `${baseURL}/favourite-teams/${user.id}`
+          );
           const normalized: Team[] = (favRes.data ?? []).map((f: any) => ({
             id: f.team_id,
             name: f.team_name,
@@ -170,10 +279,18 @@ const FavouritesPage: React.FC = () => {
         const results = await Promise.all(
           SUPPORTED_LEAGUES.map(async (league) => {
             try {
-              const rows = await fetchEplStandings({ season, level: 3, league });
+              const rows = await fetchEplStandings({
+                season,
+                level: 3,
+                league,
+              });
               return { league, rows };
             } catch (leagueError) {
-              console.error("[FavouritesPage] Failed to fetch standings:", league, leagueError);
+              console.error(
+                "[FavouritesPage] Failed to fetch standings:",
+                league,
+                leagueError
+              );
               return { league, rows: [] as LeagueRow[] };
             }
           })
@@ -245,7 +362,10 @@ const FavouritesPage: React.FC = () => {
   const handleFollow = async (teamId: number) => {
     if (!user?.id) return;
     try {
-      await axios.post(`${baseURL}/favourite-teams`, { userId: user.id, teamId });
+      await axios.post(`${baseURL}/favourite-teams`, {
+        userId: user.id,
+        teamId,
+      });
       const favRes = await axios.get(`${baseURL}/favourite-teams/${user.id}`);
       const normalized: Team[] = (favRes.data ?? []).map((f: any) => ({
         id: f.team_id,
@@ -298,8 +418,60 @@ const FavouritesPage: React.FC = () => {
     [favourites]
   );
 
+  const handleBack = useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  }, [navigate]);
+
+  const handleAuthRedirect = useCallback(() => {
+    navigate("/signup");
+  }, [navigate]);
+
   return (
     <div className={styles.container}>
+      {showAuthModal && (
+        <div
+          className={styles.modalOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="favourites-auth-modal-title"
+          aria-describedby="favourites-auth-modal-description"
+        >
+          <div className={styles.modal}>
+            <h2 id="favourites-auth-modal-title" className={styles.modalTitle}>
+              Follow your favourite teams
+            </h2>
+            <p
+              id="favourites-auth-modal-description"
+              className={styles.modalDescription}
+            >
+              The Favourite Teams hub collects live scores, upcoming fixtures,
+              and standings for the clubs you follow. Sign up or log in to start
+              tracking your teams, or head back to keep exploring the app.
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.modalSecondary}
+                onClick={handleBack}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                className={styles.modalPrimary}
+                onClick={handleAuthRedirect}
+              >
+                Sign up / Log in
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <FavouriteTeamMatches teamNames={favouriteTeamNames} />
 
       <h2 className={styles.sectionTitle}>Your Favourite Teams</h2>
@@ -334,7 +506,10 @@ const FavouritesPage: React.FC = () => {
                 {team.logo_url && <img src={team.logo_url} alt={displayName} />}
                 <span>{displayName}</span>
               </div>
-              <button className={styles.unfollow} onClick={() => handleUnfollow(team.id)}>
+              <button
+                className={styles.unfollow}
+                onClick={() => handleUnfollow(team.id)}
+              >
                 Unfollow
               </button>
             </div>
@@ -378,7 +553,9 @@ const FavouritesPage: React.FC = () => {
             return (
               <div key={team.id} className={styles.listCard}>
                 <div className={styles.listLeft}>
-                  {team.logo_url && <img src={team.logo_url} alt={displayName} />}
+                  {team.logo_url && (
+                    <img src={team.logo_url} alt={displayName} />
+                  )}
                   <span>{displayName}</span>
                 </div>
                 <button onClick={() => handleFollow(team.id)}>Follow</button>

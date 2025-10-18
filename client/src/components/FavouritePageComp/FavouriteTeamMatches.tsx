@@ -52,7 +52,17 @@ export default function FavouriteTeamMatches({
         const st = ev.status?.type;
         const isCompleted = !!st?.completed || st?.state === "post";
         const isUpcoming = st?.state === "pre" && !st?.completed;
-        return cmp > 0 ? isUpcoming : isCompleted;
+        const isLive = st?.state === "in";
+
+        if (cmp > 0) {
+          return isUpcoming || isLive;
+        }
+
+        if (cmp === 0) {
+          return isUpcoming || isLive || isCompleted;
+        }
+
+        return isCompleted;
       });
 
       const favouritesOnly = relevantByState.filter((ev) => {
@@ -83,10 +93,12 @@ export default function FavouriteTeamMatches({
     [teamNameSet]
   );
 
-  const hasLive = useMemo(
-    () => (data?.events ?? []).some((ev) => ev?.status?.type?.state === "in"),
-    [data]
-  );
+  const hasLive = useMemo(() => {
+    const cmp = compareDay(date, today);
+    return selectEvents(data, cmp).some(
+      (ev) => ev?.status?.type?.state === "in"
+    );
+  }, [data, date, today, selectEvents]);
 
   const [visible, setVisible] = useState<boolean>(() => !document.hidden);
   useEffect(() => {
