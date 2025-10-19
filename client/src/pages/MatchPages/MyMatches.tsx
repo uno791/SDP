@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./MyMatches.module.css";
@@ -30,9 +30,25 @@ const MyMatches = () => {
   const { user } = useUser();
   const [matches, setMatches] = useState<Match[]>([]);
   const [now, setNow] = useState(new Date());
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(
+    () => !user?.id
+  );
 
   // NEW: track which match to delete
   const [deleteMatchId, setDeleteMatchId] = useState<number | null>(null);
+
+  useEffect(() => {
+    setShowAuthModal(!user?.id);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!showAuthModal) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [showAuthModal]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -151,12 +167,69 @@ const MyMatches = () => {
     }
   }
 
+  const handleBack = useCallback(() => {
+    if (typeof window === "undefined") {
+      navigate("/");
+      return;
+    }
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  }, [navigate]);
+
+  const handleAuthRedirect = useCallback(() => {
+    navigate("/signup");
+  }, [navigate]);
+
   return (
     <div className={styles.page}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
       `}</style>
+
+      {showAuthModal && (
+        <div
+          className={styles.modalOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="mymatches-auth-modal-title"
+          aria-describedby="mymatches-auth-modal-description"
+        >
+          <div className={styles.modal}>
+            <h2 id="mymatches-auth-modal-title" className={styles.modalTitle}>
+              Manage your matches
+            </h2>
+            <p
+              id="mymatches-auth-modal-description"
+              className={styles.modalDescription}
+            >
+              My Matches keeps every fixture you create in one place. Track
+              live games and log events, prepare upcoming kickoffs, review past
+              results, spin up new matches, or import them in bulk with our CSV
+              template. Sign up or log in to start managing your fixtures.
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.modalSecondary}
+                onClick={handleBack}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                className={styles.modalPrimary}
+                onClick={handleAuthRedirect}
+              >
+                Sign up / Log in
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <header className={styles.hero}>
         <div className={styles.heroInner}>

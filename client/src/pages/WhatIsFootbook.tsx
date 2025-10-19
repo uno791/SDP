@@ -133,6 +133,9 @@ const HOW_IT_WORKS_STEPS = [
 export default function WhatIsFootbook() {
   return (
     <main className={styles.page}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
+      `}</style>
       <section className={styles.hero}>
         <p className={styles.tagline}>Discover Footbook</p>
         <h1 className={styles.heroTitle}>Your All-in-One Football Companion</h1>
