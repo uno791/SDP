@@ -413,6 +413,21 @@ const FavouritesPage: React.FC = () => {
   // Follow / Unfollow
   const handleFollow = async (teamId: number) => {
     if (!user?.id) return;
+    const previous = favourites;
+    if (previous.some((team) => team.id === teamId)) return;
+    const teamToAdd =
+      previous.find((team) => team.id === teamId) ??
+      allTeams.find((team) => team.id === teamId);
+
+    if (!teamToAdd) return;
+
+    setFavourites((current) => {
+      if (current.some((team) => team.id === teamId)) {
+        return current;
+      }
+      return [...current, teamToAdd];
+    });
+
     try {
       await axios.post(`${baseURL}/favourite-teams`, {
         userId: user.id,
@@ -430,11 +445,16 @@ const FavouritesPage: React.FC = () => {
       notifyFavouritesUpdated(resolveNumericUserId(), "follow");
     } catch (err) {
       console.error("❌ Failed to follow:", err);
+      setFavourites(previous);
     }
   };
 
   const handleUnfollow = async (teamId: number) => {
     if (!user?.id) return;
+    const previous = favourites;
+
+    setFavourites((current) => current.filter((team) => team.id !== teamId));
+
     try {
       await axios.delete(`${baseURL}/favourite-teams/${user.id}/${teamId}`);
       const favRes = await axios.get(`${baseURL}/favourite-teams/${user.id}`);
@@ -449,6 +469,7 @@ const FavouritesPage: React.FC = () => {
       notifyFavouritesUpdated(resolveNumericUserId(), "unfollow");
     } catch (err) {
       console.error("❌ Failed to unfollow:", err);
+      setFavourites(previous);
     }
   };
 
