@@ -1,5 +1,6 @@
 // src/pages/FavouritesPage.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import {
   useInRouterContext,
   useNavigate,
@@ -14,6 +15,7 @@ import { fetchEplStandings, type LeagueId } from "../api/espn";
 import { LEAGUE_OPTIONS } from "../components/FavouritePageComp/leagues";
 import FavouriteTeamMatches from "../components/FavouritePageComp/FavouriteTeamMatches";
 import { notifyFavouritesUpdated } from "../utils/favouritesCache";
+import Loader3D from "../components/LandingPageComp/Layout/Loader3D";
 
 type Team = {
   id: number;
@@ -243,6 +245,7 @@ const FavouritesPage: React.FC = () => {
 
     return fallbackNavigate;
   }, [routerNavigate]);
+  const [loadingPage, setLoadingPage] = useState(true);
   const [allTeams, setAllTeams] = useState<Team[]>([]);
   const [favourites, setFavourites] = useState<Team[]>([]);
   const [standings, setStandings] = useState<StandingsMap>({});
@@ -265,7 +268,9 @@ const FavouritesPage: React.FC = () => {
 
   // Load all teams + favourites
   useEffect(() => {
+    let active = true;
     const fetchData = async () => {
+      setLoadingPage(true);
       try {
         const teamsRes = await axios.get(`${baseURL}/teams`);
         const teams: Team[] = (teamsRes.data ?? []).map((team: any) => ({
@@ -283,7 +288,9 @@ const FavouritesPage: React.FC = () => {
           )
         );
 
-        setAllTeams(officialTeams);
+        if (active) {
+          setAllTeams(officialTeams);
+        }
 
         if (user?.id) {
           const favRes = await axios.get(
@@ -296,13 +303,24 @@ const FavouritesPage: React.FC = () => {
             logo_url: f.logo,
             league_code: f.league_code ?? null,
           }));
-          setFavourites(normalized);
+          if (active) {
+            setFavourites(normalized);
+          }
+        } else if (active) {
+          setFavourites([]);
         }
       } catch (err) {
         console.error("❌ Failed to fetch favourites page:", err);
+      } finally {
+        if (active) {
+          setLoadingPage(false);
+        }
       }
     };
     fetchData();
+    return () => {
+      active = false;
+    };
   }, [user?.id]);
 
   // Load standings for all supported leagues
@@ -395,6 +413,21 @@ const FavouritesPage: React.FC = () => {
   // Follow / Unfollow
   const handleFollow = async (teamId: number) => {
     if (!user?.id) return;
+    const previous = favourites;
+    if (previous.some((team) => team.id === teamId)) return;
+    const teamToAdd =
+      previous.find((team) => team.id === teamId) ??
+      allTeams.find((team) => team.id === teamId);
+
+    if (!teamToAdd) return;
+
+    setFavourites((current) => {
+      if (current.some((team) => team.id === teamId)) {
+        return current;
+      }
+      return [...current, teamToAdd];
+    });
+
     try {
       await axios.post(`${baseURL}/favourite-teams`, {
         userId: user.id,
@@ -412,11 +445,16 @@ const FavouritesPage: React.FC = () => {
       notifyFavouritesUpdated(resolveNumericUserId(), "follow");
     } catch (err) {
       console.error("❌ Failed to follow:", err);
+      setFavourites(previous);
     }
   };
 
   const handleUnfollow = async (teamId: number) => {
     if (!user?.id) return;
+    const previous = favourites;
+
+    setFavourites((current) => current.filter((team) => team.id !== teamId));
+
     try {
       await axios.delete(`${baseURL}/favourite-teams/${user.id}/${teamId}`);
       const favRes = await axios.get(`${baseURL}/favourite-teams/${user.id}`);
@@ -431,6 +469,7 @@ const FavouritesPage: React.FC = () => {
       notifyFavouritesUpdated(resolveNumericUserId(), "unfollow");
     } catch (err) {
       console.error("❌ Failed to unfollow:", err);
+      setFavourites(previous);
     }
   };
 
@@ -466,6 +505,7 @@ const FavouritesPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <AnimatePresence>{loadingPage && <Loader3D />}</AnimatePresence>
       {showAuthModal && (
         <div
           className={styles.modalOverlay}

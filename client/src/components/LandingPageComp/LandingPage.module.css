@@ -368,3 +368,75 @@
     margin-left: -15rem;
   }
 }
+
+/* Center hero buttons on mobile */
+@media (max-width: 768px) {
+  .heroButtons {
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    text-align: center;
+  }
+
+  .heroButtons button,
+  .heroButtons a {
+    margin: 0 auto;
+  }
+
+  .heroContent {
+    align-items: center; /* centers everything inside */
+    text-align: center;
+  }
+
+  .heroOverlay {
+    text-align: center;
+  }
+}
+
+/* Compact hero while keeping the ball visible */
+@media (max-width: 768px) {
+  .hero {
+    min-height: 75vh; /* keep some vertical space so the ball shows */
+    padding-bottom: 1.5rem;
+    position: relative; /* ensure the absolute ball stays anchored inside */
+    padding-top: 4rem;
+  }
+
+  .heroContent {
+    margin-top: 1.5rem !important;
+    align-items: center;
+    text-align: center;
+  }
+
+  .heroBall {
+    position: relative; /* prevent it from escaping the flow */
+    margin: 1.25rem auto 0;
+    bottom: auto;
+    left: auto;
+    transform: none;
+  }
+
+  .heroButtons {
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    text-align: center;
+  }
+
+  .heroButtons button,
+  .heroButtons a {
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    min-height: 70vh; /* still visible but tighter */
+    padding-bottom: 1rem;
+  }
+
+  .heroButtons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
