@@ -696,9 +696,7 @@ export default function LandingPage() {
               ref={heroBallRef}
             >
               {shouldRenderBall ? (
-                <Suspense
-                  fallback={<HeroBallPlaceholder />}
-                >
+                <Suspense fallback={<HeroBallPlaceholder />}>
                   <ThreeFootball />
                 </Suspense>
               ) : (
@@ -753,7 +751,7 @@ export default function LandingPage() {
               FootBook © {new Date().getFullYear()}
             </div>
             <div className={styles.footerNote}>
-              Built for fans. Connect APIs for live data.
+              Built for fans, by the fans. POW! BAM! FOOTBALL!
             </div>
           </div>
         </footer>
