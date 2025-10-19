@@ -27,13 +27,13 @@
 /* ───────── HERO ───────── */
 .hero {
   position: relative;
-  min-height: 100vh; /* was 85vh — ensures full screen height */
+  min-height: 85vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   overflow: hidden;
-  padding: 0 1rem;
+  padding: 0 1rem; /* slimmer gutters on phones */
 }
 
 /* FOOTBOOK heading */
@@ -195,6 +195,7 @@
 .grid3 {
   display: grid;
   gap: 1.25rem;
+
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
