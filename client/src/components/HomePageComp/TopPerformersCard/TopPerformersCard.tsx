@@ -130,6 +130,8 @@ function Row({
                 else img.classList.add(styles.avatarFallback);
               }}
               alt=""
+              loading="lazy"
+              decoding="async"
             />
             <span className={styles.playerName}>{winner.name}</span>
           </div>

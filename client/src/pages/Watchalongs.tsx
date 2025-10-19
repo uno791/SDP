@@ -486,6 +486,8 @@ export default function Watchalongs() {
                   alt={item.title}
                   className={styles.thumbnail}
                   loading="lazy"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
                 />
               ) : null}
             </div>

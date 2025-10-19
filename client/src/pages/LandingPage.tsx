@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  Suspense,
+  lazy,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
 import {
   motion,
@@ -15,12 +22,22 @@ import PastMatchCard from "../components/LandingPageComp/PastMatchCard";
 import FavouriteLandingMatchesCard from "../components/LandingPageComp/FavouriteLandingMatchesCard";
 import NewsCard from "../components/LandingPageComp/NewsCard";
 import MarqueeWide from "../components/LandingPageComp/MarqueeWide";
-import ThreeFootball from "../components/LandingPageComp/ThreeFootball";
 import styles from "../components/LandingPageComp/LandingPage.module.css";
 import Loader3D from "../components/LandingPageComp/Layout/Loader3D";
 import PremierLeagueTable from "../components/LandingPageComp/PremierLeagueTable";
 import type { LeagueId } from "../api/espn";
 
+const ThreeFootball = lazy(
+  () => import("../components/LandingPageComp/ThreeFootball")
+);
+
+function HeroBallPlaceholder() {
+  return (
+    <div className={styles.heroBallFallback} aria-hidden="true">
+      <span className={styles.heroBallPulse} />
+    </div>
+  );
+}
 /* ------------------------------ DATA ------------------------------ */
 const LEAGUE_TEAM_MAP: Record<LeagueId, string[]> = {
   eng1: [
@@ -548,18 +565,47 @@ export default function LandingPage() {
     }
   }, [league]);
 
-  // Fonts
-  const FontImports = () => (
-    <style>
-      {`@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe:ital@0;1&display=swap');`}
-    </style>
-  );
+  const heroBallRef = useRef<HTMLDivElement | null>(null);
+  const [shouldRenderBall, setShouldRenderBall] = useState(false);
 
   // Small parallax on the 3D ball
   const { scrollY } = useScroll();
   // gentle parallax up for the ball (keep small so it stays in the hero)
   const yFootball = useTransform(scrollY, [0, 600], [200, -120]);
+
+  useEffect(() => {
+    if (shouldRenderBall) return;
+    if (typeof window === "undefined") {
+      setShouldRenderBall(true);
+      return;
+    }
+    const node = heroBallRef.current;
+    if (!node || !("IntersectionObserver" in window)) {
+      setShouldRenderBall(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setShouldRenderBall(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [shouldRenderBall]);
+
+  useEffect(() => {
+    if (shouldRenderBall || typeof window === "undefined") {
+      return;
+    }
+    const timeout = window.setTimeout(() => setShouldRenderBall(true), 4500);
+    return () => window.clearTimeout(timeout);
+  }, [shouldRenderBall]);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1400);
@@ -568,8 +614,6 @@ export default function LandingPage() {
 
   return (
     <div className={styles.page}>
-      <FontImports />
-
       {/* Google Fonts imports (duplicated previously; one block is enough) */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
@@ -646,8 +690,20 @@ export default function LandingPage() {
             </div>
 
             {/* Ball (flex sibling; moved left & down via CSS; parallax via yFootball) */}
-            <motion.div style={{ y: yFootball }} className={styles.heroBall}>
-              <ThreeFootball />
+            <motion.div
+              style={{ y: yFootball }}
+              className={styles.heroBall}
+              ref={heroBallRef}
+            >
+              {shouldRenderBall ? (
+                <Suspense
+                  fallback={<HeroBallPlaceholder />}
+                >
+                  <ThreeFootball />
+                </Suspense>
+              ) : (
+                <HeroBallPlaceholder />
+              )}
             </motion.div>
           </div>
         </section>

@@ -19,7 +19,13 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   return (
     <div className={styles.container}>
       <div className={styles.imageWrapper}>
-        <img src={selected} alt="Profile" className={styles.image} />
+        <img
+          src={selected}
+          alt="Profile"
+          className={styles.image}
+          loading="lazy"
+          decoding="async"
+        />
         <button className={styles.editButton} onClick={handleEditClick}>
           Edit
         </button>
@@ -37,6 +43,8 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
               onChange("/assets/messi.png");
               setEditing(false);
             }}
+            loading="lazy"
+            decoding="async"
           />
           <img
             src="/assets/ronaldo.png"
@@ -48,6 +56,8 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
               onChange("/assets/ronaldo.png");
               setEditing(false);
             }}
+            loading="lazy"
+            decoding="async"
           />
         </div>
       )}

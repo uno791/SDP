@@ -85,7 +85,14 @@ export default function LatestNews() {
                 rel="noreferrer"
                 className={styles.thumbWrap}
               >
-                <img src={n.image} alt="" className={styles.thumb} />
+                <img
+                  src={n.image}
+                  alt=""
+                  className={styles.thumb}
+                  loading="lazy"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
+                />
               </a>
             )}
 

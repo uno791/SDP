@@ -35,6 +35,7 @@ export default function Header() {
           src="https://cdn.builder.io/api/v1/image/assets%2F9cae8401b37e4b32b0c47072abf66007%2F30f43436757e4098bb3dce9cb405c5a7?format=webp&width=800"
           alt="FootBook Logo"
           className={styles.logo}
+          decoding="async"
         />
       </div>
 

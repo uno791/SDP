@@ -101,7 +101,14 @@ export default function NewsCard({ league = "eng1" }: { league?: LeagueId }) {
                 className={styles.thumbWrap}
                 aria-label={n.title}
               >
-                <img src={n.image} alt="" className={styles.thumb} />
+                <img
+                  src={n.image}
+                  alt=""
+                  className={styles.thumb}
+                  loading="lazy"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
+                />
               </a>
             ) : (
               <div className={styles.thumbWrap} />

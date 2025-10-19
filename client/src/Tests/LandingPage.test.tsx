@@ -60,9 +60,10 @@ jest.mock("../components/LandingPageComp/NewsCard", () => () => (
 jest.mock("../components/LandingPageComp/MarqueeWide", () => ({ words }: any) => (
   <div data-testid="MarqueeWide">Marquee {words.join(",")}</div>
 ));
-jest.mock("../components/LandingPageComp/ThreeFootball", () => () => (
-  <div data-testid="ThreeFootball">ThreeFootball</div>
-));
+jest.mock("../components/LandingPageComp/ThreeFootball", () => ({
+  __esModule: true,
+  default: () => <div data-testid="ThreeFootball">ThreeFootball</div>,
+}));
 jest.mock("../components/LandingPageComp/Layout/Loader3D", () => () => (
   <div role="status" data-testid="landing-loader">
     Loader3D
@@ -136,7 +137,9 @@ describe("LandingPage", () => {
     expect(screen.getByTestId("LiveMatchCard")).toBeInTheDocument();
     expect(screen.getAllByTestId("PastMatchCard").length).toBeGreaterThan(0);
     expect(screen.getByTestId("NewsCard")).toBeInTheDocument();
-    expect(screen.getByTestId("ThreeFootball")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByTestId("ThreeFootball")).toBeInTheDocument()
+    );
     expect(screen.getByTestId("PremierLeagueTable")).toBeInTheDocument();
   });
 });

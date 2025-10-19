@@ -1,7 +1,6 @@
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
-  Environment,
   OrbitControls,
   Html,
   Center,
@@ -79,7 +78,7 @@ function useSafeGLTF(url: string) {
 function RotatingFootball({ url }: { url: string }) {
   const group = useRef<THREE.Group>(null);
   const [spinBoost, setSpinBoost] = useState(1);
-  const [wobble, setWobble] = useState(0);
+  const wobbleRef = useRef(0);
   const { scene } = useSafeGLTF(url);
 
   useEffect(() => {
@@ -98,9 +97,11 @@ function RotatingFootball({ url }: { url: string }) {
     if (!g) return;
     g.rotation.y += delta * (0.9 * spinBoost);
     const t = state.clock.getElapsedTime();
-    setWobble((Math.sin(t * 1.6) + Math.cos(t * 1.1)) * 0.06);
-    g.rotation.x = wobble * 0.35;
-    g.rotation.z = wobble * 0.15;
+    const wobbleTarget = (Math.sin(t * 1.6) + Math.cos(t * 1.1)) * 0.06;
+    wobbleRef.current =
+      wobbleRef.current * 0.92 + wobbleTarget * (1 - 0.92);
+    g.rotation.x = wobbleRef.current * 0.35;
+    g.rotation.z = wobbleRef.current * 0.15;
   });
 
   if (!scene) return <FallbackBall />;
@@ -136,12 +137,13 @@ export default function ThreeFootball() {
     <motion.div className={styles.wrapper} style={{ y }}>
       <Canvas
         shadows
-        dpr={[1, 2]}
+        dpr={[0.9, 1.6]}
         camera={{ position: [0, 0.4, 3], fov: 35 }}
         className={styles.canvas}
       >
         <Suspense fallback={<FallbackSpinner />}>
           <group>
+            <ambientLight intensity={0.25} />
             <hemisphereLight
               intensity={0.55}
               groundColor={new THREE.Color("#0a3f2e")}
@@ -150,8 +152,8 @@ export default function ThreeFootball() {
               castShadow
               position={[4, 6, 5]}
               intensity={1.1}
-              shadow-mapSize-width={1024}
-              shadow-mapSize-height={1024}
+              shadow-mapSize-width={512}
+              shadow-mapSize-height={512}
             />
             <Bounds fit clip margin={1.1} observe>
               <RotatingFootball url={modelUrl} />
@@ -165,8 +167,7 @@ export default function ThreeFootball() {
               <shadowMaterial transparent opacity={0.25} />
             </mesh>
           </group>
-          <Environment preset="city" />
-          <OrbitControls enablePan={false} enableZoom={false} />
+          <OrbitControls enablePan={false} enableZoom={false} enableDamping />
         </Suspense>
       </Canvas>
     </motion.div>

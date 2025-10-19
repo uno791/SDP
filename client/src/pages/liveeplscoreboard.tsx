@@ -311,6 +311,8 @@ export default function LivePremScoreboard() {
                       src={home.team.logo}
                       alt={home.team.shortDisplayName}
                       className="h-7 w-7"
+                      loading="lazy"
+                      decoding="async"
                     />
                   )}
                   <div className="truncate">
@@ -339,6 +341,8 @@ export default function LivePremScoreboard() {
                       src={away.team.logo}
                       alt={away.team.shortDisplayName}
                       className="h-7 w-7"
+                      loading="lazy"
+                      decoding="async"
                     />
                   )}
                 </div>

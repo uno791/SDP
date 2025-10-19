@@ -160,6 +160,8 @@ export default function GameSummaryCard({
                 objectFit: "contain",
                 display: "block",
               }}
+              loading="lazy"
+              decoding="async"
             />
           ) : null}
           <span
@@ -187,6 +189,8 @@ export default function GameSummaryCard({
                 objectFit: "contain",
                 display: "block",
               }}
+              loading="lazy"
+              decoding="async"
             />
           ) : null}
         </div>

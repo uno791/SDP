@@ -22,6 +22,8 @@ const AuthPanel: React.FC<AuthPanelProps> = ({ type, image, side }) => {
         className={
           side === "left" ? styles.illustrationleft : styles.illustrationright
         }
+        loading={side === "left" ? "eager" : "lazy"}
+        decoding="async"
       />
 
       {type === "signup" ? <GoogleSignUpButton /> : <GoogleLogInButton />}

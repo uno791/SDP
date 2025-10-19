@@ -50,7 +50,15 @@ export default function MatchCard({
         aria-expanded={expanded}
       >
         <div className={styles.team}>
-          {home.logo && <img src={home.logo} alt="" className={styles.logo} />}
+          {home.logo && (
+            <img
+              src={home.logo}
+              alt=""
+              className={styles.logo}
+              loading="lazy"
+              decoding="async"
+            />
+          )}
           <span>{home.name}</span>
         </div>
 
@@ -63,7 +71,15 @@ export default function MatchCard({
         </div>
 
         <div className={`${styles.team} ${styles.right}`}>
-          {away.logo && <img src={away.logo} alt="" className={styles.logo} />}
+          {away.logo && (
+            <img
+              src={away.logo}
+              alt=""
+              className={styles.logo}
+              loading="lazy"
+              decoding="async"
+            />
+          )}
           <span>{away.name}</span>
         </div>
 

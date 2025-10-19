@@ -189,7 +189,13 @@ function Card({
           <div className={styles.rowTeams}>
             <span className={styles.teamWrap}>
               {home.logo ? (
-                <img className={styles.logo} src={home.logo} alt={home.name} />
+                <img
+                  className={styles.logo}
+                  src={home.logo}
+                  alt={home.name}
+                  loading="lazy"
+                  decoding="async"
+                />
               ) : null}
               <span className={styles.matchup}>{home.name}</span>
             </span>
@@ -197,7 +203,13 @@ function Card({
             <span className={styles.teamWrap}>
               <span className={styles.matchup}>{away.name}</span>
               {away.logo ? (
-                <img className={styles.logo} src={away.logo} alt={away.name} />
+                <img
+                  className={styles.logo}
+                  src={away.logo}
+                  alt={away.name}
+                  loading="lazy"
+                  decoding="async"
+                />
               ) : null}
             </span>
           </div>

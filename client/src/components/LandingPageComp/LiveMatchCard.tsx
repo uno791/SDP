@@ -167,7 +167,13 @@ function LiveMatchCardSingle({
       <div className={styles.header}>
         <div className={styles.team}>
           {homeLogo ? (
-            <img className={styles.logo} src={homeLogo} alt={homeName} />
+            <img
+              className={styles.logo}
+              src={homeLogo}
+              alt={homeName}
+              loading="lazy"
+              decoding="async"
+            />
           ) : (
             <span />
           )}
@@ -185,7 +191,13 @@ function LiveMatchCardSingle({
         <div className={`${styles.team} ${styles.teamRight}`}>
           <span className={styles.teamName}>{awayName}</span>
           {awayLogo ? (
-            <img className={styles.logo} src={awayLogo} alt={awayName} />
+            <img
+              className={styles.logo}
+              src={awayLogo}
+              alt={awayName}
+              loading="lazy"
+              decoding="async"
+            />
           ) : (
             <span />
           )}

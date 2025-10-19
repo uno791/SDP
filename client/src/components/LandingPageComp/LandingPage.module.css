@@ -108,6 +108,47 @@
   z-index: 5;
 }
 
+.heroBallFallback {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.75),
+    rgba(4, 120, 87, 0.45) 55%,
+    rgba(4, 120, 87, 0.1)
+  );
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.heroBallPulse {
+  width: 65%;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  border: 2px dashed rgba(255, 255, 255, 0.55);
+  animation: heroBallPulse 2.4s infinite ease-in-out;
+}
+
+@keyframes heroBallPulse {
+  0% {
+    transform: scale(0.88);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(0.92);
+    opacity: 0.5;
+  }
+}
+
 /* Buttons */
 .primaryBtn {
   padding: 0.75rem 1.25rem;

@@ -518,7 +518,14 @@ const FavouritesPage: React.FC = () => {
             const displayName = getTeamDisplayName(team);
             return (
               <div key={team.id} className={styles.teamCard}>
-                {team.logo_url && <img src={team.logo_url} alt={displayName} />}
+                {team.logo_url && (
+                  <img
+                    src={team.logo_url}
+                    alt={displayName}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
                 <span>{displayName}</span>
                 <div className={styles.statsRow}>
                   <span className={styles.positionBadge}>#{pos}</span>
@@ -537,7 +544,14 @@ const FavouritesPage: React.FC = () => {
           return (
             <div key={team.id} className={styles.listCard}>
               <div className={styles.listLeft}>
-                {team.logo_url && <img src={team.logo_url} alt={displayName} />}
+                {team.logo_url && (
+                  <img
+                    src={team.logo_url}
+                    alt={displayName}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
                 <span>{displayName}</span>
               </div>
               <button
@@ -588,7 +602,12 @@ const FavouritesPage: React.FC = () => {
               <div key={team.id} className={styles.listCard}>
                 <div className={styles.listLeft}>
                   {team.logo_url && (
-                    <img src={team.logo_url} alt={displayName} />
+                    <img
+                      src={team.logo_url}
+                      alt={displayName}
+                      loading="lazy"
+                      decoding="async"
+                    />
                   )}
                   <span>{displayName}</span>
                 </div>
