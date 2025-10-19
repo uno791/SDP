@@ -408,10 +408,8 @@ describe("Landing page components", () => {
 
     if (!dateLabel || !dateInput) return;
 
-    const clickSpy = jest.spyOn(dateInput, "click");
-
-    fireEvent.keyDown(dateLabel, { key: "Enter", code: "Enter" });
-    expect(clickSpy).toHaveBeenCalled();
+    fireEvent.click(dateLabel);
+    expect(container.querySelector(".calendar")).toBeTruthy();
 
     const beforeCalls = mockFetchScoreboard.mock.calls.length;
 
@@ -420,7 +418,5 @@ describe("Landing page components", () => {
     await waitFor(() =>
       expect(mockFetchScoreboard.mock.calls.length).toBeGreaterThan(beforeCalls)
     );
-
-    clickSpy.mockRestore();
   });
 });
