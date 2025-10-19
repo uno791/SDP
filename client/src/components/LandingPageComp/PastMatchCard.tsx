@@ -62,6 +62,31 @@ function formatDateTimeSAST(d: Date): string {
 }
 
 /* Local day math (we display & navigate by SA calendar days) */
+const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function startOfMonthLocal(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), 1, 12);
+}
+function addMonthsLocal(d: Date, delta: number): Date {
+  const next = new Date(d.getFullYear(), d.getMonth(), 1, 12);
+  next.setMonth(next.getMonth() + delta);
+  return next;
+}
+function buildCalendarGrid(month: Date): Date[] {
+  const firstOfMonth = startOfMonthLocal(month);
+  const firstWeekday = (firstOfMonth.getDay() + 6) % 7; // Monday as column 0
+  const gridStart = new Date(firstOfMonth);
+  gridStart.setDate(firstOfMonth.getDate() - firstWeekday);
+
+  const cells: Date[] = [];
+  for (let i = 0; i < 42; i++) {
+    const cell = new Date(gridStart);
+    cell.setDate(gridStart.getDate() + i);
+    cells.push(cell);
+  }
+  return cells;
+}
+
 function formatYMD(d: Date): string {
   return ymdInSAST(d);
 }
@@ -132,6 +157,96 @@ function subline(ev: Event) {
 
   // Upcoming: show full SA date + 24h time, with no timezone text
   return formatDateTimeSAST(dt);
+}
+
+function CalendarOverlay({
+  selectedYmd,
+  matchDays,
+  onSelect,
+}: {
+  selectedYmd: string | null;
+  matchDays: Set<string>;
+  onSelect: (ymd: string) => void;
+}) {
+  const [viewMonth, setViewMonth] = useState<Date>(() =>
+    startOfMonthLocal(selectedYmd ? dateFromYMD(selectedYmd) : new Date())
+  );
+
+  useEffect(() => {
+    setViewMonth(startOfMonthLocal(selectedYmd ? dateFromYMD(selectedYmd) : new Date()));
+  }, [selectedYmd]);
+
+  const days = useMemo(() => buildCalendarGrid(viewMonth), [viewMonth]);
+  const todayYmd = useMemo(() => formatYMD(new Date()), []);
+
+  const headerLabel = useMemo(
+    () =>
+      viewMonth.toLocaleDateString(undefined, {
+        month: "long",
+        year: "numeric",
+      }),
+    [viewMonth]
+  );
+
+  return (
+    <div className={styles.calendar} role="dialog" aria-label="Select match date">
+      <div className={styles.calendarHeader}>
+        <button
+          type="button"
+          className={styles.calendarNavBtn}
+          onClick={() => setViewMonth((prev) => addMonthsLocal(prev, -1))}
+          aria-label="Previous month"
+        >
+          ◀
+        </button>
+        <div className={styles.calendarTitle}>{headerLabel}</div>
+        <button
+          type="button"
+          className={styles.calendarNavBtn}
+          onClick={() => setViewMonth((prev) => addMonthsLocal(prev, 1))}
+          aria-label="Next month"
+        >
+          ▶
+        </button>
+      </div>
+
+      <div className={styles.calendarWeekRow}>
+        {WEEKDAY_LABELS.map((label) => (
+          <div key={label} className={styles.calendarDow}>
+            {label}
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.calendarGrid}>
+        {days.map((day, idx) => {
+          const ymd = formatYMD(day);
+          const inMonth = day.getMonth() === viewMonth.getMonth();
+          const isSelected = selectedYmd === ymd;
+          const isToday = todayYmd === ymd;
+          const hasMatch = matchDays.has(ymd);
+
+          const classNames = [styles.calendarDay];
+          if (!inMonth) classNames.push(styles.calendarDayMuted);
+          if (isSelected) classNames.push(styles.calendarDaySelected);
+          if (isToday) classNames.push(styles.calendarDayToday);
+
+          return (
+            <button
+              key={`${ymd}-${idx}`}
+              type="button"
+              className={classNames.join(" ")}
+              onClick={() => onSelect(ymd)}
+              aria-label={`${labelLong(ymd)}${hasMatch ? " (match day)" : ""}`}
+            >
+              {day.getDate()}
+              {hasMatch && <span className={styles.calendarDot} aria-hidden />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 /* ───────────── Single Card ───────────── */
@@ -350,6 +465,8 @@ export default function PastMatchCard({
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [matchDays, setMatchDays] = useState<Set<string>>(() => new Set());
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const teamNameSet = useMemo(() => {
     if (teamNames === undefined) return null;
@@ -389,11 +506,45 @@ export default function PastMatchCard({
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const datePickerWrapRef = useRef<HTMLDivElement>(null);
+  const mergeMatchDays = useCallback((res: ScoreboardResponse | null | undefined) => {
+    if (!res) return;
+
+    const additions = new Set<string>();
+
+    for (const league of res.leagues ?? []) {
+      for (const iso of league?.calendar ?? []) {
+        const dt = new Date(iso);
+        if (!Number.isNaN(dt.getTime())) additions.add(formatYMD(dt));
+      }
+    }
+
+    for (const ev of res.events ?? []) {
+      const dt = new Date(ev.date);
+      if (!Number.isNaN(dt.getTime())) additions.add(formatYMD(dt));
+    }
+
+    if (!additions.size) return;
+
+    setMatchDays((prev) => {
+      let changed = false;
+      const combined = new Set(prev);
+      additions.forEach((day) => {
+        if (!combined.has(day)) {
+          combined.add(day);
+          changed = true;
+        }
+      });
+      return changed ? combined : prev;
+    });
+  }, []);
 
   useEffect(() => {
     setYmd(null);
     setData(null);
     setOpenId(null);
+    setMatchDays(new Set());
+    setCalendarOpen(false);
   }, [league]);
 
   // First day to show: prefer “today” (SAST) if there are any games,
@@ -405,6 +556,8 @@ export default function PastMatchCard({
       const today = ymdInSAST(new Date());
       try {
         const res = await fetchScoreboard(dateFromYMD(today), league);
+        if (!alive) return;
+        mergeMatchDays(res);
         const filteredToday = filterEvents(uniqueEvents(res?.events ?? []));
         if (filteredToday.length > 0) {
           if (alive) setYmd(today);
@@ -415,6 +568,8 @@ export default function PastMatchCard({
       for (let i = 0; i < 30; i++) {
         try {
           const res = await fetchScoreboard(dateFromYMD(probe), league);
+          if (!alive) return;
+          mergeMatchDays(res);
           const evs = filterEvents(uniqueEvents(res?.events ?? []));
           const allPost =
             evs.length > 0 &&
@@ -435,7 +590,7 @@ export default function PastMatchCard({
     return () => {
       alive = false;
     };
-  }, [ymd, league, filterEvents]);
+  }, [ymd, league, filterEvents, mergeMatchDays]);
 
   // Fetch all matches (pre/in/post) for the selected SAST date
   useEffect(() => {
@@ -446,6 +601,8 @@ export default function PastMatchCard({
       setErr(null);
       try {
         const res = await fetchScoreboard(dateFromYMD(ymd), league);
+        if (!alive) return;
+        mergeMatchDays(res);
         const evs = uniqueEvents(res?.events ?? []);
         if (alive) setData({ ...res, events: evs });
       } catch (e: any) {
@@ -457,7 +614,31 @@ export default function PastMatchCard({
     return () => {
       alive = false;
     };
-  }, [ymd, league]);
+  }, [ymd, league, mergeMatchDays]);
+
+  useEffect(() => {
+    if (!calendarOpen) return;
+
+    const handlePointer = (event: MouseEvent | TouchEvent) => {
+      if (!datePickerWrapRef.current) return;
+      if (datePickerWrapRef.current.contains(event.target as Node)) return;
+      setCalendarOpen(false);
+    };
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setCalendarOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointer);
+    document.addEventListener("touchstart", handlePointer);
+    window.addEventListener("keydown", handleKey);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointer);
+      document.removeEventListener("touchstart", handlePointer);
+      window.removeEventListener("keydown", handleKey);
+    };
+  }, [calendarOpen]);
 
   const events = useMemo(
     () =>
@@ -467,17 +648,31 @@ export default function PastMatchCard({
     [data, filterEvents]
   );
 
-  const prev = () => ymd && setYmd(addDaysLocal(ymd, -1));
-  const next = () => ymd && setYmd(addDaysLocal(ymd, +1));
-  const openPicker = () => {
-    const el = inputRef.current;
-    if (!el) return;
-    // @ts-ignore
-    if (el.showPicker) el.showPicker();
-    else el.click();
+  const handleSelectDay = useCallback(
+    (value: string) => {
+      setYmd(value);
+      setOpenId(null);
+      setCalendarOpen(false);
+    },
+    []
+  );
+
+  const prev = () => {
+    if (!ymd) return;
+    handleSelectDay(addDaysLocal(ymd, -1));
   };
-  const onPick = (e: React.ChangeEvent<HTMLInputElement>) =>
-    e.target.value && setYmd(e.target.value);
+  const next = () => {
+    if (!ymd) return;
+    handleSelectDay(addDaysLocal(ymd, +1));
+  };
+  const toggleCalendar = () => {
+    setCalendarOpen((open) => !open);
+  };
+  const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) {
+      handleSelectDay(e.target.value);
+    }
+  };
 
   return (
     <>
@@ -490,27 +685,33 @@ export default function PastMatchCard({
             className={styles.dateBtn}
             onClick={prev}
             aria-label="Previous day"
+            type="button"
           >
             ◀
           </button>
-          <div
-            className={styles.dateLabel}
-            onClick={openPicker}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                openPicker();
-              }
-            }}
-          >
-            {ymd ? labelLong(ymd) : "—"}
+          <div className={styles.datePickerWrap} ref={datePickerWrapRef}>
+            <button
+              type="button"
+              className={styles.dateLabel}
+              onClick={toggleCalendar}
+              aria-haspopup="dialog"
+              aria-expanded={calendarOpen}
+            >
+              {ymd ? labelLong(ymd) : "—"}
+            </button>
+            {calendarOpen && (
+              <CalendarOverlay
+                selectedYmd={ymd}
+                matchDays={matchDays}
+                onSelect={handleSelectDay}
+              />
+            )}
           </div>
           <button
             className={styles.dateBtn}
             onClick={next}
             aria-label="Next day"
+            type="button"
           >
             ▶
           </button>

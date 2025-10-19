@@ -85,6 +85,9 @@ function parseReplacesNames(text?: string): { inName?: string; outName?: string 
 
 /** ---------------- Scoreboard ---------------- */
 export type ScoreboardResponse = {
+  leagues?: Array<{
+    calendar?: string[];
+  }>;
   events: Array<{
     id: string;
     date: string;
