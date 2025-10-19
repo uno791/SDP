@@ -173,6 +173,10 @@ export default function MatchViewer() {
     null
   );
   const drawHighlightRef = useRef(false);
+  const testOverrideActiveRef = useRef(false);
+  const testOverrideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   const triggerHighlight = useCallback((className: string, duration = 2500) => {
     setSummaryHighlight(className);
@@ -194,6 +198,25 @@ export default function MatchViewer() {
     overlayTimerRef.current = setTimeout(() => {
       setOverlayState(null);
       overlayTimerRef.current = null;
+    }, duration);
+  }, []);
+
+  const disableTestOverride = useCallback(() => {
+    if (testOverrideTimerRef.current) {
+      clearTimeout(testOverrideTimerRef.current);
+      testOverrideTimerRef.current = null;
+    }
+    testOverrideActiveRef.current = false;
+  }, []);
+
+  const enableTestOverride = useCallback((duration = 3400) => {
+    if (testOverrideTimerRef.current) {
+      clearTimeout(testOverrideTimerRef.current);
+    }
+    testOverrideActiveRef.current = true;
+    testOverrideTimerRef.current = setTimeout(() => {
+      testOverrideActiveRef.current = false;
+      testOverrideTimerRef.current = null;
     }, duration);
   }, []);
 
@@ -233,6 +256,10 @@ export default function MatchViewer() {
       if (winnerOverrideTimerRef.current) {
         clearTimeout(winnerOverrideTimerRef.current);
       }
+      if (testOverrideTimerRef.current) {
+        clearTimeout(testOverrideTimerRef.current);
+      }
+      testOverrideActiveRef.current = false;
     };
   }, []);
 
@@ -543,7 +570,7 @@ export default function MatchViewer() {
   const effectiveWinnerSide = overrideWinner ?? scoreboardWinner ?? null;
 
   useEffect(() => {
-    if (!isMatchFinal) return;
+    if (!isMatchFinal || testOverrideActiveRef.current) return;
 
     if (goalAnimTimerRef.current) {
       clearTimeout(goalAnimTimerRef.current);
@@ -720,20 +747,25 @@ export default function MatchViewer() {
     ) => {
       switch (kind) {
         case "goal":
+          enableTestOverride(3000);
           startGoalAnimation("animate-goal", "goal");
           break;
         case "penalty":
+          enableTestOverride(3000);
           startGoalAnimation("animate-penalty", "penalty");
           break;
         case "red":
+          enableTestOverride(3200);
           triggerHighlight("animate-red-card", 2600);
           activateOverlay("red-card", 2600);
           break;
         case "yellow":
+          enableTestOverride(3000);
           triggerHighlight("animate-penalty", 2200);
           activateOverlay("yellow-card", 2600);
           break;
         case "draw":
+          enableTestOverride(3800);
           if (winnerOverrideTimerRef.current) {
             clearTimeout(winnerOverrideTimerRef.current);
             winnerOverrideTimerRef.current = null;
@@ -745,6 +777,7 @@ export default function MatchViewer() {
         case "winner-home":
         case "winner-away": {
           const side = kind === "winner-home" ? "home" : "away";
+          enableTestOverride(3800);
           if (winnerOverrideTimerRef.current) {
             clearTimeout(winnerOverrideTimerRef.current);
           }
@@ -758,6 +791,7 @@ export default function MatchViewer() {
           break;
         }
         case "reset":
+          disableTestOverride();
           if (goalAnimTimerRef.current) {
             clearTimeout(goalAnimTimerRef.current);
             goalAnimTimerRef.current = null;
@@ -783,7 +817,13 @@ export default function MatchViewer() {
           break;
       }
     },
-    [activateOverlay, startGoalAnimation, triggerHighlight]
+    [
+      activateOverlay,
+      disableTestOverride,
+      enableTestOverride,
+      startGoalAnimation,
+      triggerHighlight,
+    ]
   );
 
   /* early returns */
