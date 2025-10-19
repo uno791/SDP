@@ -15,6 +15,7 @@ type Match = {
   utc_kickoff: string;
   minute?: number | null;
   notes_json?: { duration?: string | number };
+  league_code?: string | null; // ✅ Added so TS knows this exists
 };
 
 export default function UserMatches() {
@@ -35,7 +36,20 @@ export default function UserMatches() {
       .get(`${baseURL}/matches?from=${from}&to=${to}`)
       .then((res) => {
         console.log(`[Frontend] UserMatches for ${date}:`, res.data);
-        setMatches(res.data.matches || []);
+
+        // 🧹 Filter out major leagues only (Premier League, La Liga, Serie A, Ligue 1, Bundesliga)
+        const filtered = (res.data.matches || []).filter(
+          (m: any) =>
+            ![
+              "eng.1", // Premier League
+              "esp.1", // La Liga
+              "ita.1", // Serie A
+              "fra.1", // Ligue 1
+              "ger.1", // Bundesliga
+            ].includes(m.league_code ?? "")
+        );
+
+        setMatches(filtered);
       })
       .catch((err) =>
         console.error("[Frontend] Failed to fetch matches for date:", err)
@@ -88,7 +102,10 @@ export default function UserMatches() {
             const isOpen = expandedId === m.id;
 
             return (
-              <div key={m.id} className={`${styles.card} ${isOpen ? styles.open : ""}`}>
+              <div
+                key={m.id}
+                className={`${styles.card} ${isOpen ? styles.open : ""}`}
+              >
                 <div
                   className={styles.row}
                   role="button"
@@ -103,9 +120,13 @@ export default function UserMatches() {
                 >
                   <div className={styles.left}>
                     <div className={styles.matchup}>
-                      <span className={styles.teamName}>{m.home_team?.name ?? "TBD"}</span>
+                      <span className={styles.teamName}>
+                        {m.home_team?.name ?? "TBD"}
+                      </span>
                       <span className={styles.vs}>vs</span>
-                      <span className={styles.teamName}>{m.away_team?.name ?? "TBD"}</span>
+                      <span className={styles.teamName}>
+                        {m.away_team?.name ?? "TBD"}
+                      </span>
                     </div>
                     <div className={styles.score}>
                       {m.home_score ?? 0} - {m.away_score ?? 0}
@@ -143,6 +164,7 @@ export default function UserMatches() {
     </div>
   );
 }
+
 
 
 

@@ -17,17 +17,18 @@ type Match = {
   utc_kickoff: string;
   minute?: number | null;
   notes_json?: { duration?: string | number };
-  home_possession?: number | null; // ✅ added
-  away_possession?: number | null; // ✅ added
+  home_possession?: number | null;
+  away_possession?: number | null;
+  league_code?: string | null; // ✅ added for filtering
 };
 
 export default function LiveUserMatches() {
-  const { user } = useUser(); // ✅ current logged-in user
+  const { user } = useUser();
   const [matches, setMatches] = useState<Match[]>([]);
   const [now, setNow] = useState(new Date());
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [modalMatchId, setModalMatchId] = useState<number | null>(null);
-  const [reportMatchId, setReportMatchId] = useState<number | null>(null); // ✅ added
+  const [reportMatchId, setReportMatchId] = useState<number | null>(null);
 
   useEffect(() => {
     const url = new URL(`${baseURL}/matches`);
@@ -38,7 +39,20 @@ export default function LiveUserMatches() {
       .get(url.toString())
       .then((res) => {
         console.log("[Frontend] /matches response:", res.data);
-        setMatches(res.data.matches || []);
+
+        // 🧹 Filter out only major-league matches
+        const filtered = (res.data.matches || []).filter(
+          (m: any) =>
+            ![
+              "eng.1", // Premier League
+              "esp.1", // La Liga
+              "ita.1", // Serie A
+              "fra.1", // Ligue 1
+              "ger.1", // Bundesliga
+            ].includes(m.league_code ?? "")
+        );
+
+        setMatches(filtered);
       })
       .catch((err) =>
         console.error("[Frontend] Failed to fetch matches:", err)
@@ -134,7 +148,6 @@ export default function LiveUserMatches() {
                   className={`${styles.body} ${isOpen ? styles.bodyOpen : ""}`}
                 >
                   <div className={styles.bodyInner}>
-                    {/* ✅ Possession display */}
                     <div className={styles.possessionDisplay}>
                       <strong>Possession:</strong>
                       <div className={styles.possessionBar}>
@@ -164,7 +177,6 @@ export default function LiveUserMatches() {
                       >
                         Open Match Viewer
                       </button>
-                      {/* ✅ New Report button */}
                       <button
                         className={styles.reportBtn}
                         onClick={() => setReportMatchId(m.id)}
@@ -187,7 +199,6 @@ export default function LiveUserMatches() {
         />
       )}
 
-      {/* ✅ Report Modal */}
       {reportMatchId && (
         <ReportModal
           matchId={reportMatchId}
