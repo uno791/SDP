@@ -287,17 +287,17 @@
   margin-top: 1.5rem;
 }
 
-/* ---------- Mobile Responsive Styles ---------- */
+/* ---------- Improved Mobile Responsive Styles ---------- */
 @media (max-width: 768px) {
   /* Center entire form vertically and horizontally */
-  .page, /* if your form sits inside .page */
+  .page,
   .form {
     display: flex;
     flex-direction: column;
-    align-items: center; /* horizontal centering */
-    justify-content: center; /* vertical centering */
+    align-items: center;
+    justify-content: center;
     padding: 1.25rem;
-    min-height: 100vh; /* ensure full viewport height for vertical centering */
+    min-height: 100vh;
   }
 
   /* Limit form width and center content */
@@ -308,8 +308,12 @@
     text-align: center;
   }
 
-  /* Layout adjustments for flex sections */
-  .teams {
+  /* Flex sections become vertical */
+  .teams,
+  .settings,
+  .inviteRow,
+  .privacyRow,
+  .buttons {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
@@ -319,24 +323,17 @@
     width: 100%;
   }
 
-  .settings {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-
+  /* Fix for lineup input rows (number, selects, etc.) */
+  .lineupCountRow,
   .lineupInputRow,
-  .lineupActions,
-  .inviteRow,
-  .privacyRow,
-  .buttons {
+  .lineupActions {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 0.75rem;
+    width: 100%;
   }
 
-  /* Inputs and buttons full width for mobile usability */
+  /* Inputs, selects, and counters full-width */
   .textInput,
   .durationInput,
   .userSelect,
@@ -344,6 +341,7 @@
     width: 100%;
   }
 
+  /* Buttons full-width and centered */
   .upload,
   .addLineup,
   .addUsersBtn,
@@ -354,6 +352,15 @@
   .smallActionAlt {
     width: 100%;
     text-align: center;
+  }
+
+  /* Keep chips & small notes clean */
+  .chips {
+    justify-content: center;
+  }
+
+  .numberBadge {
+    margin: 0 auto;
   }
 }
 
@@ -368,13 +375,20 @@
     padding: 1rem;
   }
 
+  /* Stack chips & labels cleanly */
   .chips {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
+    gap: 0.5rem;
   }
 
   .chip {
     justify-content: center;
     width: 100%;
+  }
+
+  /* Slightly smaller spacing */
+  .smallNote {
+    font-size: 0.75rem;
   }
 }
