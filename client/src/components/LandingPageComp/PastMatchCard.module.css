@@ -18,20 +18,32 @@
 .headerRow{
   display:flex;align-items:center;justify-content:space-between;
   gap:12px;margin-bottom:12px;
+  flex-wrap:wrap;
 }
 .headerTitle{
   font-size:2rem;font-weight:800;color:var(--navy);margin:0;
 }
-.dateControls{display:inline-flex;align-items:center;gap:10px;}
+.dateControls{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:nowrap;
+}
 .dateBtn{
   width:40px;height:40px;border:2px solid var(--navy);border-radius:10px;
   background:#fff;color:var(--navy);font-weight:800;font-size:16px;
   display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 40px;
 }
 .dateBtn:active{transform:translateY(1px);}
 .dateLabel{
-  min-width:240px;padding:8px 14px;border:2px solid var(--navy);border-radius:12px;
+  padding:8px 14px;border:2px solid var(--navy);border-radius:12px;
   background:#fff;color:var(--navy);text-align:center;font-weight:800;font-size:18px;line-height:1.1;cursor:pointer;
+  flex:1 1 auto;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 /* hide native input, keep accessible */
 .dateInput{position:absolute;width:.1px;height:.1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
@@ -97,3 +109,48 @@
 /* messages */
 .state{margin:8px 0;color:var(--navy);}
 .error{color:#b00020;}
+
+/* ---------- Responsive adjustments ---------- */
+@media (max-width: 1024px){
+  .headerTitle{font-size:1.75rem;}
+  .row{gap:10px;}
+  .statRow{grid-template-columns:36px 1fr 36px;}
+}
+
+@media (max-width: 768px){
+  .sectionStrip{padding:12px;}
+  .card{padding:0.875rem;}
+  .headerRow{flex-direction:column;align-items:flex-start;}
+  .dateControls{width:100%;justify-content:center;gap:8px;}
+  .dateLabel{min-width:0;text-align:center;}
+  .row{grid-template-columns:1fr;justify-items:center;text-align:center;}
+  .right{justify-items:center;}
+  .caret{margin-top:6px;}
+  .left{gap:4px;}
+  .rowTeams{flex-wrap:wrap;gap:8px;}
+  .score{font-size:1.125rem;}
+  .statRow{grid-template-columns:32px 1fr 32px;gap:8px;}
+  .ctaWrap{justify-content:center;}
+}
+
+@media (max-width: 480px){
+  .headerTitle{font-size:1.5rem;}
+  .dateControls{gap:6px;}
+  .dateBtn{width:36px;height:36px;font-size:14px;}
+  .dateLabel{font-size:0.95rem;padding:6px 10px;}
+  .rowTeams{gap:6px;}
+  .logo{width:24px;height:24px;}
+  .matchup{font-size:0.95rem;}
+  .vs{margin:0 4px;}
+  .score{font-size:1.05rem;}
+  .statLabel{font-size:0.95rem;}
+  .statRow{font-size:0.9rem;}
+  .pill{padding:5px 9px;font-size:0.85rem;}
+}
+
+@media (min-width: 1440px){
+  .sectionStrip{padding:18px 20px 24px;}
+  .card{padding:1.25rem;}
+  .row{gap:16px;}
+  .statRow{grid-template-columns:44px 1fr 44px;}
+}

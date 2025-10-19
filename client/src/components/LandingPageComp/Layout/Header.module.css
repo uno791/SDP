@@ -247,12 +247,12 @@
     max-width: 62vw;
   }
   .signupButton {
-    font-size: 0.84rem;
+    font-size: 0.6rem;
     padding: 0.34rem 0.76rem;
   }
   .menuButton {
     font-size: 1.9rem;
-    right: 110px;
+    right: 30px;
   }
 }
 
@@ -263,11 +263,11 @@
     max-width: 58vw;
   }
   .signupButton {
-    font-size: 0.82rem;
+    font-size: 0.6rem;
     padding: 0.32rem 0.7rem;
   }
   .menuButton {
-    right: 125px;
+    right: 30px;
   } /* matches your fixed-offset approach */
 }
 
@@ -278,10 +278,10 @@
   }
   .signupButton {
     margin-right: 0;
-    font-size: 0.8rem;
+    font-size: 0.6rem;
   }
   .menuButton {
-    right: 140px;
+    right: 30px;
   }
 }
 
@@ -293,10 +293,10 @@
   }
   .signupButton {
     padding: 0.3rem 0.62rem;
-    font-size: 0.78rem;
+    font-size: 0.4rem;
   }
   .menuButton {
-    right: 140px;
+    right: 30px;
     font-size: 1.75rem;
     padding: 0.25rem;
   }

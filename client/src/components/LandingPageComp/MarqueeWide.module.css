@@ -7,7 +7,7 @@
   display: inline-block;
   white-space: nowrap;
   animation: marquee 18s linear infinite;
-  font-size: 1.5rem;
+  font-size: clamp(1.1rem, 4vw, 1.6rem);
   font-weight: 800;
 }
 
@@ -22,5 +22,32 @@
   }
   100% {
     transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 768px) {
+  .marquee {
+    animation-duration: 22s;
+  }
+  .item {
+    margin: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .marquee {
+    animation-duration: 26s;
+  }
+  .item {
+    margin: 0 0.75rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  .marquee {
+    animation-duration: 16s;
+  }
+  .item {
+    margin: 0 2rem;
   }
 }
