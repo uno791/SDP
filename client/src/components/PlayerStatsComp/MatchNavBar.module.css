@@ -11,9 +11,10 @@
 
   height: var(--match-nav-height);
 
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
+  column-gap: 2rem;
 
   padding: 0 3rem;
   box-sizing: border-box;
@@ -32,9 +33,9 @@
 
 .navList {
   display: flex;
-  flex: 1;
   justify-content: center;
   gap: 2rem;
+  justify-self: center;
 }
 
 .navListMobile {
@@ -94,10 +95,10 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  justify-self: end;
 }
 
-.navToggle,
-.menuButton {
+.navToggle {
   display: none;
   background: none;
   border: none;
@@ -109,7 +110,6 @@
   border-radius: 9999px;
   transition: color 0.2s ease, background-color 0.2s ease;
 }
-
 .navToggle:hover,
 .menuButton:hover {
   color: #ffffff;
@@ -120,6 +120,21 @@
 .menuButton:focus-visible {
   outline: 2px solid #34d399;
   outline-offset: 2px;
+}
+
+.menuButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #d1fae5;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin: 0;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 @media (max-width: 1100px) {
@@ -135,6 +150,7 @@
 @media (max-width: 900px) {
   .nav {
     padding: 0 1.5rem;
+    column-gap: 1.5rem;
   }
 
   .title {
@@ -157,8 +173,8 @@
 
   .navList {
     gap: 1rem;
-    justify-content: flex-end;
-    flex: 1 1 auto;
+    justify-content: center;
+    flex: 0 1 auto;
     overflow-x: auto;
     padding: 0 0.5rem;
     scrollbar-width: none;
@@ -177,7 +193,12 @@
     gap: 0.35rem;
   }
 
-  .navToggle,
+  .navToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .menuButton {
     display: flex;
     align-items: center;
