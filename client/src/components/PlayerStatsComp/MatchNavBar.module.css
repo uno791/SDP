@@ -1,32 +1,48 @@
+:root {
+  --match-nav-height: 4rem;
+}
+
 .nav {
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 50;
+  position: fixed;
 
-  backdrop-filter: blur(4px);
-  background: #01532db9;
+  height: var(--match-nav-height);
+
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  --header-height: 4rem;
-  position: fixed;
+  padding: 0 3rem;
+  box-sizing: border-box;
 
-  left: 0;
-  right: 0;
-
+  background: #01532db9;
+  backdrop-filter: blur(4px);
   border-bottom: 1px solid rgba(6, 95, 70, 0.2);
-
-  height: var(--header-height);
 }
 
-.navList {
+.navList,
+.navListMobile {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.navList {
   display: flex;
-  gap: 2rem;
   flex: 1;
-  justify-content: center; /* center nav items */
+  justify-content: center;
+  gap: 2rem;
+}
+
+.navListMobile {
+  display: none;
+  width: 100%;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .navLink {
@@ -34,20 +50,21 @@
   font-weight: 600;
   font-size: 1rem;
   color: #d1fae5;
-  padding-bottom: 0.25rem;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  padding: 0.25rem 0;
   border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .navLink:hover {
   color: #ffffff;
-  border-bottom: 2px solid #34d399; /* emerald-400 */
+  border-bottom: 2px solid #34d399;
 }
 
 .active {
   color: #ffffff;
-  border-bottom: 2px solid #10b981; /* emerald-500 */
+  border-bottom: 2px solid #10b981;
 }
+
 .logo {
   width: 2.5rem;
   height: 2.5rem;
@@ -59,31 +76,177 @@
   justify-content: center;
   font-weight: 800;
 }
+
 .brand {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-left: 7rem !important;
-  margin-right: -7rem !important;
 }
+
 .title {
   color: white;
   font-weight: 700;
   font-size: 1.125rem;
   letter-spacing: 0.05em;
 }
-.burgerButton {
-  background: none;
-  border: none;
-  color: #d1fae5; /* emerald-100 */
-  font-size: 1.5rem;
-  cursor: pointer;
+
+.actions {
   display: flex;
   align-items: center;
-  margin-right: 7rem !important;
-  margin-left: 2rem !important;
+  gap: 0.5rem;
 }
 
-.burgerButton:hover {
+.navToggle,
+.menuButton {
+  display: none;
+  background: none;
+  border: none;
+  color: #d1fae5;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin: 0;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.navToggle:hover,
+.menuButton:hover {
   color: #ffffff;
+  background-color: rgba(52, 211, 153, 0.2);
+}
+
+.navToggle:focus-visible,
+.menuButton:focus-visible {
+  outline: 2px solid #34d399;
+  outline-offset: 2px;
+}
+
+@media (max-width: 1100px) {
+  .nav {
+    padding: 0 2rem;
+  }
+
+  .navList {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .nav {
+    padding: 0 1.5rem;
+  }
+
+  .title {
+    font-size: 1.05rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav {
+    padding: 0 1.25rem;
+  }
+
+  .brand {
+    gap: 0.75rem;
+  }
+
+  .title {
+    font-size: 1rem;
+  }
+
+  .navList {
+    gap: 1rem;
+    justify-content: flex-end;
+    flex: 1 1 auto;
+    overflow-x: auto;
+    padding: 0 0.5rem;
+    scrollbar-width: none;
+  }
+
+  .navList::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navLink {
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+
+  .actions {
+    gap: 0.35rem;
+  }
+
+  .navToggle,
+  .menuButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav {
+    padding: 0 1rem;
+  }
+
+  .navList {
+    display: none;
+  }
+
+  .navListMobileOpen {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    position: fixed;
+    top: var(--match-nav-height);
+    left: 0;
+    right: 0;
+    padding: 0.6rem 1rem 0.75rem;
+    background: #01532db9;
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 0 0 1.5rem 1.5rem;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+    z-index: 45;
+  }
+
+  .navLink {
+    width: auto;
+    text-align: center;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.95rem;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+
+  .navLink:hover {
+    border-color: rgba(52, 211, 153, 0.45);
+  }
+
+  .active {
+    border-color: #10b981;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav {
+    padding: 0 0.75rem;
+  }
+
+  .logo {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .title {
+    font-size: 0.95rem;
+  }
+
+  .navLink {
+    font-size: 0.9rem;
+    padding: 0.35rem 0.5rem;
+  }
 }

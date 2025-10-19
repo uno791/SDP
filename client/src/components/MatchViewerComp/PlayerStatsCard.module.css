@@ -1,5 +1,11 @@
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .table {
   width: 100%;
+  min-width: 520px;
   border-collapse: collapse;
   background: rgba(6, 95, 70, 0.6);
   border-radius: 0.75rem;
@@ -37,4 +43,32 @@
 .detailsBtn:hover {
   background: #fcd34d;
   transform: scale(1.05);
+}
+
+@media (max-width: 640px) {
+  .table {
+    min-width: 480px;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .table {
+    min-width: 420px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .detailsBtn {
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
 }

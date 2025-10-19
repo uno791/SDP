@@ -14,32 +14,34 @@ const PlayerStatsCard: React.FC = () => {
 
   return (
     <ComicCard>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Player</th>
-            <th>Pos</th>
-            <th>Goals</th>
-            <th>Assists</th>
-            <th>Shots</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {players.map((p, idx) => (
-            <tr key={idx}>
-              <td>{p.name}</td>
-              <td>{p.pos}</td>
-              <td>{p.goals}</td>
-              <td>{p.assists}</td>
-              <td>{p.shots}</td>
-              <td>
-                <button className={styles.detailsBtn}>View Details</button>
-              </td>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Pos</th>
+              <th>Goals</th>
+              <th>Assists</th>
+              <th>Shots</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {players.map((p, idx) => (
+              <tr key={idx}>
+                <td>{p.name}</td>
+                <td>{p.pos}</td>
+                <td>{p.goals}</td>
+                <td>{p.assists}</td>
+                <td>{p.shots}</td>
+                <td>
+                  <button className={styles.detailsBtn}>View Details</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </ComicCard>
   );
 };

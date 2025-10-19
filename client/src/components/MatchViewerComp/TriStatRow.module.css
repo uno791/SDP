@@ -1,12 +1,14 @@
 .row {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas: "left label right";
   align-items: center;
   gap: 1rem;
   padding: 0.5rem 0;
 }
 
 .left {
+  grid-area: left;
   justify-self: start;
   text-align: left;
   font-variant-numeric: tabular-nums;
@@ -15,6 +17,7 @@
 }
 
 .label {
+  grid-area: label;
   justify-self: center;
   text-align: center;
   font-weight: 700;
@@ -24,9 +27,41 @@
 }
 
 .right {
+  grid-area: right;
   justify-self: end;
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: #0e5a4c;
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "label label"
+      "left right";
+    gap: 0.5rem 1rem;
+  }
+
+  .label {
+    text-align: center;
+    font-size: 0.95rem;
+  }
+
+  .left,
+  .right {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .row {
+    gap: 0.5rem;
+  }
+
+  .left,
+  .right {
+    font-size: 0.9rem;
+  }
 }
