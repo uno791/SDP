@@ -280,7 +280,10 @@ function LiveMatchCardSingle({
 /* ---------------- Grid with fallback, de-dupe, accordion + 15s polling ---------------- */
 const POLL_MS = 15_000;
 
-export default function LiveMatchCard({ showLabel = true, league = "eng1" }: GridProps) {
+export default function LiveMatchCard({
+  showLabel = true,
+  league = "eng1",
+}: GridProps) {
   const [data, setData] = useState<ScoreboardResponse | null>(null);
   const [usedDate, setUsedDate] = useState<Date | null>(null);
   const [err, setErr] = useState<string | null>(null);
