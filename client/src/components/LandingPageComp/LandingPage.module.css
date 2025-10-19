@@ -1,3 +1,4 @@
+/* ───────────────── Base (mobile-first) ───────────────── */
 .page {
   min-height: 100vh;
   font-family: "Inter", sans-serif;
@@ -14,13 +15,13 @@
   justify-content: center;
   background: rgba(6, 78, 59, 0.8);
   color: white;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
 }
 
 /* Main */
 .main {
-  padding-top: 5rem;
+  padding-top: 4rem; /* a bit tighter on phones */
 }
 
 /* ───────── HERO ───────── */
@@ -32,54 +33,57 @@
   align-items: center;
   justify-content: flex-start;
   overflow: hidden;
-  padding: 0 1.5rem;
+  padding: 0 1rem; /* slimmer gutters on phones */
 }
 
 /* FOOTBOOK heading */
 .heroTitle {
   display: block;
-  font-size: clamp(6rem, 14vw, 20rem);
+  /* No funky scaling on phones; let it breathe */
+  font-size: clamp(2.5rem, 14vw, 6rem);
   font-weight: 800;
   font-family: "Alfa Slab One", serif;
   color: rgba(255, 255, 255, 0.9);
-  line-height: 0.9;
+  line-height: 0.95;
   text-align: center;
   margin: 1rem 0 0 0;
-  transform: scaleX(1.3) scaleY(2.2);
+  transform: none;
   transform-origin: center top;
   pointer-events: none;
   user-select: none;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .heroContent {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* force left alignment */
+  align-items: flex-start;
   justify-content: flex-start;
   width: 100%;
-  margin-top: 14rem !important;
+  margin-top: 2.5rem; /* was 14rem – too tall for phones */
   padding: 0;
+  gap: 1rem;
 }
 
 .heroOverlay {
   color: white;
   text-align: left;
-  width: 100%; /* span full width */
-  margin: 0 !important; /* reset any offsets */
-  padding-left: 0rem; /* tiny gutter, remove if you want true flush */
-
-  max-width: 40% !important; /* remove the constraint */
+  width: 100%;
+  margin: 0;
+  padding: 0 0.25rem;
+  max-width: 100%; /* full width by default */
 }
 
 .heroHeading {
-  font-size: clamp(1.25rem, 2.5vw, 2rem);
+  font-size: clamp(1.125rem, 4.5vw, 1.5rem);
   font-family: "Alumni Sans Pinstripe", sans-serif;
   font-weight: 800;
   margin: 0;
 }
 
 .heroSub {
-  font-size: clamp(1rem, 1.25vw, 1.25rem);
+  font-size: clamp(0.95rem, 3.5vw, 1.125rem);
   color: rgba(255, 255, 255, 0.9);
   margin: 0.25rem 0 1rem 0;
   font-family: "Alumni Sans Pinstripe", sans-serif;
@@ -91,39 +95,19 @@
   flex-wrap: wrap;
   gap: 0.75rem;
 }
+
+/* Ball: inline and centered on phones */
 .heroBall {
-  position: absolute; /* ⬅️ break free of flex */
-  bottom: -8rem; /* start hidden under marquee */
-  left: 50%; /* center horizontally */
-  transform: translateX(-50%);
-  width: clamp(220px, 30vw, 440px);
-  height: clamp(220px, 30vw, 440px);
+  position: relative;
+  margin: 1.5rem auto 0;
+  width: clamp(180px, 55vw, 260px);
+  height: clamp(180px, 55vw, 260px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 5;
 }
 
-/* Desktop */
-@media (min-width: 1024px) {
-  .heroContent {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-top: 10rem;
-  }
-
-  .heroOverlay {
-    margin-left: 2rem; /* tiny gutter */
-    max-width: 45%;
-  }
-
-  .heroBall {
-    bottom: -10rem; /* further hidden */
-    left: 50%; /* stay centered horizontally */
-    transform: translateX(-50%);
-  }
-}
 /* Buttons */
 .primaryBtn {
   padding: 0.75rem 1.25rem;
@@ -149,23 +133,30 @@
 }
 
 /* ───────── Sections ───────── */
+.sectionWhite,
+.sectionGray {
+  padding: 3rem 1rem;
+}
 .sectionWhite {
-  padding: 4rem 1.5rem;
   background: white;
 }
 .sectionGray {
-  padding: 4rem 1.5rem;
   background: #f9fafb;
 }
+
 .sectionHeading {
-  font-size: 1.875rem;
+  font-size: clamp(1.25rem, 3.8vw, 1.875rem);
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
+
+/* Fluid grid by default */
 .grid3 {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
+
 .stack {
   display: flex;
   flex-direction: column;
@@ -176,7 +167,7 @@
 .ticker {
   background: #065f46;
   color: white;
-  padding: 1.5rem 0;
+  padding: 1.25rem 0;
 }
 
 /* Footer */
@@ -188,7 +179,7 @@
 .footerInner {
   max-width: 72rem;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -201,51 +192,119 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* ───────────────── Responsive ───────────────── */
+/* ───────── Breakpoints ───────── */
 
-/* Tablet and up */
-@media (min-width: 768px) {
+/* ───────── Fix marquee spacing on small screens ───────── */
+@media (max-width: 640px) {
   .hero {
-    padding: 0 3rem;
+    min-height: 70vh; /* shorter hero */
   }
+
+  .heroContent {
+    margin-top: 1.5rem !important; /* pull content upward */
+  }
+
   .heroBall {
-    display: flex;
+    margin-top: 1rem; /* keep ball close to title */
   }
+
+  .ticker {
+    margin-top: 1rem; /* bring marquee right under hero */
+  }
+}
+/* ───────── Responsive title wrapping ───────── */
+
+/* Default: single line on larger screens */
+.heroBreak {
+  display: none;
+}
+
+/* iPhone 14 Pro Max and similar widths (~430px and below) */
+@media (max-width: 430px) {
+  .heroBreak {
+    display: block; /* forces line break */
+  }
+
   .heroTitle {
-    font-size: 14vw;
-  }
-  .grid3 {
-    grid-template-columns: repeat(2, 1fr);
+    line-height: 0.9;
+    text-align: center;
+    font-size: clamp(3rem, 24vw, 6rem);
+    transform: none; /* prevent weird scaling that breaks text flow */
   }
 }
 
-/* Desktop and up */
-@media (min-width: 1024px) {
+@media (max-width: 480px) {
+  .hero {
+    margin-top: 1rem;
+    max-height: 50vh; /* even tighter for iPhone SE etc. */
+  }
   .heroTitle {
-    font-size: 12vw;
+    padding: 0 0.25rem;
+    font-size: clamp(3.4rem, 28vw, 6.2rem);
+    transform: none;
+    letter-spacing: clamp(0.01em, 0.2vw, 0.05em);
+  }
+  .heroContent {
+    margin-top: 1rem !important;
   }
 
+  .heroBall {
+    margin-top: 0.5rem;
+  }
+
+  .ticker {
+    margin-top: 0.5rem;
+  }
+}
+
+/* >= 768px (tablets) */
+@media (min-width: 768px) {
+  .hero {
+    padding: 0 2rem;
+  }
+  .heroContent {
+    margin-top: 6rem; /* bring content back under the title */
+  }
+  .heroOverlay {
+    max-width: 60%;
+    padding: 0;
+  }
+  /* Reintroduce absolute ball for composition */
+  .heroBall {
+    position: absolute;
+    bottom: -6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    width: clamp(260px, 34vw, 380px);
+    height: clamp(260px, 34vw, 380px);
+  }
+}
+
+/* >= 1024px (desktop) */
+@media (min-width: 1024px) {
+  .heroTitle {
+    /* desktop hero: wide and tall like your design */
+    font-size: clamp(8rem, 12vw, 20rem);
+    transform: scaleX(1.3) scaleY(2.2);
+  }
   .heroContent {
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
-    margin-top: 8rem; /* ⬅️ even more breathing room under the big word */
+    margin-top: 8rem;
+    gap: 2rem;
   }
-
   .heroOverlay {
     max-width: 46%;
+    margin-left: 1rem;
   }
-
   .heroBall {
-    max-width: 54%;
-    justify-content: flex-start;
-    /* ⬇️ push the ball LEFT and DOWN without using transform (Framer owns transform) */
-    margin-left: -12rem;
-    margin-top: 4rem;
-  }
-
-  .grid3 {
-    grid-template-columns: repeat(3, 1fr);
+    bottom: -10rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(320px, 30vw, 440px);
+    height: clamp(320px, 30vw, 440px);
   }
   .footerInner {
     flex-direction: row;
@@ -253,42 +312,18 @@
     align-items: center;
   }
 }
-/* ───────── Small devices (iPhone SE / iPhone 12) ───────── */
-@media (max-width: 480px) {
-  .heroTitle {
-    font-size: 12vw; /* scale neatly to viewport width */
-    text-align: center; /* center on small screens */
-    padding: 0 0.5rem; /* little breathing room */
-    display: block;
-    font-size: clamp(2.5rem, 12vw, 12rem); /* scale with screen size */
-    font-weight: 800;
-    font-family: "Alfa Slab One", serif;
-    color: rgba(255, 255, 255, 0.9);
-    line-height: 0.9;
-    text-align: center;
-    margin: 1rem 0 0 0;
 
-    transform: none; /* remove scaleX/scaleY */
-    transform-origin: center top;
-    pointer-events: none;
-    user-select: none;
-
-    word-break: break-word; /* ensures no overflow */
-    overflow-wrap: break-word;
+/* >= 1280px (large desktop) */
+@media (min-width: 1280px) {
+  .heroContent {
+    margin-top: 15rem;
   }
-
   .heroOverlay {
-    max-width: 100% !important; /* full width for text */
-    padding-left: 0.75rem; /* small gutter so it doesn’t touch edge */
+    max-width: 45%;
   }
-
   .heroBall {
-    position: relative; /* inline flow on small screens */
-    margin: 2rem auto 0 auto; /* center horizontally */
-    width: 200px;
-    height: 200px;
-    bottom: 0; /* remove absolute offsets */
-    left: auto;
-    transform: none; /* reset transforms */
+    /* optional lateral nudge without fighting transforms */
+
+    margin-left: -15rem;
   }
 }

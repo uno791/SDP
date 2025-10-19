@@ -23,7 +23,7 @@ import type { LeagueId } from "../api/espn";
 
 /* ------------------------------ DATA ------------------------------ */
 const LEAGUE_TEAM_MAP: Record<LeagueId, string[]> = {
-   eng1: [
+  eng1: [
     "Arsenal",
     "Aston Villa",
     "AFC Bournemouth",
@@ -217,8 +217,6 @@ const LEAGUE_TEAM_MAP: Record<LeagueId, string[]> = {
   ],
 };
 
-
-
 const LEAGUE_STORAGE_KEY = "league";
 const DEFAULT_LEAGUE: LeagueId = "eng1";
 const LEAGUE_OPTIONS: Array<{ id: LeagueId; label: string }> = [
@@ -242,109 +240,109 @@ const isLeagueId = (value: string | null): value is LeagueId =>
 export const TEAM_ABBR_CANON: Record<string, string> = {
   // --- Premier League (eng1) ---
   "AFC Bournemouth": "BOU",
-  "Arsenal": "ARS",
+  Arsenal: "ARS",
   "Aston Villa": "AVL",
-  "Brentford": "BRE",
+  Brentford: "BRE",
   "Brighton & Hove Albion": "BHA",
-  "Burnley": "BUR",
-  "Chelsea": "CHE",
+  Burnley: "BUR",
+  Chelsea: "CHE",
   "Crystal Palace": "CRY",
-  "Everton": "EVE",
-  "Fulham": "FUL",
+  Everton: "EVE",
+  Fulham: "FUL",
   "Leeds United": "LEE",
-  "Liverpool": "LIV",
+  Liverpool: "LIV",
   "Manchester City": "MCI",
   "Manchester United": "MUN",
   "Newcastle United": "NEW",
   "Nottingham Forest": "NFO",
-  "Sunderland": "SUN",
+  Sunderland: "SUN",
   "Tottenham Hotspur": "TOT",
   "West Ham United": "WHU",
   "Wolverhampton Wanderers": "WOL",
 
   // --- LaLiga (esp1) ---
-  "Alavés": "ALA",
-  "Athletic Club": "ATH",                 // (aka Athletic Bilbao)
+  Alavés: "ALA",
+  "Athletic Club": "ATH", // (aka Athletic Bilbao)
   "Atlético de Madrid": "ATM",
-  "Barcelona": "FCB",
+  Barcelona: "FCB",
   "Real Betis": "BET",
   "Celta Vigo": "CEL",
-  "Elche": "ELC",
-  "Espanyol": "ESP",
-  "Getafe": "GET",
-  "Girona": "GIR",
-  "Levante": "LEV",
-  "Mallorca": "MLL",
-  "Osasuna": "OSA",
-  "Oviedo": "OVI",
+  Elche: "ELC",
+  Espanyol: "ESP",
+  Getafe: "GET",
+  Girona: "GIR",
+  Levante: "LEV",
+  Mallorca: "MLL",
+  Osasuna: "OSA",
+  Oviedo: "OVI",
   "Rayo Vallecano": "RAY",
   "Real Madrid": "RMA",
   "Real Sociedad": "RSO",
-  "Sevilla": "SEV",
-  "Valencia": "VAL",
-  "Villarreal": "VIL",
+  Sevilla: "SEV",
+  Valencia: "VAL",
+  Villarreal: "VIL",
 
   // --- Serie A (ita1) ---
-  "Atalanta": "ATA",
-  "Bologna": "BOL",
-  "Cagliari": "CAG",
-  "Como": "COM",
-  "Cremonese": "CRE",
-  "Fiorentina": "FIO",
-  "Genoa": "GEN",
-  "Inter": "INT",
-  "Juventus": "JUV",
-  "Lazio": "LAZ",
-  "Lecce": "LEC",
+  Atalanta: "ATA",
+  Bologna: "BOL",
+  Cagliari: "CAG",
+  Como: "COM",
+  Cremonese: "CRE",
+  Fiorentina: "FIO",
+  Genoa: "GEN",
+  Inter: "INT",
+  Juventus: "JUV",
+  Lazio: "LAZ",
+  Lecce: "LEC",
   "AC Milan": "MIL",
-  "Napoli": "NAP",
-  "Parma": "PAR",
-  "Pisa": "PIS",
-  "Roma": "ROM",
-  "Sassuolo": "SAS",
-  "Torino": "TOR",
-  "Udinese": "UDI",
+  Napoli: "NAP",
+  Parma: "PAR",
+  Pisa: "PIS",
+  Roma: "ROM",
+  Sassuolo: "SAS",
+  Torino: "TOR",
+  Udinese: "UDI",
   "Hellas Verona": "VER",
 
   // --- Bundesliga (ger1) ---
-  "Augsburg": "AUG",
+  Augsburg: "AUG",
   "Bayer Leverkusen": "LEV",
   "Bayern Munich": "BAY",
   "Borussia Dortmund": "BVB",
   "Borussia Mönchengladbach": "BMG",
   "Eintracht Frankfurt": "SGE",
-  "Freiburg": "SCF",
+  Freiburg: "SCF",
   "Hamburger SV": "HSV",
-  "Heidenheim": "HEI",
-  "Hoffenheim": "TSG",
+  Heidenheim: "HEI",
+  Hoffenheim: "TSG",
   "1. FC Köln": "KOE",
   "RB Leipzig": "RBL",
   "Mainz 05": "MAI",
   "FC St. Pauli": "STP",
-  "Stuttgart": "VFB",
+  Stuttgart: "VFB",
   "Union Berlin": "FCU",
   "Werder Bremen": "BRE",
-  "Wolfsburg": "WOB",
+  Wolfsburg: "WOB",
 
   // --- Ligue 1 (fra1) ---
-  "Angers": "ANG",
-  "Auxerre": "AUX",
-  "Brest": "BRE",
+  Angers: "ANG",
+  Auxerre: "AUX",
+  Brest: "BRE",
   "Le Havre": "HAC",
-  "Lens": "RCL",
-  "Lille": "LIL",
-  "Lorient": "LOR",
-  "Lyon": "LYO",
-  "Marseille": "MAR",
-  "Metz": "MET",
-  "Monaco": "ASM",
-  "Nantes": "NAN",
-  "Nice": "NIC",
+  Lens: "RCL",
+  Lille: "LIL",
+  Lorient: "LOR",
+  Lyon: "LYO",
+  Marseille: "MAR",
+  Metz: "MET",
+  Monaco: "ASM",
+  Nantes: "NAN",
+  Nice: "NIC",
   "Paris FC": "PFC",
   "Paris Saint-Germain": "PSG",
-  "Rennes": "REN",
-  "Strasbourg": "STR",
-  "Toulouse": "TFC",
+  Rennes: "REN",
+  Strasbourg: "STR",
+  Toulouse: "TFC",
 };
 
 // Common variants/short names → canonical names
@@ -352,10 +350,15 @@ export const TEAM_ALIASES: Record<string, string[]> = {
   // --- Premier League ---
   "AFC Bournemouth": ["Bournemouth"],
   "Aston Villa": ["Villa"],
-  "Brighton & Hove Albion": ["Brighton", "Brighton Hove Albion", "Brighton & Hove", "BHAFC"],
+  "Brighton & Hove Albion": [
+    "Brighton",
+    "Brighton Hove Albion",
+    "Brighton & Hove",
+    "BHAFC",
+  ],
   "Crystal Palace": ["Palace"],
   "Leeds United": ["Leeds"],
-  "Liverpool": ["LFC"],
+  Liverpool: ["LFC"],
   "Manchester City": ["Man City", "Man. City", "MCFC", "Manchester C"],
   "Manchester United": ["Man United", "Man Utd", "Man. United", "MUFC"],
   "Newcastle United": ["Newcastle", "NUFC"],
@@ -363,73 +366,82 @@ export const TEAM_ALIASES: Record<string, string[]> = {
   "Tottenham Hotspur": ["Tottenham", "Spurs"],
   "West Ham United": ["West Ham"],
   "Wolverhampton Wanderers": ["Wolverhampton", "Wolves"],
-  "Arsenal": ["AFC", "Arsenal FC"],
+  Arsenal: ["AFC", "Arsenal FC"],
 
   // --- LaLiga ---
   "Athletic Club": ["Athletic Bilbao", "Bilbao"],
-  "Atlético de Madrid": ["Atletico Madrid", "Atletico de Madrid", "Atlético Madrid", "Atleti"],
-  "Barcelona": ["FC Barcelona", "Barca", "Barça"],
+  "Atlético de Madrid": [
+    "Atletico Madrid",
+    "Atletico de Madrid",
+    "Atlético Madrid",
+    "Atleti",
+  ],
+  Barcelona: ["FC Barcelona", "Barca", "Barça"],
   "Celta Vigo": ["RC Celta", "Celta de Vigo"],
-  "Espanyol": ["RCD Espanyol"],
-  "Girona": ["Girona FC"],
+  Espanyol: ["RCD Espanyol"],
+  Girona: ["Girona FC"],
   "Real Betis": ["Real Betis Balompié", "Betis"],
   "Real Madrid": ["Real Madrid CF", "RM"],
   "Real Sociedad": ["Real Sociedad de Fútbol", "La Real"],
-  "Sevilla": ["Sevilla FC"],
-  "Villarreal": ["Villarreal CF"],
-  "Alavés": ["Deportivo Alavés"],
+  Sevilla: ["Sevilla FC"],
+  Villarreal: ["Villarreal CF"],
+  Alavés: ["Deportivo Alavés"],
   "Rayo Vallecano": ["Rayo"],
-  "Osasuna": ["CA Osasuna"],
+  Osasuna: ["CA Osasuna"],
 
   // --- Serie A ---
   "AC Milan": ["Milan", "ACM"],
-  "Inter": ["Inter Milan", "Internazionale", "FC Internazionale"],
-  "Juventus": ["Juve"],
-  "Lazio": ["SS Lazio"],
-  "Roma": ["AS Roma"],
-  "Fiorentina": ["ACF Fiorentina"],
+  Inter: ["Inter Milan", "Internazionale", "FC Internazionale"],
+  Juventus: ["Juve"],
+  Lazio: ["SS Lazio"],
+  Roma: ["AS Roma"],
+  Fiorentina: ["ACF Fiorentina"],
   "Hellas Verona": ["Verona"],
-  "Udinese": ["Udinese Calcio"],
-  "Sassuolo": ["US Sassuolo"],
-  "Torino": ["Torino FC"],
-  "Cremonese": ["US Cremonese"],
-  "Como": ["Como 1907"],
+  Udinese: ["Udinese Calcio"],
+  Sassuolo: ["US Sassuolo"],
+  Torino: ["Torino FC"],
+  Cremonese: ["US Cremonese"],
+  Como: ["Como 1907"],
 
   // --- Bundesliga ---
   "Bayern Munich": ["FC Bayern", "Bayern", "FCB"],
   "Bayer Leverkusen": ["Leverkusen", "Bayer 04"],
   "Borussia Dortmund": ["Dortmund"],
-  "Borussia Mönchengladbach": ["Mönchengladbach", "Monchengladbach", "Gladbach"],
+  "Borussia Mönchengladbach": [
+    "Mönchengladbach",
+    "Monchengladbach",
+    "Gladbach",
+  ],
   "Eintracht Frankfurt": ["Eintracht", "Frankfurt"],
-  "Freiburg": ["SC Freiburg"],
-  "Hoffenheim": ["TSG Hoffenheim"],
+  Freiburg: ["SC Freiburg"],
+  Hoffenheim: ["TSG Hoffenheim"],
   "1. FC Köln": ["FC Köln", "FC Koln", "Koln", "Köln"],
   "RB Leipzig": ["Leipzig"],
   "Mainz 05": ["Mainz"],
-  "Stuttgart": ["VfB Stuttgart"],
+  Stuttgart: ["VfB Stuttgart"],
   "Union Berlin": ["1. FC Union Berlin", "Union"],
   "Werder Bremen": ["Bremen"],
-  "Wolfsburg": ["VfL Wolfsburg"],
+  Wolfsburg: ["VfL Wolfsburg"],
   "Hamburger SV": ["Hamburg", "HSV"],
   "FC St. Pauli": ["St. Pauli"],
 
   // --- Ligue 1 ---
   "Paris Saint-Germain": ["PSG"],
-  "Marseille": ["Olympique de Marseille", "OM"],
-  "Lyon": ["Olympique Lyonnais", "OL"],
-  "Lille": ["LOSC Lille", "LOSC"],
-  "Lens": ["RC Lens"],
+  Marseille: ["Olympique de Marseille", "OM"],
+  Lyon: ["Olympique Lyonnais", "OL"],
+  Lille: ["LOSC Lille", "LOSC"],
+  Lens: ["RC Lens"],
   "Le Havre": ["Le Havre AC"],
-  "Nice": ["OGC Nice"],
-  "Nantes": ["FC Nantes"],
-  "Rennes": ["Stade Rennais", "SRFC"],
-  "Strasbourg": ["RC Strasbourg", "RCSA"],
-  "Toulouse": ["Toulouse FC", "TFC"],
-  "Monaco": ["AS Monaco", "ASM"],
-  "Angers": ["SCO Angers"],
-  "Auxerre": ["AJ Auxerre"],
-  "Metz": ["FC Metz"],
-  "Lorient": ["FC Lorient"],
+  Nice: ["OGC Nice"],
+  Nantes: ["FC Nantes"],
+  Rennes: ["Stade Rennais", "SRFC"],
+  Strasbourg: ["RC Strasbourg", "RCSA"],
+  Toulouse: ["Toulouse FC", "TFC"],
+  Monaco: ["AS Monaco", "ASM"],
+  Angers: ["SCO Angers"],
+  Auxerre: ["AJ Auxerre"],
+  Metz: ["FC Metz"],
+  Lorient: ["FC Lorient"],
   "Paris FC": ["PFC"],
 };
 
@@ -457,13 +469,22 @@ export const ABBR_LOOKUP: Record<string, string> = (() => {
 
 // Smarter fallback: prefer 3 letters from the first word if initials < 3
 export const fallbackAbbrev = (name: string) => {
-  const words = name.replace(/&/g, " ").split(/[\s-]+/).filter(Boolean);
+  const words = name
+    .replace(/&/g, " ")
+    .split(/[\s-]+/)
+    .filter(Boolean);
   if (words.length >= 2) {
-    const initials = words.map(w => w[0]).join("").toUpperCase();
+    const initials = words
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase();
     if (initials.length >= 3) return initials.slice(0, 3);
     const first = words[0] ?? "";
     if (first.length >= 3) return first.slice(0, 3).toUpperCase();
-    return (initials + first.slice(0, 3 - initials.length).toUpperCase()).slice(0, 3);
+    return (initials + first.slice(0, 3 - initials.length).toUpperCase()).slice(
+      0,
+      3
+    );
   }
   return (words[0] ?? name).slice(0, 3).toUpperCase();
 };
@@ -517,7 +538,11 @@ export default function LandingPage() {
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("league", league);
-      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      window.history.replaceState(
+        {},
+        "",
+        `${url.pathname}${url.search}${url.hash}`
+      );
     } catch {
       /* ignore history errors */
     }
@@ -561,7 +586,9 @@ export default function LandingPage() {
       <main className={styles.main}>
         {/* HERO */}
         <section className={styles.hero}>
-          <h1 className={styles.heroTitle}>FOOTBOOK</h1>
+          <h1 className={styles.heroTitle}>
+            FOOT<span className={styles.heroBreak}></span>BOOK
+          </h1>
 
           <div className={styles.heroContent}>
             {/* Bottom-left tagline & buttons */}
@@ -578,7 +605,10 @@ export default function LandingPage() {
                   margin: "0.75rem 0",
                 }}
               >
-                <label htmlFor="landing-league-select" style={{ fontWeight: 600 }}>
+                <label
+                  htmlFor="landing-league-select"
+                  style={{ fontWeight: 600 }}
+                >
                   League
                 </label>
                 <select
@@ -606,14 +636,14 @@ export default function LandingPage() {
                 <a href="#live" className={styles.primaryBtn}>
                   View Live Matches
                 </a>
-              <a href="#news" className={styles.secondaryBtn}>
-                Latest News
-              </a>
-              <Link to="/what-is-footbook" className={styles.secondaryBtn}>
-                What is Footbook?
-              </Link>
+                <a href="#news" className={styles.secondaryBtn}>
+                  Latest News
+                </a>
+                <Link to="/what-is-footbook" className={styles.secondaryBtn}>
+                  What is Footbook?
+                </Link>
+              </div>
             </div>
-          </div>
 
             {/* Ball (flex sibling; moved left & down via CSS; parallax via yFootball) */}
             <motion.div style={{ y: yFootball }} className={styles.heroBall}>

@@ -160,18 +160,144 @@
   align-items: center;
   margin-right: -0.25rem !important;
 }
+/* ───────── Mobile baseline (covers all phones up to 430px) ───────── */
+@media (max-width: 430px) {
+  .header {
+    --header-height: 4.5rem;
+    height: auto;
+    padding-block: 0.4rem;
+    overflow: visible;
+  }
 
-@media (max-width: 640px) {
   .container {
-    padding: 0.5rem 1rem;
+    position: relative; /* anchor for absolute burger */
+    display: grid;
+    grid-template-columns: 1fr auto; /* brand | actions (signup) */
+    align-items: center;
+    column-gap: 0.5rem;
+    row-gap: 0.5rem;
+    padding: 0.5rem 0.75rem; /* we'll do device-specific right offsets below */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
   }
 
-  .highlightText,
-  .highlightPlaceholder {
-    max-width: min(56vw, 16rem);
+  /* Brand left, remove negative nudge */
+  .brand {
+    grid-column: 1 / 2;
+    margin-left: 0;
+    min-width: 0;
+    gap: 0.5rem;
   }
 
+  .title {
+    max-width: 60vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: clamp(0.95rem, 3.3vw, 1.06rem);
+    letter-spacing: 0.04em;
+  }
+
+  .logo {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  /* Signup stays visible (to the left of the burger) */
+  .signupButton {
+    grid-column: 2 / 3;
+    justify-self: end;
+    margin: 0;
+    padding: 0.32rem 0.72rem;
+    font-size: 0.82rem;
+  }
+
+  /* Burger is absolutely positioned; device buckets will set `right` below */
+  .menuButton {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.8rem;
+    line-height: 1;
+    padding: 0.25rem; /* touch target */
+    margin: 0 !important; /* clear old negative margin */
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Hide highlight on mobile */
   .highlightRow {
-    gap: 0.25rem;
+    display: none !important;
+  }
+
+  /* Page content starts below fixed header */
+  .main {
+    padding-top: calc(var(--header-height) + 1.25rem);
+  }
+}
+
+/* ───────── iPhone 14 Pro Max (414–430px) — you set this pattern ───────── */
+@media (min-width: 414px) and (max-width: 430px) {
+  .title {
+    max-width: 62vw;
+  }
+  .signupButton {
+    font-size: 0.84rem;
+    padding: 0.34rem 0.76rem;
+  }
+  .menuButton {
+    font-size: 1.9rem;
+    right: 110px;
+  }
+}
+
+/* ───────── iPhone 14/15 Pro & common Android (391–413px) — NEW bucket ─────────
+   Examples: iPhone 14/15 Pro (393px), Pixel 5 (393px), many Androids (411–412px) */
+@media (min-width: 391px) and (max-width: 413px) {
+  .title {
+    max-width: 58vw;
+  }
+  .signupButton {
+    font-size: 0.82rem;
+    padding: 0.32rem 0.7rem;
+  }
+  .menuButton {
+    right: 125px;
+  } /* matches your fixed-offset approach */
+}
+
+/* ───────── iPhone 12/13/14 (376–390px) — you set this pattern ───────── */
+@media (min-width: 376px) and (max-width: 390px) {
+  .title {
+    max-width: 56vw;
+  }
+  .signupButton {
+    margin-right: 0;
+    font-size: 0.8rem;
+  }
+  .menuButton {
+    right: 140px;
+  }
+}
+
+/* ───────── iPhone SE (≤375px) — you set this pattern ───────── */
+@media (max-width: 375px) {
+  .title {
+    max-width: 52vw;
+    font-size: 0.95rem;
+  }
+  .signupButton {
+    padding: 0.3rem 0.62rem;
+    font-size: 0.78rem;
+  }
+  .menuButton {
+    right: 140px;
+    font-size: 1.75rem;
+    padding: 0.25rem;
   }
 }
