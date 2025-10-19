@@ -10,7 +10,7 @@ export default function MatchNavBar() {
   const [navOpen, setNavOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (!eventId) return null; // don’t show if no match id
+  if (!eventId) return null; // don't show if no match id
 
   const mobileNavListClassName = [
     styles.navListMobile,
@@ -80,14 +80,19 @@ export default function MatchNavBar() {
             type="button"
             className={styles.menuButton}
             onClick={() => setSidebarOpen(true)}
-            aria-label="Open site navigation"
+            aria-label="Open menu"
           >
             <Menu />
           </button>
         </div>
       </nav>
 
-      <ul id="match-nav-mobile" className={mobileNavListClassName}>
+      <ul
+        id="match-nav-mobile"
+        className={mobileNavListClassName}
+        hidden={!navOpen}
+        aria-hidden={!navOpen}
+      >
         <li>
           <NavLink
             to={`/matchviewer?id=${eventId}`}
