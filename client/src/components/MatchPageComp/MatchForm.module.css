@@ -286,3 +286,95 @@
   justify-content: space-between;
   margin-top: 1.5rem;
 }
+
+/* ---------- Mobile Responsive Styles ---------- */
+@media (max-width: 768px) {
+  /* Center entire form vertically and horizontally */
+  .page, /* if your form sits inside .page */
+  .form {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* horizontal centering */
+    justify-content: center; /* vertical centering */
+    padding: 1.25rem;
+    min-height: 100vh; /* ensure full viewport height for vertical centering */
+  }
+
+  /* Limit form width and center content */
+  .form {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  /* Layout adjustments for flex sections */
+  .teams {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .teamColumn {
+    width: 100%;
+  }
+
+  .settings {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .lineupInputRow,
+  .lineupActions,
+  .inviteRow,
+  .privacyRow,
+  .buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Inputs and buttons full width for mobile usability */
+  .textInput,
+  .durationInput,
+  .userSelect,
+  .countInput {
+    width: 100%;
+  }
+
+  .upload,
+  .addLineup,
+  .addUsersBtn,
+  .saveBtn,
+  .create,
+  .cancel,
+  .smallAction,
+  .smallActionAlt {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .subHeader {
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .form {
+    border-radius: 12px;
+    padding: 1rem;
+  }
+
+  .chips {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .chip {
+    justify-content: center;
+    width: 100%;
+  }
+}

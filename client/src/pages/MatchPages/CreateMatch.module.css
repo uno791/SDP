@@ -59,3 +59,57 @@
 .csvTemplate:hover {
   background: #dcfce7;
 }
+
+/* ---------- Mobile Responsive Styles ---------- */
+@media (max-width: 768px) {
+  .page {
+    padding: 1.25rem;
+  }
+
+  .container {
+    padding: 1.25rem;
+    border-radius: 16px;
+  }
+
+  .header {
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .uploadCsv {
+    width: 100%;
+    align-self: stretch;
+    text-align: center;
+  }
+
+  .csvTemplate {
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 1rem;
+  }
+
+  .container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .header {
+    font-size: 1.1rem;
+  }
+
+  .uploadCsv {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .csvTemplate {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+  }
+}
